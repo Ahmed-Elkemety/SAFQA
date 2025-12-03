@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35931.197 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SAFQA.API", "SAFQA.API\SAFQA.API.csproj", "{C8E2DDA2-0B7D-4BE1-AAA4-38C93F1FC01C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SAFQA.BLL", "SAFQA.BLL\SAFQA.BLL.csproj", "{C44F92D1-A464-4535-B47E-536D64A29A3E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SAFQA.DAL", "SAFQA.DAL\SAFQA.DAL.csproj", "{A360E73D-2D7A-4427-B640-A28E7FADC9F8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C8E2DDA2-0B7D-4BE1-AAA4-38C93F1FC01C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8E2DDA2-0B7D-4BE1-AAA4-38C93F1FC01C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8E2DDA2-0B7D-4BE1-AAA4-38C93F1FC01C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8E2DDA2-0B7D-4BE1-AAA4-38C93F1FC01C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C44F92D1-A464-4535-B47E-536D64A29A3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C44F92D1-A464-4535-B47E-536D64A29A3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C44F92D1-A464-4535-B47E-536D64A29A3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C44F92D1-A464-4535-B47E-536D64A29A3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A360E73D-2D7A-4427-B640-A28E7FADC9F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A360E73D-2D7A-4427-B640-A28E7FADC9F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A360E73D-2D7A-4427-B640-A28E7FADC9F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A360E73D-2D7A-4427-B640-A28E7FADC9F8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E980F74D-31A0-47F9-A908-C03529EE904C}
+	EndGlobalSection
+EndGlobal
