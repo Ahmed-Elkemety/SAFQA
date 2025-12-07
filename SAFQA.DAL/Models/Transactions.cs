@@ -23,6 +23,5 @@ namespace SAFQA.DAL.Models
         public int WalletId { get; set; }
         public Wallet Wallet { get; set; }
         public ICollection<Notification> Notifications { get; set; }
-        public Delivery Delivery { get; set; }
     }
 }

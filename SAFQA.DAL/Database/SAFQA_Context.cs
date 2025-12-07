@@ -44,5 +44,8 @@ namespace SAFQA.DAL.Database
         public DbSet<Wallet> Wallets { get; set; }
         public DbSet<Country> countries { get; set; }
         public DbSet<City> cities { get; set; }
+        public DbSet<Images> images { get; set; }
+        public DbSet<CategoryAttributes> categoryAttributes { get; set; }
+        public DbSet<ItemAttributesValue> itemAttributesValues { get; set; }
     }
 }

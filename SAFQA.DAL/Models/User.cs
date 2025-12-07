@@ -29,7 +29,6 @@ namespace SAFQA.DAL.Models
         public int CityId { get; set; }
         public string City { get; set; }
 
-        public string Street { get; set; }
         public UserStatus Status { get; set; } // Active - Inactive - Blocked - Deleted
         public UserLanguage language { get; set; } // Arabic - English
         public DateTime CreatedAt { get; set; }

@@ -12,17 +12,14 @@ namespace SAFQA.DAL.Models
     {
         public int Id { get; set; }
         public string Title { get; set; }
-        public NotificationTypes notification { get; set; }
+        public NotificationTypes notificationType { get; set; }
+        public int ReferenceId { get; set; }
         public string Message { get; set; }
         public bool IsRead { get; set; }
-        public decimal? BalanceAfter { get; set; }
         public DateTime CreatedAt { get; set; }
-        public string? Descriptor { get; set; }
         public int UserId { get; set; }
-        public Auction Auction { get; set; }
-        public int BidsId { get; set; }
-        public Bid Bids { get; set; }
         public User User { get; set; }
+        public int TransactionId { get; set; }
         public Transactions Transaction { get; set; }
     }
 }
