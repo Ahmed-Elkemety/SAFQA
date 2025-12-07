@@ -42,5 +42,7 @@ namespace SAFQA.DAL.Database
         public DbSet<Review> Reviews { get; set; }
         public DbSet<Transactions> Transactions { get; set; }
         public DbSet<Wallet> Wallets { get; set; }
+        public DbSet<Country> countries { get; set; }
+        public DbSet<City> cities { get; set; }
     }
 }
