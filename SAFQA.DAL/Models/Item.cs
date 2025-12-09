@@ -23,7 +23,5 @@ namespace SAFQA.DAL.Models
         public Auction Auction { get; set; }
         public ICollection<Images> images { get; set; }
         public ICollection<ItemAttributesValue> itemAttributesValues { get; set; }
-
-
     }
 }

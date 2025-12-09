@@ -15,7 +15,6 @@ namespace SAFQA.DAL.Models
         public DataTypes dataType { get; set; }
         public Unit unit { get; set; }
         public bool IsRequird { get; set; }
-
         public int CategoryId { get; set; }
         public Category category { get; set; }
         public ICollection<ItemAttributesValue> itemAttributesValues { get; set; }

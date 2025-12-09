@@ -10,8 +10,7 @@ namespace SAFQA.DAL.Models
 {
     public class User
     {
-        public int UserId { get; set; }
-
+        public int Id { get; set; }
         public byte[] Image { get; set; }
         public string FullName { get; set; }
         public string Email { get; set; }
@@ -23,11 +22,11 @@ namespace SAFQA.DAL.Models
 
         // To choose Country From Database
         public int CountryId { get; set; } 
-        public string Country { get; set; }
+        public Country Country { get; set; }
 
         // To choose City From Database 
         public int CityId { get; set; }
-        public string City { get; set; }
+        public City City { get; set; }
 
         public UserStatus Status { get; set; } // Active - Inactive - Blocked - Deleted
         public UserLanguage language { get; set; } // Arabic - English

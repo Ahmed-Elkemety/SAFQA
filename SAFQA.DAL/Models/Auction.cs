@@ -11,12 +11,11 @@ namespace SAFQA.DAL.Models
 {
     public class Auction
     {
-        public int AuctionId { get; set; }
+        public int Id { get; set; }
 
         // FK to Seller (1-to-1)
         public int SellerId { get; set; }
         public Seller Seller { get; set; }
-
         public int WinnerUserId { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }

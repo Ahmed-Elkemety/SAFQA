@@ -13,6 +13,6 @@ namespace SAFQA.DAL.Models
         public int CategoryAttributeId { get; set; }
         public CategoryAttributes categoryAttributes { get; set; }
         public int ItemId { get; set; }
-        public Item MyProperty { get; set; }
+        public Item Item { get; set; }
     }
 }

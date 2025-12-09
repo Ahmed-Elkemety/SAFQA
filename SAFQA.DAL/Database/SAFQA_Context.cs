@@ -5,6 +5,7 @@ using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using SAFQA.DAL.Configration;
 using SAFQA.DAL.Models;
 
 namespace SAFQA.DAL.Database
@@ -18,15 +19,24 @@ namespace SAFQA.DAL.Database
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<ProxyBidding>()
-                    .HasKey(pb => new { pb.ProxyId, pb.BidId });
-
-            foreach (var fk in modelBuilder.Model.GetEntityTypes()
-                    .SelectMany(e => e.GetForeignKeys()))
-            {
-                fk.DeleteBehavior = DeleteBehavior.NoAction;
-            }
+            modelBuilder.ApplyConfiguration(new AuctionConfigration());
+            modelBuilder.ApplyConfiguration(new BidConfigration());
+            modelBuilder.ApplyConfiguration(new CategoryAttributesConfigration());
+            modelBuilder.ApplyConfiguration(new CategoryConfigration());
+            modelBuilder.ApplyConfiguration(new CityConfigration());
+            modelBuilder.ApplyConfiguration(new CountryConfigration());
+            modelBuilder.ApplyConfiguration(new DeliveryConfigration());
+            modelBuilder.ApplyConfiguration(new DisputesConfigration());
+            modelBuilder.ApplyConfiguration(new ImagesConfigration());
+            modelBuilder.ApplyConfiguration(new ItemAttributesValueConfigration());
+            modelBuilder.ApplyConfiguration(new ItemConfigration());
+            modelBuilder.ApplyConfiguration(new NotificationConfigration());
+            modelBuilder.ApplyConfiguration(new ProxyBiddingConfigration());
+            modelBuilder.ApplyConfiguration(new ReviewConfigration());
+            modelBuilder.ApplyConfiguration(new SellerConfigration());
+            modelBuilder.ApplyConfiguration(new TransactionConfigration());
+            modelBuilder.ApplyConfiguration(new UserConfigration());
+            modelBuilder.ApplyConfiguration(new WalletConfigration());
         }
 
         public DbSet<User> Users { get; set; }
