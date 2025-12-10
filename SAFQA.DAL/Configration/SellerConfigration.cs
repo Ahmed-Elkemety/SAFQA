@@ -10,22 +10,15 @@ namespace SAFQA.DAL.Configration
 {
     public class SellerConfigration : IEntityTypeConfiguration<Seller>
     {
+        
         public void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<Seller> builder)
         {
-
-
-            builder
-                .HasMany(a => a.Auctions)
-                .WithOne(e => e.Seller)
-                .HasForeignKey(e => e.SellerId)
-                .OnDelete(DeleteBehavior.Cascade);
 
             builder
                 .HasOne(a => a.User)
                 .WithOne(e => e.Seller)
                 .HasForeignKey<Seller>(a => a.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-
+                .IsRequired(false);
 
 
 

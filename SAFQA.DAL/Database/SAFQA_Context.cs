@@ -37,6 +37,12 @@ namespace SAFQA.DAL.Database
             modelBuilder.ApplyConfiguration(new TransactionConfigration());
             modelBuilder.ApplyConfiguration(new UserConfigration());
             modelBuilder.ApplyConfiguration(new WalletConfigration());
+
+            foreach (var relationship in modelBuilder.Model.GetEntityTypes()
+                    .SelectMany(e => e.GetForeignKeys()))
+            {
+                relationship.DeleteBehavior = DeleteBehavior.Restrict;
+            }
         }
 
         public DbSet<User> Users { get; set; }

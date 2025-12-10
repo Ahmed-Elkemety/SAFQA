@@ -14,14 +14,12 @@ namespace SAFQA.DAL.Models
         public int Id { get; set; }
         public TransactionType Type { get; set; }
         public TransactionStatus Status { get; set; }
-        public string ReferenceId { get; set; } // Under Review
         public decimal BalanceBefore { get; set; }
         public decimal BalanceAfter { get; set; }
         public decimal Amount { get; set; }
         public string Description { get; set; }
         public DateTime CreatedAt{ get; set; }
-        public int WalletId { get; set; }
+        public int? WalletId { get; set; }
         public Wallet Wallet { get; set; }
-        public ICollection<Notification> Notifications { get; set; }
     }
 }

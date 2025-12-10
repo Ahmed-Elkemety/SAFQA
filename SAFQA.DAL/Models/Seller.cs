@@ -9,10 +9,10 @@ namespace SAFQA.DAL.Models
 {
     public class Seller
     {
-        public int SellerId { get; set; }
+        public int Id { get; set; }
 
         // FK to User (1-to-1)
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
         public User User { get; set; }
 
         public byte[] StoreLogo { get; set; }
@@ -26,6 +26,8 @@ namespace SAFQA.DAL.Models
         public SellerVerificationStatus VerificationStatus { get; set; } //  Pending - Verified - Rejected
         public StoreStatus StoreStatus { get; set; } // Active - Inactive - Suspended - Closed
         public DateTime SellerAt { get; set; }
+        public bool IsDeleted { get; set; }
+        public bool DeletedAt { get; set; }
 
         // Navigation
         public ICollection<Auction> Auctions { get; set; } // 1 to M

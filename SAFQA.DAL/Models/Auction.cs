@@ -14,7 +14,7 @@ namespace SAFQA.DAL.Models
         public int Id { get; set; }
 
         // FK to Seller (1-to-1)
-        public int SellerId { get; set; }
+        public int? SellerId{ get; set; }
         public Seller Seller { get; set; }
         public int WinnerUserId { get; set; }
         public string Title { get; set; }
@@ -37,14 +37,16 @@ namespace SAFQA.DAL.Models
         public bool HotScore { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+        public bool IsDeleted { get; set; }
+        public bool DeletedAt { get; set; }
 
 
 
         // Navigation
         public Delivery delivery { get; set; } // 1 to 1
         public ICollection<User> users { get; set; } // M to N
-        public ICollection<Notification> notifications { get; set; } // 1 to M
         public ICollection<Bid> Bids { get; set; } // 1 to M
+        public ICollection<ProxyBidding> ProxyBiddings { get; set; }
         public ICollection<Disputes> disputes { get; set; } // 1 to M
         public ICollection<Item> items { get; set; } // 1 to M
     }

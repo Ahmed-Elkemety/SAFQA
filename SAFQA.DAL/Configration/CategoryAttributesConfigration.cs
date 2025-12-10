@@ -12,6 +12,11 @@ namespace SAFQA.DAL.Configration
     {
         public void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<CategoryAttributes> builder)
         {
+            builder
+                .HasOne(ca => ca.category)
+                .WithMany(c => c.CategoryAttributes)
+                .HasForeignKey(ca => ca.CategoryId)
+                .IsRequired(false);
 
             builder.Property(ca => ca.Name).IsRequired().HasMaxLength(150);
             builder.Property(ca => ca.dataType).IsRequired();

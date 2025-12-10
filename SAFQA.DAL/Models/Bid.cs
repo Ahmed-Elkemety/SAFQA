@@ -15,10 +15,11 @@ namespace SAFQA.DAL.Models
         public decimal Amount { get; set; }
         public int BidOrder { get; set; }
         public DateTime Date { get; set; }
-        public int UserId { get; set; }
-        public int AuctionId { get; set; }
+        public int? UserId { get; set; }
+        public int? AuctionId { get; set; }
+        public int? ProxyBiddingId { get; set; }
         public  User User { get; set; }
         public Auction Auction { get; set; }
-        public ICollection<Notification> Notifications { get; set; }
+        public ProxyBidding proxyBidding { get; set; }
     }
 }

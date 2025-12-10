@@ -12,13 +12,30 @@ namespace SAFQA.DAL.Configration
     {
         public void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<Delivery> builder)
         {
+            builder.HasOne(a => a.Auction)
+                   .WithOne(e => e.delivery)
+                   .HasForeignKey<Delivery>(a => a.AuctionId);
+
             builder
-                .HasMany(a => a.Disputes)
-                .WithOne(e => e.Delivery)
-                .HasForeignKey(e => e.DeliveryId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasOne(a => a.User)
+                .WithMany(e => e.deliveries)
+                .HasForeignKey(a => a.UserId)
+                .IsRequired(false);
 
+            builder
+                .HasOne(a => a.Seller)
+                .WithMany(e => e.deliveries)
+                .HasForeignKey(a => a.SellerId)
+                .IsRequired(false);
+            builder.Property(d => d.Code)
+              .IsRequired()
+              .HasMaxLength(50);
 
+            
+            builder.Property(d => d.ComfirmedAt).IsRequired();
+            builder.Property(d => d.ContactNumber).IsRequired().HasMaxLength(20);
+            builder.Property(d => d.ProfImage).HasColumnType("varbinary(max)").IsRequired();
+            builder.Property(d => d.Status).IsRequired().HasConversion<int>();
         }
     }
 }

@@ -17,19 +17,14 @@ namespace SAFQA.DAL.Configration
                 .HasOne(a => a.Wallet)
                 .WithMany(e => e.Transactions)
                 .HasForeignKey(a => a.WalletId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .IsRequired(false);
 
 
-            builder.Property(t => t.ReferenceId).HasMaxLength(100);
             builder.Property(t => t.Amount).HasColumnType("decimal(18,2)").IsRequired();
             builder.Property(t => t.BalanceBefore).HasColumnType("decimal(18,2)").IsRequired();
             builder.Property(t => t.BalanceAfter).HasColumnType("decimal(18,2)").IsRequired();
             builder.Property(t => t.Description).HasMaxLength(500);
             builder.Property(t => t.CreatedAt).HasDefaultValueSql("GETDATE()");
-            builder.HasIndex(t => t.Type);
-            builder.HasIndex(t => t.Status);
-            builder.HasIndex(t => t.WalletId);
-            builder.HasIndex(t => t.CreatedAt);
         }
     }
 }

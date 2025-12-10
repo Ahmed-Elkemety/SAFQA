@@ -17,7 +17,17 @@ namespace SAFQA.DAL.Configration
                 .HasOne(a => a.Auction)
                 .WithMany(e => e.disputes)
                 .HasForeignKey(a => a.AuctionId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .IsRequired(false);
+            builder
+                .HasOne(a => a.Delivery)
+                .WithMany(e => e.Disputes)
+                .HasForeignKey(a => a.DeliveryId)
+                .IsRequired(false);
+            builder
+                .HasOne(a => a.User)
+                .WithMany(e => e.disputes)
+                .HasForeignKey(a => a.UserId)
+                .IsRequired(false);
 
 
             builder.Property(d => d.Title).IsRequired().HasMaxLength(200);

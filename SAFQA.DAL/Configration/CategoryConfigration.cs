@@ -12,19 +12,11 @@ namespace SAFQA.DAL.Configration
     {
         public void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<Category> builder)
         {
-            builder
-                .HasMany(a => a.Items)
-                .WithOne(e => e.Category)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            builder
-                .HasMany(a => a.CategoryAttributes)
-                .WithOne(e => e.category)
-                .OnDelete(DeleteBehavior.Cascade);
-
             builder.Property(c => c.Name).IsRequired().HasMaxLength(100);
             builder.HasIndex(c => c.Name).IsUnique();
             builder.Property(c => c.Description).HasMaxLength(500);
+            builder.HasIndex(c => c.Name);
+            builder.HasIndex(c => c.Id);
         }
     }
 }

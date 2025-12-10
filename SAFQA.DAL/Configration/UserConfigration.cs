@@ -12,6 +12,13 @@ namespace SAFQA.DAL.Configration
     {
         public void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<User> builder)
         {
+            builder
+                .HasOne(c => c.City)
+                .WithMany(u => u.users)
+                .HasForeignKey(c => c.CityId)
+                .IsRequired(false);
+
+
 
             builder.Property(u => u.FullName).IsRequired().HasMaxLength(150);
             builder.Property(u => u.Email).IsRequired().HasMaxLength(150);

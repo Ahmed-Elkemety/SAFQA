@@ -12,7 +12,16 @@ namespace SAFQA.DAL.Configration
     {
         public void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<ProxyBidding> builder)
         {
-            builder.HasKey(pb => new { pb.BidId, pb.ProxyId });
+            builder.HasOne(a => a.auction)
+                   .WithMany(pb => pb.ProxyBiddings)
+                   .HasForeignKey(a => a.AuctionId)
+                   .IsRequired(false);
+
+            builder.HasOne(u => u.user)
+                    .WithMany(pb => pb.proxyBiddings)
+                    .HasForeignKey(u => u.UserId)
+                    .IsRequired(false);
+
             builder.Property(pb => pb.Status).IsRequired();
             builder.Property(pb => pb.Max).IsRequired();
             builder.Property(pb => pb.Step).IsRequired();

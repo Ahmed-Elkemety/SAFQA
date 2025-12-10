@@ -15,20 +15,13 @@ namespace SAFQA.DAL.Configration
             builder
                 .HasOne(a => a.Auction)
                 .WithMany(e => e.items)
-                .HasForeignKey(c => c.AuctionId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(a => a.AuctionId);
 
             builder
-                .HasMany(a => a.images)
-                .WithOne(e => e.item)
-                .HasForeignKey(c => c.ItemId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            builder
-                .HasMany(a => a.itemAttributesValues)
-                .WithOne(e => e.Item)
-                .HasForeignKey(c => c.ItemId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasOne(a => a.Category)
+                .WithMany(e => e.Items)
+                .HasForeignKey(a => a.CategoryId)
+                .IsRequired(false);
 
 
             builder.Property(i => i.title).IsRequired().HasMaxLength(200);

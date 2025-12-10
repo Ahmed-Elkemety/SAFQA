@@ -10,12 +10,16 @@ namespace SAFQA.DAL.Models
 {
     public class ProxyBidding
     {
-        public int BidId { get; set; }
-        public int ProxyId { get; set; }
+        public int Id { get; set; }
         public ProxyStatus Status { get; set; }
         public int Max { get; set; }
         public int Step { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdateAt { get; set; }
+        public int? UserId { get; set; }
+        public User user { get; set; }
+        public int? AuctionId { get; set; }
+        public Auction auction { get; set; }
+        public ICollection<Bid> bids { get; set; }
     }
 }

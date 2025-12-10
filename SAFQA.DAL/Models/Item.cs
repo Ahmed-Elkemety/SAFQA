@@ -18,7 +18,7 @@ namespace SAFQA.DAL.Models
         public ItemCondition Condition { get; set; }
         public string WarrantyInfo { get; set; }
         public int AuctionId { get; set; }
-        public int CategoryId { get; set; }
+        public int? CategoryId { get; set; }
         public Category Category { get; set; }
         public Auction Auction { get; set; }
         public ICollection<Images> images { get; set; }

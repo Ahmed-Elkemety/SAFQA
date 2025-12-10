@@ -15,8 +15,12 @@ namespace SAFQA.DAL.Configration
             builder
                 .HasOne(a => a.categoryAttributes)
                 .WithMany(e => e.itemAttributesValues)
-                .HasForeignKey(r => r.CategoryAttributeId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(a => a.CategoryAttributeId);
+            builder
+                .HasOne(i => i.Item)
+                .WithMany(e => e.itemAttributesValues)
+                .HasForeignKey(i => i.ItemId)
+                .IsRequired(false);
         }
     }
 }

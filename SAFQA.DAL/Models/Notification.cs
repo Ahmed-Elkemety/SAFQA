@@ -19,8 +19,5 @@ namespace SAFQA.DAL.Models
         public DateTime CreatedAt { get; set; }
         public int UserId { get; set; }
         public User User { get; set; }
-        public int TransactionId { get; set; }
-        public Transactions Transaction { get; set; }
-        public Bid Bid { get; set; }
     }
 }

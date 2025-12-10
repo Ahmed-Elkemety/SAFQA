@@ -15,14 +15,7 @@ namespace SAFQA.DAL.Configration
             builder
                 .HasOne(a => a.Country)
                 .WithMany(e => e.Cities)
-                .HasForeignKey(e => e.CountryId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            builder
-                .HasMany(a => a.users)
-                .WithOne(e => e.City)
-                .HasForeignKey(a => a.CityId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(e => e.CountryId);
 
             builder.Property(c => c.Name).IsRequired().HasMaxLength(150);
         }
