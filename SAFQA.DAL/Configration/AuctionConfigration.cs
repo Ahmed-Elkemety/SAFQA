@@ -25,6 +25,7 @@ namespace SAFQA.DAL.Configration
             builder.Property(a => a.IsFeatured).HasDefaultValue(false);
             builder.Property(a => a.IsTrending).HasDefaultValue(false);
             builder.Property(a => a.HotScore).HasDefaultValue(false);
+            builder.Property(a => a.DeletedAt).HasDefaultValueSql("GETDATE()");
         }
     }
 }

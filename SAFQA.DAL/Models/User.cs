@@ -24,7 +24,7 @@ namespace SAFQA.DAL.Models
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public bool IsDeleted { get; set; }
-        public bool DeletedAt { get; set; }
+        public string DeletedAt { get; set; }
         public DateTime LastLogin { get; set; }
 
         // Navigation

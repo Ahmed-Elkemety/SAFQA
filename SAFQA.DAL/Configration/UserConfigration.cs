@@ -33,6 +33,7 @@ namespace SAFQA.DAL.Configration
             builder.Property(u => u.Role).IsRequired();
             builder.Property(u => u.Status).IsRequired();
             builder.Property(u => u.language).IsRequired();
+            builder.Property(u => u.DeletedAt).HasDefaultValueSql("GETDATE()");
         }
     }
 }

@@ -53,8 +53,11 @@ namespace SAFQA.DAL.Migrations
                     b.Property<decimal>("CurrentPrice")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<bool>("DeletedAt")
-                        .HasColumnType("bit");
+                    b.Property<string>("DeletedAt")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(max)")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -606,8 +609,11 @@ namespace SAFQA.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("varbinary(max)");
 
-                    b.Property<bool>("DeletedAt")
-                        .HasColumnType("bit");
+                    b.Property<string>("DeletedAt")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(max)")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -705,7 +711,10 @@ namespace SAFQA.DAL.Migrations
             modelBuilder.Entity("SAFQA.DAL.Models.User", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateOnly>("BirthDate")
                         .HasColumnType("date");
@@ -718,8 +727,11 @@ namespace SAFQA.DAL.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETDATE()");
 
-                    b.Property<bool>("DeletedAt")
-                        .HasColumnType("bit");
+                    b.Property<string>("DeletedAt")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(max)")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -809,6 +821,9 @@ namespace SAFQA.DAL.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("Wallets");
                 });
@@ -1051,15 +1066,18 @@ namespace SAFQA.DAL.Migrations
                         .HasForeignKey("CityId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("SAFQA.DAL.Models.Wallet", "wallet")
-                        .WithOne("User")
-                        .HasForeignKey("SAFQA.DAL.Models.User", "Id")
+                    b.Navigation("City");
+                });
+
+            modelBuilder.Entity("SAFQA.DAL.Models.Wallet", b =>
+                {
+                    b.HasOne("SAFQA.DAL.Models.User", "User")
+                        .WithOne("wallet")
+                        .HasForeignKey("SAFQA.DAL.Models.Wallet", "UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("City");
-
-                    b.Navigation("wallet");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.Auction", b =>
@@ -1140,14 +1158,14 @@ namespace SAFQA.DAL.Migrations
                     b.Navigation("proxyBiddings");
 
                     b.Navigation("reviews");
+
+                    b.Navigation("wallet")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.Wallet", b =>
                 {
                     b.Navigation("Transactions");
-
-                    b.Navigation("User")
-                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

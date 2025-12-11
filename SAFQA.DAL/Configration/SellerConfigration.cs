@@ -34,6 +34,7 @@ namespace SAFQA.DAL.Configration
             builder.Property(s => s.BussinessType).IsRequired();
             builder.Property(s => s.VerificationStatus).IsRequired();
             builder.Property(s => s.StoreStatus).IsRequired();
+            builder.Property(s => s.DeletedAt).HasDefaultValueSql("GETDATE()");
         }
     }
 }

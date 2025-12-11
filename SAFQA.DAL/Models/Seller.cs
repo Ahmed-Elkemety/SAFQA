@@ -27,7 +27,7 @@ namespace SAFQA.DAL.Models
         public StoreStatus StoreStatus { get; set; } // Active - Inactive - Suspended - Closed
         public DateTime SellerAt { get; set; }
         public bool IsDeleted { get; set; }
-        public bool DeletedAt { get; set; }
+        public string DeletedAt { get; set; }
 
         // Navigation
         public ICollection<Auction> Auctions { get; set; } // 1 to M
