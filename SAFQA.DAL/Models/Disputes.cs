@@ -14,7 +14,7 @@ namespace SAFQA.DAL.Models
         public DisputeStatus Status { get; set; }
         public string Reason { get; set; }
         public DateTime Date { get; set; }
-        public int? UserId { get; set; }
+        public string? UserId { get; set; }
         public int? AuctionId { get; set; }
         public int? DeliveryId { get; set; }
         public Delivery Delivery { get; set; }

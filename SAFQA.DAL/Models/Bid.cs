@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Principal;
 using System.Text;
@@ -15,7 +16,7 @@ namespace SAFQA.DAL.Models
         public decimal Amount { get; set; }
         public int BidOrder { get; set; }
         public DateTime Date { get; set; }
-        public int? UserId { get; set; }
+        public string? UserId { get; set; }
         public int? AuctionId { get; set; }
         public int? ProxyBiddingId { get; set; }
         public  User User { get; set; }

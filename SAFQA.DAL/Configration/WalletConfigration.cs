@@ -14,7 +14,7 @@ namespace SAFQA.DAL.Configration
         {
             builder
                 .HasOne(a => a.User)
-                .WithOne(e => e.wallet)
+                .WithOne(e => e.Wallet)
                 .HasForeignKey<Wallet>(a => a.UserId);
 
 

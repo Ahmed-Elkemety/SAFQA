@@ -12,7 +12,7 @@ namespace SAFQA.DAL.Models
         public int Id { get; set; }
 
         // FK to User (1-to-1)
-        public int? UserId { get; set; }
+        public string? UserId { get; set; }
         public User User { get; set; }
 
         public byte[] StoreLogo { get; set; }

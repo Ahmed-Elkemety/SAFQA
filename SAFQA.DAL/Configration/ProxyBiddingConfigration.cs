@@ -18,7 +18,7 @@ namespace SAFQA.DAL.Configration
                    .IsRequired(false);
 
             builder.HasOne(u => u.user)
-                    .WithMany(pb => pb.proxyBiddings)
+                    .WithMany(pb => pb.ProxyBiddings)
                     .HasForeignKey(u => u.UserId)
                     .IsRequired(false);
 

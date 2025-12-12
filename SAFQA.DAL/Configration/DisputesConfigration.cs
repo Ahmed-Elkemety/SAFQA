@@ -25,7 +25,7 @@ namespace SAFQA.DAL.Configration
                 .IsRequired(false);
             builder
                 .HasOne(a => a.User)
-                .WithMany(e => e.disputes)
+                .WithMany(e => e.Disputes)
                 .HasForeignKey(a => a.UserId)
                 .IsRequired(false);
 

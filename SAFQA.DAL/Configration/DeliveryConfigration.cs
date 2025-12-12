@@ -18,7 +18,7 @@ namespace SAFQA.DAL.Configration
 
             builder
                 .HasOne(a => a.User)
-                .WithMany(e => e.deliveries)
+                .WithMany(e => e.Deliveries)
                 .HasForeignKey(a => a.UserId)
                 .IsRequired(false);
 

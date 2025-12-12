@@ -12,7 +12,7 @@ namespace SAFQA.DAL.Models
         public decimal Balance { get; set; }
         public decimal FrozenBalance { get; set; }
         public DateTime UpdatedAt { get; set; }
-        public int UserId { get; set; }
+        public string UserId { get; set; }
         public User User { get; set; }
         public ICollection<Transactions> Transactions { get; set; } 
     }

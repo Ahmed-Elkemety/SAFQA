@@ -18,7 +18,7 @@ namespace SAFQA.DAL.Models
         public DeliveryStatus Status { get; set; }
         public int AuctionId { get; set; }
         public int? SellerId { get; set; }
-        public int? UserId { get; set; }
+        public string? UserId { get; set; }
         public ICollection<Disputes> Disputes { get; set; }
         public Auction Auction { get; set; }
         public User User { get; set; }

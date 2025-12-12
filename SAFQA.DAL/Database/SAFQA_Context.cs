@@ -4,14 +4,17 @@ using System.Linq;
 using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using SAFQA.DAL.Configration;
 using SAFQA.DAL.Models;
 
 namespace SAFQA.DAL.Database
 {
-    public class SAFQA_Context:DbContext
+    public class SAFQA_Context:IdentityDbContext<User>
     {
+        public readonly object RefreshTokens;
+
         public SAFQA_Context(DbContextOptions<SAFQA_Context>options):base(options)
         {
             
@@ -19,6 +22,8 @@ namespace SAFQA.DAL.Database
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
             modelBuilder.ApplyConfiguration(new AuctionConfigration());
             modelBuilder.ApplyConfiguration(new BidConfigration());
             modelBuilder.ApplyConfiguration(new CategoryAttributesConfigration());
@@ -35,8 +40,8 @@ namespace SAFQA.DAL.Database
             modelBuilder.ApplyConfiguration(new ReviewConfigration());
             modelBuilder.ApplyConfiguration(new SellerConfigration());
             modelBuilder.ApplyConfiguration(new TransactionConfigration());
-            modelBuilder.ApplyConfiguration(new UserConfigration());
             modelBuilder.ApplyConfiguration(new WalletConfigration());
+            modelBuilder.ApplyConfiguration(new RefreshTokenConfig());
 
             foreach (var relationship in modelBuilder.Model.GetEntityTypes()
                     .SelectMany(e => e.GetForeignKeys()))
@@ -63,5 +68,6 @@ namespace SAFQA.DAL.Database
         public DbSet<Images> images { get; set; }
         public DbSet<CategoryAttributes> categoryAttributes { get; set; }
         public DbSet<ItemAttributesValue> itemAttributesValues { get; set; }
+        public DbSet<RefreshToken> refreshTokens { get; set; }
     }
 }

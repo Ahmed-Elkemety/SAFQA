@@ -4,40 +4,40 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 using SAFQA.BLL.Enums;
 
 namespace SAFQA.DAL.Models
 {
-    public class User
+    public class User:IdentityUser
     {
-        public int Id { get; set; }
-        public byte[] Image { get; set; }
         public string FullName { get; set; }
-        public string Email { get; set; }
-        public string Password { get; set; }
-        public string PhoneNumber { get; set; }
+        public byte[]? Image { get; set; }
         public DateOnly BirthDate { get; set; }
         public string Gender { get; set; }
-        public UserRole Role { get; set; } // User - Seller - Admin
-        public UserStatus Status { get; set; } // Active - Inactive - Blocked - Deleted
-        public UserLanguage language { get; set; } // Arabic - English
+        public UserRole Role { get; set; }
+        public UserStatus Status { get; set; }
+        public UserLanguage Language { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
-        public bool IsDeleted { get; set; }
-        public string DeletedAt { get; set; }
         public DateTime LastLogin { get; set; }
+        public bool IsDeleted { get; set; }
+        public DateTime? DeletedAt { get; set; }
 
-        // Navigation
         public int? CityId { get; set; }
         public City City { get; set; }
-        public Seller Seller { get; set; } // 1 to 1
-        public Wallet wallet { get; set; } // 1 to 1
-        public ICollection<Auction> Auctions { get; set; } // M to N
-        public ICollection<Bid> Bids { get; set; } // 1 to M
-        public ICollection<ProxyBidding> proxyBiddings { get; set; }
-        public ICollection<Notification> notifications { get; set; } // 1 to M
-        public ICollection<Disputes> disputes { get; set; } // 1 to M
-        public ICollection<Delivery> deliveries { get; set; } // 1 to M
-        public ICollection<Review> reviews { get; set; } // 1 to M
+
+        public Seller Seller { get; set; }
+        public Wallet Wallet { get; set; }
+
+        public ICollection<Auction> Auctions { get; set; }
+        public ICollection<Bid> Bids { get; set; }
+        public ICollection<ProxyBidding> ProxyBiddings { get; set; }
+        public ICollection<Notification> Notifications { get; set; }
+        public ICollection<Disputes> Disputes { get; set; }
+        public ICollection<Delivery> Deliveries { get; set; }
+        public ICollection<Review> Reviews { get; set; }
+
+        public ICollection<RefreshToken> RefreshTokens { get; set; }
     }
 }

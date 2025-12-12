@@ -14,7 +14,7 @@ namespace SAFQA.DAL.Configration
         {
             builder
                 .HasOne(a => a.User)
-                .WithMany(e => e.notifications)
+                .WithMany(e => e.Notifications)
                 .HasForeignKey(a => a.UserId);
 
 

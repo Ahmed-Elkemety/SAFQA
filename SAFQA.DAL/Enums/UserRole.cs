@@ -9,7 +9,7 @@ namespace SAFQA.BLL.Enums
     public enum UserRole
     {
         User = 1,
-        Seller = 2,
-        Admin = 3
+        Admin = 2,
+        Seller = 3
     }
 }

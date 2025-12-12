@@ -12,6 +12,8 @@ namespace SAFQA.DAL.Configration
     {
         public void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<User> builder)
         {
+            builder.ToTable("AspNetUsers");
+
             builder
                 .HasOne(c => c.City)
                 .WithMany(u => u.users)
@@ -21,19 +23,28 @@ namespace SAFQA.DAL.Configration
 
 
             builder.Property(u => u.FullName).IsRequired().HasMaxLength(150);
-            builder.Property(u => u.Email).IsRequired().HasMaxLength(150);
-            builder.HasIndex(u => u.Email).IsUnique();
-            builder.Property(u => u.Password).IsRequired().HasMaxLength(500); 
-            builder.Property(u => u.PhoneNumber).HasMaxLength(20);
+
             builder.Property(u => u.Gender).HasMaxLength(10);
-            builder.Property(u => u.CreatedAt).HasDefaultValueSql("GETDATE()");
-            builder.Property(u => u.UpdatedAt).HasDefaultValueSql("GETDATE()");
-            builder.Property(u => u.LastLogin).HasDefaultValueSql("GETDATE()");
-            builder.Property(u => u.Image).HasColumnType("varbinary(max)");
+
+            builder.Property(u => u.Image).HasColumnType("varbinary(max)").IsRequired(false);
+
+            builder.Property(u => u.BirthDate).HasDefaultValueSql("GETDATE()");
+
             builder.Property(u => u.Role).IsRequired();
+
             builder.Property(u => u.Status).IsRequired();
-            builder.Property(u => u.language).IsRequired();
-            builder.Property(u => u.DeletedAt).HasDefaultValueSql("GETDATE()");
+
+            builder.Property(u => u.Language).IsRequired();
+
+            builder.Property(u => u.CreatedAt).HasDefaultValueSql("GETDATE()");
+
+            builder.Property(u => u.UpdatedAt).HasDefaultValueSql("GETDATE()");
+
+            builder.Property(u => u.LastLogin).HasDefaultValueSql("GETDATE()");
+
+            builder.Property(u => u.IsDeleted).HasDefaultValue(false);
+
+            builder.Property(u => u.DeletedAt).HasMaxLength(50).IsRequired(false);
         }
     }
 }
