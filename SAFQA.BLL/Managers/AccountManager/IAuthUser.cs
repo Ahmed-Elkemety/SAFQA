@@ -8,8 +8,8 @@ namespace SAFQA.BLL.Managers.AccountManager
 {
     public interface IAuthUser
     {
-        Task<AuthResult> RegisterAsync(RegisterDto dto);
-        Task<AuthResult> LoginAsync(LoginDto dto);
-        Task<AuthResult> RefreshTokenAsync(string refreshToken);
+        Task<AuthResult> RegisterAsync(RegisterDto dto, string deciceId);
+        Task<AuthResult> LoginAsync(LoginDto dto , string deciceId);
+        Task<AuthResult> RefreshTokenAsync(string refreshToken , string deciceId);
     }
 }

@@ -15,14 +15,18 @@ namespace SAFQA.DAL.Configration
         {
             builder.HasKey(r => r.Id);
 
-            builder.Property(r => r.Token).IsRequired();
-            builder.Property(r => r.ExpiryDate).IsRequired();
-
             builder.HasOne(r => r.User)
                    .WithMany(u => u.RefreshTokens)
                    .HasForeignKey(r => r.UserId)
                    .IsRequired()
                    .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Property(r => r.TokenHash).IsRequired().HasMaxLength(256);
+
+            builder.Property(r => r.DeviceId).IsRequired().HasMaxLength(100);
+
+            builder.Property(r => r.IsRevoked).HasDefaultValue(false);
+
         }
     }
 }

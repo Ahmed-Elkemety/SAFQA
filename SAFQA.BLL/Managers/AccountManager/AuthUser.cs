@@ -13,6 +13,8 @@ using SAFQA.BLL.Enums;
 using SAFQA.DAL.Database;
 using SAFQA.DAL.Models;
 using Microsoft.EntityFrameworkCore;
+using SAFQA.BLL.Help;
+using System.Security.Cryptography;
 
 namespace SAFQA.BLL.Managers.AccountManager
 {
@@ -37,7 +39,7 @@ namespace SAFQA.BLL.Managers.AccountManager
         #endregion
         
         #region  check By Email , Create User Object , Assign Password To This Email , Add Role To User By Identity , Generate Token
-        public async Task<AuthResult> RegisterAsync(RegisterDto dto)
+        public async Task<AuthResult> RegisterAsync(RegisterDto dto , string deviceId)
         {
             var existingUser = await _userManager.FindByEmailAsync(dto.Email);
             if (existingUser != null)
@@ -70,7 +72,7 @@ namespace SAFQA.BLL.Managers.AccountManager
             }
             await _userManager.AddToRoleAsync(user, dto.Role.ToString().ToUpper());
 
-            var token = await GenerateTokensAsync(user);
+            var token = await GenerateTokensAsync(user, deviceId);
 
             return new AuthResult
             {
@@ -83,7 +85,7 @@ namespace SAFQA.BLL.Managers.AccountManager
         #endregion
 
         #region  Search By Email , Check Password To This Email , Generate Token
-        public async Task<AuthResult> LoginAsync(LoginDto dto)
+        public async Task<AuthResult> LoginAsync(LoginDto dto , string deviceId)
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
@@ -103,7 +105,7 @@ namespace SAFQA.BLL.Managers.AccountManager
                     Errors = new List<string> { "Invalid login attempt" }
                 };
             }
-            var token = await GenerateTokensAsync(user);
+            var token = await GenerateTokensAsync(user , deviceId);
             return new AuthResult
             {
                 IsSuccess = true,
@@ -115,25 +117,29 @@ namespace SAFQA.BLL.Managers.AccountManager
         #endregion
 
         #region Search User. Token That == Argument Token , Check For This UsrToken ,Generate Token By Refresh Token & Add ExpiryDate
-        public async Task<AuthResult> RefreshTokenAsync(string Token)
+        public async Task<AuthResult> RefreshTokenAsync(string refreshToken, string deviceId)
         {
-            var userToken = await _context.refreshTokens
-           .Include(r => r.User)
-           .FirstOrDefaultAsync(r => r.Token == Token);
+            var tokenhash = refreshToken.Hash();
+            var storedToken = await _context.refreshTokens
+                .Include(r => r.User)
+                .FirstOrDefaultAsync(r =>
+                    r.TokenHash == tokenhash &&
+                    r.DeviceId == deviceId &&
+                    !r.IsRevoked);
 
-            if (userToken == null || userToken.ExpiryDate < DateTime.UtcNow)
+            if (storedToken == null || storedToken.ExpiryDate < DateTime.UtcNow)
                 return new AuthResult { IsSuccess = false, Message = "Invalid or expired refresh token" };
 
-            var tokens = await GenerateTokensAsync(userToken.User);
+            storedToken.IsRevoked = true;
 
-            userToken.Token = tokens.RefreshToken;
-            userToken.ExpiryDate = DateTime.UtcNow.AddDays(7);
+            var tokens = await GenerateTokensAsync(storedToken.User,deviceId);
+
             await _context.SaveChangesAsync();
 
             return new AuthResult
             {
                 IsSuccess = true,
-                UserId = userToken.User.Id,
+                UserId = storedToken.User.Id,
                 Token = tokens.Token,
                 RefreshToken = tokens.RefreshToken
             };
@@ -141,7 +147,7 @@ namespace SAFQA.BLL.Managers.AccountManager
         #endregion
 
         #region add claims , get Role of User By Identity , make roles to claims , create key , create Access token , Create Refresh Token
-        private async Task<(string Token, string RefreshToken)> GenerateTokensAsync(User user)
+        private async Task<(string Token, string RefreshToken)> GenerateTokensAsync(User user , string deviceId)
         {
             var claims = new List<Claim>
         {
@@ -164,14 +170,17 @@ namespace SAFQA.BLL.Managers.AccountManager
                 signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
             );
 
-            var refreshToken = Guid.NewGuid().ToString();
+            var refreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+            var refreshTokenHash = refreshToken.Hash();
 
 
             _context.refreshTokens.Add(new RefreshToken
             {
-                Token = refreshToken,
+                TokenHash = refreshTokenHash,
                 UserId = user.Id,
-                ExpiryDate = DateTime.UtcNow.AddDays(7)
+                DeviceId = deviceId,
+                ExpiryDate = DateTime.UtcNow.AddDays(7),
+                IsRevoked = false
             });
             await _context.SaveChangesAsync();
 

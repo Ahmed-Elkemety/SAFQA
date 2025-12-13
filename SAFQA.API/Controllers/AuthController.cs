@@ -21,7 +21,10 @@ namespace SAFQA.API.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Register([FromBody] RegisterDto dto)
         {
-            var result = await _authUser.RegisterAsync(dto);
+            var deviceId = Request.Headers["DeviceId"].FirstOrDefault() ?? Guid.NewGuid().ToString();
+
+
+            var result = await _authUser.RegisterAsync(dto, deviceId);
             if (!result.IsSuccess)
                 return BadRequest(result);
 
@@ -31,9 +34,12 @@ namespace SAFQA.API.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
-            var result = await _authUser.LoginAsync(dto);
+            var deviceId = Request.Headers["DeviceId"].FirstOrDefault() ?? Guid.NewGuid().ToString();
+
+
+            var result = await _authUser.LoginAsync(dto, deviceId);
             if (!result.IsSuccess)
-                return BadRequest(result);
+                return Unauthorized(result);
 
             return Ok(result);
         }
@@ -41,9 +47,12 @@ namespace SAFQA.API.Controllers
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken([FromBody] string refreshToken)
         {
-            var result = await _authUser.RefreshTokenAsync(refreshToken);
+            var deviceId = Request.Headers["DeviceId"].FirstOrDefault();
+
+
+            var result = await _authUser.RefreshTokenAsync(refreshToken,deviceId);
             if (!result.IsSuccess)
-                return BadRequest(result);
+                return Unauthorized(result);
 
             return Ok(result);
         }
