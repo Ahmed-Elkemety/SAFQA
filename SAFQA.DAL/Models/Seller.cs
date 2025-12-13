@@ -21,6 +21,8 @@ namespace SAFQA.DAL.Models
         public SellerBusinessType BussinessType { get; set; } // Individual - Company - Government - NonProfit
         public string Description { get; set; }
         public int Rating { get; set; }
+        public int Followers { get; set; }
+        public int AuctionCount { get; set; }
         public string CommercialRegister { get; set; }
         public byte[] CommercialRegisterImage { get; set; }
         public SellerVerificationStatus VerificationStatus { get; set; } //  Pending - Verified - Rejected

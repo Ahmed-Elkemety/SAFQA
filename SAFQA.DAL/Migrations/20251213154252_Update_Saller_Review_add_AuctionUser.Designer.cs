@@ -12,8 +12,8 @@ using SAFQA.DAL.Database;
 namespace SAFQA.DAL.Migrations
 {
     [DbContext(typeof(SAFQA_Context))]
-    [Migration("20251213140531_Add_GenderType_Enum")]
-    partial class Add_GenderType_Enum
+    [Migration("20251213154252_Update_Saller_Review_add_AuctionUser")]
+    partial class Update_Saller_Review_add_AuctionUser
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,21 +24,6 @@ namespace SAFQA.DAL.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("AuctionUser", b =>
-                {
-                    b.Property<int>("AuctionsId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("usersId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("AuctionsId", "usersId");
-
-                    b.HasIndex("usersId");
-
-                    b.ToTable("AuctionUser");
-                });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
@@ -269,6 +254,26 @@ namespace SAFQA.DAL.Migrations
                     b.HasIndex("SellerId");
 
                     b.ToTable("Auctions");
+                });
+
+            modelBuilder.Entity("SAFQA.DAL.Models.AuctionUser", b =>
+                {
+                    b.Property<int?>("AuctionId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("JoinedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.HasKey("AuctionId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AuctionUsers");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.Bid", b =>
@@ -724,6 +729,9 @@ namespace SAFQA.DAL.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("AuctionId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Comment")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -734,6 +742,9 @@ namespace SAFQA.DAL.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETDATE()");
 
+                    b.Property<int>("DeliverySpeed")
+                        .HasColumnType("int");
+
                     b.Property<int>("Rating")
                         .HasColumnType("int");
 
@@ -743,7 +754,14 @@ namespace SAFQA.DAL.Migrations
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<int>("accurateDescription")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("AuctionId")
+                        .IsUnique()
+                        .HasFilter("[AuctionId] IS NOT NULL");
 
                     b.HasIndex("SellerId");
 
@@ -759,6 +777,9 @@ namespace SAFQA.DAL.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AuctionCount")
+                        .HasColumnType("int");
 
                     b.Property<int>("BussinessType")
                         .HasColumnType("int");
@@ -782,6 +803,9 @@ namespace SAFQA.DAL.Migrations
                         .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("Followers")
+                        .HasColumnType("int");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -1013,21 +1037,6 @@ namespace SAFQA.DAL.Migrations
                     b.ToTable("Wallets");
                 });
 
-            modelBuilder.Entity("AuctionUser", b =>
-                {
-                    b.HasOne("SAFQA.DAL.Models.Auction", null)
-                        .WithMany()
-                        .HasForeignKey("AuctionsId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("SAFQA.DAL.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("usersId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -1087,6 +1096,25 @@ namespace SAFQA.DAL.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Seller");
+                });
+
+            modelBuilder.Entity("SAFQA.DAL.Models.AuctionUser", b =>
+                {
+                    b.HasOne("SAFQA.DAL.Models.Auction", "Auction")
+                        .WithMany("AuctionUsers")
+                        .HasForeignKey("AuctionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SAFQA.DAL.Models.User", "User")
+                        .WithMany("AuctionUsers")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Auction");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.Bid", b =>
@@ -1271,6 +1299,11 @@ namespace SAFQA.DAL.Migrations
 
             modelBuilder.Entity("SAFQA.DAL.Models.Review", b =>
                 {
+                    b.HasOne("SAFQA.DAL.Models.Auction", "auction")
+                        .WithOne("review")
+                        .HasForeignKey("SAFQA.DAL.Models.Review", "AuctionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("SAFQA.DAL.Models.Seller", "Seller")
                         .WithMany("reviews")
                         .HasForeignKey("SellerId")
@@ -1284,6 +1317,8 @@ namespace SAFQA.DAL.Migrations
                     b.Navigation("Seller");
 
                     b.Navigation("User");
+
+                    b.Navigation("auction");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.Seller", b =>
@@ -1329,6 +1364,8 @@ namespace SAFQA.DAL.Migrations
 
             modelBuilder.Entity("SAFQA.DAL.Models.Auction", b =>
                 {
+                    b.Navigation("AuctionUsers");
+
                     b.Navigation("Bids");
 
                     b.Navigation("ProxyBiddings");
@@ -1339,6 +1376,9 @@ namespace SAFQA.DAL.Migrations
                     b.Navigation("disputes");
 
                     b.Navigation("items");
+
+                    b.Navigation("review")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.Category", b =>
@@ -1391,6 +1431,8 @@ namespace SAFQA.DAL.Migrations
 
             modelBuilder.Entity("SAFQA.DAL.Models.User", b =>
                 {
+                    b.Navigation("AuctionUsers");
+
                     b.Navigation("Bids");
 
                     b.Navigation("Deliveries");

@@ -24,6 +24,12 @@ namespace SAFQA.DAL.Configration
                 .HasForeignKey(p => p.SellerId)
                 .IsRequired(false);
 
+            builder
+                .HasOne(a => a.auction)
+                .WithOne(b => b.review)
+                .HasForeignKey<Review>(a => a.AuctionId)
+                .IsRequired(false);
+
             builder.Property(r => r.Rating).IsRequired();
             builder.Property(r => r.Comment).HasMaxLength(500);
             builder.Property(r => r.Comment).HasMaxLength(500);

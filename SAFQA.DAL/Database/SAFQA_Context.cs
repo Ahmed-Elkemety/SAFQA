@@ -42,6 +42,8 @@ namespace SAFQA.DAL.Database
             modelBuilder.ApplyConfiguration(new TransactionConfigration());
             modelBuilder.ApplyConfiguration(new WalletConfigration());
             modelBuilder.ApplyConfiguration(new RefreshTokenConfig());
+            modelBuilder.ApplyConfiguration(new AuctionUserConfiguration());
+
 
             foreach (var relationship in modelBuilder.Model.GetEntityTypes()
                     .SelectMany(e => e.GetForeignKeys()))
@@ -69,5 +71,6 @@ namespace SAFQA.DAL.Database
         public DbSet<CategoryAttributes> categoryAttributes { get; set; }
         public DbSet<ItemAttributesValue> itemAttributesValues { get; set; }
         public DbSet<RefreshToken> refreshTokens { get; set; }
+        public DbSet<AuctionUser> AuctionUsers { get; set; }
     }
 }

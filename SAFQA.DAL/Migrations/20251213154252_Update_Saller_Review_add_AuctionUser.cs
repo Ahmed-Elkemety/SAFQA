@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SAFQA.DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class Add_GenderType_Enum : Migration
+    public partial class Update_Saller_Review_add_AuctionUser : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -304,6 +304,8 @@ namespace SAFQA.DAL.Migrations
                     BussinessType = table.Column<int>(type: "int", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
                     Rating = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    Followers = table.Column<int>(type: "int", nullable: false),
+                    AuctionCount = table.Column<int>(type: "int", nullable: false),
                     CommercialRegister = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     CommercialRegisterImage = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
                     VerificationStatus = table.Column<int>(type: "int", nullable: false),
@@ -386,35 +388,6 @@ namespace SAFQA.DAL.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Reviews",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Rating = table.Column<int>(type: "int", nullable: false),
-                    Comment = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    Date = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETDATE()"),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    SellerId = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Reviews", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Reviews_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Reviews_Sellers_SellerId",
-                        column: x => x.SellerId,
-                        principalTable: "Sellers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Transactions",
                 columns: table => new
                 {
@@ -441,24 +414,25 @@ namespace SAFQA.DAL.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AuctionUser",
+                name: "AuctionUsers",
                 columns: table => new
                 {
-                    AuctionsId = table.Column<int>(type: "int", nullable: false),
-                    usersId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    AuctionId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    JoinedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETDATE()")
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AuctionUser", x => new { x.AuctionsId, x.usersId });
+                    table.PrimaryKey("PK_AuctionUsers", x => new { x.AuctionId, x.UserId });
                     table.ForeignKey(
-                        name: "FK_AuctionUser_AspNetUsers_usersId",
-                        column: x => x.usersId,
+                        name: "FK_AuctionUsers_AspNetUsers_UserId",
+                        column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_AuctionUser_Auctions_AuctionsId",
-                        column: x => x.AuctionsId,
+                        name: "FK_AuctionUsers_Auctions_AuctionId",
+                        column: x => x.AuctionId,
                         principalTable: "Auctions",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -559,6 +533,44 @@ namespace SAFQA.DAL.Migrations
                         name: "FK_proxyBiddings_Auctions_AuctionId",
                         column: x => x.AuctionId,
                         principalTable: "Auctions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Reviews",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Rating = table.Column<int>(type: "int", nullable: false),
+                    Comment = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETDATE()"),
+                    DeliverySpeed = table.Column<int>(type: "int", nullable: false),
+                    accurateDescription = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    SellerId = table.Column<int>(type: "int", nullable: true),
+                    AuctionId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Reviews", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Reviews_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Reviews_Auctions_AuctionId",
+                        column: x => x.AuctionId,
+                        principalTable: "Auctions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Reviews_Sellers_SellerId",
+                        column: x => x.SellerId,
+                        principalTable: "Sellers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -735,9 +747,9 @@ namespace SAFQA.DAL.Migrations
                 column: "SellerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AuctionUser_usersId",
-                table: "AuctionUser",
-                column: "usersId");
+                name: "IX_AuctionUsers_UserId",
+                table: "AuctionUsers",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Bids_AuctionId",
@@ -852,6 +864,13 @@ namespace SAFQA.DAL.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Reviews_AuctionId",
+                table: "Reviews",
+                column: "AuctionId",
+                unique: true,
+                filter: "[AuctionId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Reviews_SellerId",
                 table: "Reviews",
                 column: "SellerId");
@@ -899,7 +918,7 @@ namespace SAFQA.DAL.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "AuctionUser");
+                name: "AuctionUsers");
 
             migrationBuilder.DropTable(
                 name: "Bids");

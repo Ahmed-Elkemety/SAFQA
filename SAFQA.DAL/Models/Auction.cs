@@ -43,8 +43,9 @@ namespace SAFQA.DAL.Models
 
 
         // Navigation
+        public Review review { get; set; }
         public Delivery delivery { get; set; } // 1 to 1
-        public ICollection<User> users { get; set; } // M to N
+        public ICollection<AuctionUser> AuctionUsers { get; set; } // M to N
         public ICollection<Bid> Bids { get; set; } // 1 to M
         public ICollection<ProxyBidding> ProxyBiddings { get; set; }
         public ICollection<Disputes> disputes { get; set; } // 1 to M

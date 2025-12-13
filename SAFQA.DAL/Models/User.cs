@@ -31,7 +31,7 @@ namespace SAFQA.DAL.Models
         public Seller Seller { get; set; }
         public Wallet Wallet { get; set; }
 
-        public ICollection<Auction> Auctions { get; set; }
+        public ICollection<AuctionUser> AuctionUsers { get; set; }
         public ICollection<Bid> Bids { get; set; }
         public ICollection<ProxyBidding> ProxyBiddings { get; set; }
         public ICollection<Notification> Notifications { get; set; }
