@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using SAFQA.BLL.Enums;
+using SAFQA.DAL.Enums;
 
 namespace SAFQA.DAL.Models
 {
@@ -14,7 +15,7 @@ namespace SAFQA.DAL.Models
         public string FullName { get; set; }
         public byte[]? Image { get; set; }
         public DateOnly BirthDate { get; set; }
-        public string Gender { get; set; }
+        public GenderType Gender { get; set; }
         public UserRole Role { get; set; }
         public UserStatus Status { get; set; }
         public UserLanguage Language { get; set; }

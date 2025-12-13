@@ -4,13 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using SAFQA.BLL.Enums;
+using SAFQA.DAL.Enums;
 
 namespace SAFQA.BLL.Dtos.AccountDto
 {
     public class RegisterDto
     {
         public string FullName { get; set; }
-        public string Gender { get; set; }
+        public GenderType Gender { get; set; }
         public DateOnly BirthDate { get; set; }
         public UserRole Role { get; set; }
         public UserStatus Status { get; set; }
