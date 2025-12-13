@@ -18,14 +18,15 @@ namespace SAFQA.BLL.Managers.AccountManager
 {
     public class AuthUser : IAuthUser
     {
+        #region  Dependency Injection , UserManagement & SignInManager in Identity , IConfiguration To Access To App Settings 
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly IConfiguration _configuration;
         private readonly SAFQA_Context _context;
 
         public AuthUser(UserManager<User> userManager
-            , SignInManager<User> signInManager 
-            , IConfiguration configuration 
+            , SignInManager<User> signInManager
+            , IConfiguration configuration
             , SAFQA_Context context)
         {
             _userManager = userManager;
@@ -33,6 +34,9 @@ namespace SAFQA.BLL.Managers.AccountManager
             _configuration = configuration;
             _context = context;
         }
+        #endregion
+        
+        #region  check By Email , Create User Object , Assign Password To This Email , Add Role To User By Identity , Generate Token
         public async Task<AuthResult> RegisterAsync(RegisterDto dto)
         {
             var existingUser = await _userManager.FindByEmailAsync(dto.Email);
@@ -66,7 +70,7 @@ namespace SAFQA.BLL.Managers.AccountManager
             }
             await _userManager.AddToRoleAsync(user, dto.Role.ToString().ToUpper());
 
-            var token = await  GenerateTokensAsync(user);
+            var token = await GenerateTokensAsync(user);
 
             return new AuthResult
             {
@@ -76,6 +80,9 @@ namespace SAFQA.BLL.Managers.AccountManager
                 RefreshToken = token.RefreshToken
             };
         }
+        #endregion
+
+        #region  Search By Email , Check Password To This Email , Generate Token
         public async Task<AuthResult> LoginAsync(LoginDto dto)
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
@@ -105,7 +112,9 @@ namespace SAFQA.BLL.Managers.AccountManager
                 RefreshToken = token.RefreshToken
             };
         }
+        #endregion
 
+        #region Search User. Token That == Argument Token , Check For This UsrToken ,Generate Token By Refresh Token & Add ExpiryDate
         public async Task<AuthResult> RefreshTokenAsync(string Token)
         {
             var userToken = await _context.refreshTokens
@@ -113,24 +122,26 @@ namespace SAFQA.BLL.Managers.AccountManager
            .FirstOrDefaultAsync(r => r.Token == Token);
 
             if (userToken == null || userToken.ExpiryDate < DateTime.UtcNow)
-            return new AuthResult { IsSuccess = false, Message = "Invalid or expired refresh token" };
+                return new AuthResult { IsSuccess = false, Message = "Invalid or expired refresh token" };
 
-        var tokens = await GenerateTokensAsync(userToken.User);
+            var tokens = await GenerateTokensAsync(userToken.User);
 
-        userToken.Token = tokens.RefreshToken;
-        userToken.ExpiryDate = DateTime.UtcNow.AddDays(7);
-        await _context.SaveChangesAsync();
+            userToken.Token = tokens.RefreshToken;
+            userToken.ExpiryDate = DateTime.UtcNow.AddDays(7);
+            await _context.SaveChangesAsync();
 
-        return new AuthResult
-        {
-            IsSuccess = true,
-            UserId = userToken.User.Id,
-            Token = tokens.Token,
-            RefreshToken = tokens.RefreshToken
-        };
+            return new AuthResult
+            {
+                IsSuccess = true,
+                UserId = userToken.User.Id,
+                Token = tokens.Token,
+                RefreshToken = tokens.RefreshToken
+            };
         }
+        #endregion
 
-       private async Task<(string Token, string RefreshToken)> GenerateTokensAsync(User user)
+        #region add claims , get Role of User By Identity , make roles to claims , create key , create Access token , Create Refresh Token
+        private async Task<(string Token, string RefreshToken)> GenerateTokensAsync(User user)
         {
             var claims = new List<Claim>
         {
@@ -165,7 +176,8 @@ namespace SAFQA.BLL.Managers.AccountManager
             await _context.SaveChangesAsync();
 
             return (new JwtSecurityTokenHandler().WriteToken(token), refreshToken);
-        }
+        } 
+        #endregion
 
     }
 }
