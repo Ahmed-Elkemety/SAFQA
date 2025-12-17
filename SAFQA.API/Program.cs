@@ -8,6 +8,7 @@ using SAFQA.DAL.Models;
 using System.Text;
 using SAFQA.BLL.Managers.AccountManager;
 using System.Reflection.Metadata;
+using SAFQA.API.Middleware;
 
 namespace SAFQA.API
 {
@@ -22,7 +23,31 @@ namespace SAFQA.API
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.AddSecurityDefinition("ApiKey", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                {
+                    Description = "Enter API Key",
+                    Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+                    Name = "x-api-key",
+                    In = Microsoft.OpenApi.Models.ParameterLocation.Header
+                });
+
+                c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "ApiKey"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+            });
 
             builder.Services.AddDbContext<SAFQA_Context>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("cs")));
 
@@ -33,6 +58,7 @@ namespace SAFQA.API
             builder.Services.AddScoped<IAuthUser, AuthUser>();
 
             var jwtSettings = builder.Configuration.GetSection("JWT");
+            builder.Services.Configure<ApiKeyOptions>(builder.Configuration.GetSection("ApiKey"));
 
             builder.Services.AddAuthentication(options =>
             {
@@ -58,11 +84,11 @@ namespace SAFQA.API
 
 
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
+
+            app.UseSwagger();
+            app.UseSwaggerUI();
+
+            app.UseMiddleware<ApiKeyMiddleware>();
 
             app.UseHttpsRedirection();
 
@@ -72,7 +98,7 @@ namespace SAFQA.API
 
             async Task SeedRolesAsync(WebApplication app)
             {
-                using var scope = app.Services.CreateScope(); //  ⁄„· Scope
+                using var scope = app.Services.CreateScope();
                 var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
                 string[] roles = { "ADMIN", "USER", "SELLER" };
@@ -86,10 +112,9 @@ namespace SAFQA.API
                 }
             }
 
-            // «” œ⁄«¡ «·œ«·… »⁄œ  ⁄—Ì› «·‹ app Êﬁ»· app.Run()
             await SeedRolesAsync(app);
 
-            await app.RunAsync(); // Use RunAsync since Main is now async
+            await app.RunAsync();
         }
     }
 }
