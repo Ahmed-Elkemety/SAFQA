@@ -55,7 +55,7 @@ namespace SAFQA.BLL.Managers.AccountManager
                 FullName = dto.FullName,
                 Gender = dto.Gender,
                 BirthDate = dto.BirthDate,
-                Status = dto.Status,
+                Status = UserStatus.Active,
                 Language = dto.Language,
                 Email = dto.Email,
                 UserName = dto.Email,
@@ -70,7 +70,7 @@ namespace SAFQA.BLL.Managers.AccountManager
                     Errors = result.Errors.Select(e => e.Description).ToList()
                 };
             }
-            await _userManager.AddToRoleAsync(user, dto.Role.ToString().ToUpper());
+            await _userManager.AddToRoleAsync(user, "USER");
 
             var token = await GenerateTokensAsync(user, deviceId);
 

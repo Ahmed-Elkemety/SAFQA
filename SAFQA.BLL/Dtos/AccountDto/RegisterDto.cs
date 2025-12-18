@@ -14,8 +14,6 @@ namespace SAFQA.BLL.Dtos.AccountDto
         public DateOnly BirthDate { get; set; }
         public string PhoneNumber { get; set; }
         public GenderType Gender { get; set; }
-        public string Role { get; set; }
-        public UserStatus Status { get; set; }
         public UserLanguage Language { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
