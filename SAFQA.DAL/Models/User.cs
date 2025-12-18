@@ -16,7 +16,6 @@ namespace SAFQA.DAL.Models
         public byte[]? Image { get; set; }
         public DateOnly BirthDate { get; set; }
         public GenderType Gender { get; set; }
-        public UserRole Role { get; set; }
         public UserStatus Status { get; set; }
         public UserLanguage Language { get; set; }
         public DateTime CreatedAt { get; set; }

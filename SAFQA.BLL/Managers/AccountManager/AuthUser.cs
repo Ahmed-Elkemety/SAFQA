@@ -55,11 +55,11 @@ namespace SAFQA.BLL.Managers.AccountManager
                 FullName = dto.FullName,
                 Gender = dto.Gender,
                 BirthDate = dto.BirthDate,
-                Role = dto.Role,
                 Status = dto.Status,
                 Language = dto.Language,
                 Email = dto.Email,
-                UserName = dto.Email
+                UserName = dto.Email,
+                PhoneNumber = dto.PhoneNumber
             };
             var result = await _userManager.CreateAsync(user, dto.Password);
             if (!result.Succeeded)
