@@ -59,7 +59,8 @@ namespace SAFQA.BLL.Managers.AccountManager
                 Language = dto.Language,
                 Email = dto.Email,
                 UserName = dto.Email,
-                PhoneNumber = dto.PhoneNumber
+                PhoneNumber = dto.PhoneNumber,
+                CityId = dto.cityId
             };
             var result = await _userManager.CreateAsync(user, dto.Password);
             if (!result.Succeeded)

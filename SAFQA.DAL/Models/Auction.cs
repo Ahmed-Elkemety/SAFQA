@@ -16,7 +16,7 @@ namespace SAFQA.DAL.Models
         // FK to Seller (1-to-1)
         public int? SellerId{ get; set; }
         public Seller Seller { get; set; }
-        public int WinnerUserId { get; set; }
+        public string WinnerUserId { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
         public decimal StartingPrice { get; set; }
