@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SAFQA.BLL.Enums
+namespace SAFQA.BLL.Dtos.AccountDto.Google
 {
-    public enum UserLanguage
+    public class GoogleDto
     {
-        Arabic = 1,
-        English = 2
+        public string IdToken { get; set; }
     }
 }

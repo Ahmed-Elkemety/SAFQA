@@ -32,8 +32,6 @@ namespace SAFQA.DAL.Configration
 
             builder.Property(u => u.Status).IsRequired();
 
-            builder.Property(u => u.Language).IsRequired();
-
             builder.Property(u => u.CreatedAt).HasDefaultValueSql("GETDATE()");
 
             builder.Property(u => u.UpdatedAt).HasDefaultValueSql("GETDATE()");

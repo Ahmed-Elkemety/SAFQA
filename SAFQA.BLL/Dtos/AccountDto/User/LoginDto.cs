@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SAFQA.BLL.Dtos.AccountDto
+namespace SAFQA.BLL.Dtos.AccountDto.User
 {
     public class LoginDto
     {

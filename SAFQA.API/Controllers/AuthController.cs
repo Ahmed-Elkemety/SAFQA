@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using SAFQA.BLL.Dtos.AccountDto;
+using SAFQA.BLL.Dtos.AccountDto.Facebook;
+using SAFQA.BLL.Dtos.AccountDto.Google;
+using SAFQA.BLL.Dtos.AccountDto.User;
 using SAFQA.BLL.Managers.AccountManager;
 
 namespace SAFQA.API.Controllers
@@ -38,6 +40,33 @@ namespace SAFQA.API.Controllers
 
 
             var result = await _authUser.LoginAsync(dto, deviceId);
+            if (!result.IsSuccess)
+                return Unauthorized(result);
+
+            return Ok(result);
+        }
+
+        [HttpPost("google")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleDto dto)
+        {
+            var deviceId = Request.Headers["DeviceId"].FirstOrDefault() ?? Guid.NewGuid().ToString();
+
+            var result = await _authUser.GoogleLoginAsync(dto.IdToken, deviceId);
+
+            if (!result.IsSuccess)
+                return Unauthorized(result);
+
+            return Ok(result);
+        }
+
+        [HttpPost("facebook")]
+        [AllowAnonymous]
+        public async Task<IActionResult> FacebookLogin([FromBody] FacebookLoginDto dto)
+        {
+            var deviceId = Request.Headers["DeviceId"].FirstOrDefault() ?? Guid.NewGuid().ToString();
+            var result = await _authUser.FacebookLoginAsync(dto.AccessToken, deviceId);
+
             if (!result.IsSuccess)
                 return Unauthorized(result);
 

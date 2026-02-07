@@ -14,15 +14,16 @@ namespace SAFQA.DAL.Models
     {
         public string FullName { get; set; }
         public byte[]? Image { get; set; }
-        public DateOnly BirthDate { get; set; }
-        public GenderType Gender { get; set; }
+        public DateOnly? BirthDate { get; set; }
+        public GenderType? Gender { get; set; }
         public UserStatus Status { get; set; }
-        public UserLanguage Language { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public DateTime LastLogin { get; set; }
         public bool IsDeleted { get; set; }
         public DateTime? DeletedAt { get; set; }
+
+        public bool IsProfileCompleted { get; set; }
 
         public int? CityId { get; set; }
         public City City { get; set; }
