@@ -6,9 +6,9 @@ using Microsoft.IdentityModel.Tokens;
 using SAFQA.DAL.Database;
 using SAFQA.DAL.Models;
 using System.Text;
-using SAFQA.BLL.Managers.AccountManager;
 using System.Reflection.Metadata;
 using SAFQA.API.Middleware;
+using SAFQA.BLL.Managers.AccountManager.Auth;
 
 namespace SAFQA.API
 {

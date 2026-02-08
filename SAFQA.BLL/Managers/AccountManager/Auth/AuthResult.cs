@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SAFQA.BLL.Managers.AccountManager
+namespace SAFQA.BLL.Managers.AccountManager.Auth
 {
     public class AuthResult
     {

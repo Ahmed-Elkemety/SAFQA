@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Text.Json.Serialization;
 
-namespace SAFQA.BLL.Managers.AccountManager
+namespace SAFQA.BLL.Managers.AccountManager.Auth
 {
 
     public class FacebookDebugResponse

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using SAFQA.BLL.Dtos.AccountDto.User;
-namespace SAFQA.BLL.Managers.AccountManager
+namespace SAFQA.BLL.Managers.AccountManager.Auth
 {
     public interface IAuthUser
     {

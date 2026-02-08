@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using SAFQA.BLL.Dtos.AccountDto.Facebook;
 using SAFQA.BLL.Dtos.AccountDto.Google;
 using SAFQA.BLL.Dtos.AccountDto.User;
-using SAFQA.BLL.Managers.AccountManager;
+using SAFQA.BLL.Managers.AccountManager.Auth;
 
 namespace SAFQA.API.Controllers
 {

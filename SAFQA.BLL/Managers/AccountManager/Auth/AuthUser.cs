@@ -19,7 +19,7 @@ using SAFQA.BLL.Dtos.AccountDto.User;
 using SAFQA.BLL.Dtos.AccountDto.Facebook;
 using System.Text.Json;
 
-namespace SAFQA.BLL.Managers.AccountManager
+namespace SAFQA.BLL.Managers.AccountManager.Auth
 {
     public class AuthUser : IAuthUser
     {
