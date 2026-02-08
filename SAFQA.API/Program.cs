@@ -78,8 +78,18 @@ namespace SAFQA.API
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Secret"]))
                 };
             });
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll",
+                    policy =>
+                    {
+                        policy.AllowAnyOrigin()
+                              .AllowAnyHeader()
+                              .AllowAnyMethod();
+                    });
+            });
 
-           
+
             var app = builder.Build(); // Fix for CS0841: Declare and initialize 'app' before using it
 
 
@@ -87,6 +97,8 @@ namespace SAFQA.API
 
             app.UseSwagger();
             app.UseSwaggerUI();
+
+            app.UseCors("AllowAll");
 
             app.UseMiddleware<ApiKeyMiddleware>();
 
