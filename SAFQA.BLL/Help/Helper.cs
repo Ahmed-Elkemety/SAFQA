@@ -18,6 +18,26 @@ namespace SAFQA.BLL.Help
             var bytes = Encoding.UTF8.GetBytes(input);
             var hash = sha.ComputeHash(bytes);
             return Convert.ToBase64String(hash);
-        } 
+        }
+        // توليد OTP 6 أرقام افتراضي
+        public static string GenerateOtp(int digits = 6)
+        {
+            var random = new Random();
+            var min = (int)Math.Pow(10, digits - 1);
+            var max = (int)Math.Pow(10, digits) - 1;
+            return random.Next(min, max).ToString();
+        }
+
+        // عمل Hash للـ OTP مع Secret
+        public static string HashOtp(string code, string secret)
+        {
+            return (code + secret).Hash();
+        }
+
+        // توليد Session Token مؤقت
+        public static string GenerateSessionToken()
+        {
+            return Guid.NewGuid().ToString();
+        }
     }
 }

@@ -5,6 +5,7 @@ using SAFQA.BLL.Dtos.AccountDto.Facebook;
 using SAFQA.BLL.Dtos.AccountDto.Google;
 using SAFQA.BLL.Dtos.AccountDto.User;
 using SAFQA.BLL.Managers.AccountManager.Auth;
+using SAFQA.BLL.Managers.AccountManager.OAuth;
 
 namespace SAFQA.API.Controllers
 {
@@ -13,10 +14,12 @@ namespace SAFQA.API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthUser _authUser;
+        private readonly IOAuth _oAuth;
 
-        public AuthController(IAuthUser authUser)
+        public AuthController(IAuthUser authUser , IOAuth oAuth)
         {
-            _authUser = authUser;
+            _authUser = authUser ;
+            _oAuth = oAuth;
         }
 
         [HttpPost("register")]
@@ -52,7 +55,7 @@ namespace SAFQA.API.Controllers
         {
             var deviceId = Request.Headers["DeviceId"].FirstOrDefault() ?? Guid.NewGuid().ToString();
 
-            var result = await _authUser.GoogleLoginAsync(dto.IdToken, deviceId);
+            var result = await _oAuth.GoogleLoginAsync(dto.IdToken, deviceId);
 
             if (!result.IsSuccess)
                 return Unauthorized(result);
@@ -65,7 +68,7 @@ namespace SAFQA.API.Controllers
         public async Task<IActionResult> FacebookLogin([FromBody] FacebookLoginDto dto)
         {
             var deviceId = Request.Headers["DeviceId"].FirstOrDefault() ?? Guid.NewGuid().ToString();
-            var result = await _authUser.FacebookLoginAsync(dto.AccessToken, deviceId);
+            var result = await _oAuth.FacebookLoginAsync(dto.AccessToken, deviceId);
 
             if (!result.IsSuccess)
                 return Unauthorized(result);

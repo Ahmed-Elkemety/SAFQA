@@ -10,8 +10,6 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
     {
         Task<AuthResult> RegisterAsync(RegisterDto dto, string deciceId);
         Task<AuthResult> LoginAsync(LoginDto dto , string deciceId);
-        Task<AuthResult> GoogleLoginAsync(string idToken, string deviceId);
-        Task<AuthResult> FacebookLoginAsync(string accessToken, string deviceId);
         Task<AuthResult> RefreshTokenAsync(string refreshToken , string deciceId);
     }
 }

@@ -45,6 +45,7 @@ namespace SAFQA.DAL.Database
             modelBuilder.ApplyConfiguration(new AuctionUserConfiguration());
 
 
+
             foreach (var relationship in modelBuilder.Model.GetEntityTypes()
                     .SelectMany(e => e.GetForeignKeys()))
             {
@@ -72,5 +73,7 @@ namespace SAFQA.DAL.Database
         public DbSet<ItemAttributesValue> itemAttributesValues { get; set; }
         public DbSet<RefreshToken> refreshTokens { get; set; }
         public DbSet<AuctionUser> AuctionUsers { get; set; }
+        public DbSet<PasswordResetOtp> PasswordResetOtps { get; set; }
+
     }
 }

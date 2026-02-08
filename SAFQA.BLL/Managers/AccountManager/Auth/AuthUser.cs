@@ -18,6 +18,7 @@ using Google.Apis.Auth;
 using SAFQA.BLL.Dtos.AccountDto.User;
 using SAFQA.BLL.Dtos.AccountDto.Facebook;
 using System.Text.Json;
+using SAFQA.BLL.Managers.AccountManager.OAuth;
 
 namespace SAFQA.BLL.Managers.AccountManager.Auth
 {
@@ -119,105 +120,6 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
         }
         #endregion
 
-        #region Google Login
-        public async Task<AuthResult> GoogleLoginAsync(string idToken, string deviceId)
-        {
-            var payload = await GoogleJsonWebSignature.ValidateAsync(idToken);
-
-            if (payload == null)
-                return new AuthResult { IsSuccess = false, Message = "Invalid Google token" };
-
-            var user = await _userManager.FindByEmailAsync(payload.Email);
-
-            if (user == null)
-            {
-                user = new User
-                {
-                    Email = payload.Email,
-                    UserName = payload.Email,
-                    FullName = payload.Name,
-                    EmailConfirmed = true
-                };
-
-                var createResult = await _userManager.CreateAsync(user);
-                if (!createResult.Succeeded)
-                    return new AuthResult
-                    {
-                        IsSuccess = false,
-                        Message = "Failed to create user",
-                        Errors = createResult.Errors.Select(e => e.Description).ToList()
-                    };
-            }
-
-            var tokens = await GenerateTokensAsync(user, deviceId);
-
-            return new AuthResult
-            {
-                IsSuccess = true,
-                Message = "Google login successful",
-                UserId = user.Id,
-                Token = tokens.Token,
-                RefreshToken = tokens.RefreshToken
-            };
-        }
-        #endregion
-
-        #region Facebook Login
-        public async Task<AuthResult> FacebookLoginAsync(string accessToken, string deviceId)
-        {
-            var fbUser = await VerifyFacebookToken(accessToken);
-            if (fbUser == null)
-                return new AuthResult { IsSuccess = false, Message = "Invalid Facebook token" };
-
-            
-            var user = await _userManager.FindByEmailAsync(fbUser.Email)
-                       ?? await CreateUserAsync(fbUser);
-
-            
-            var tokens = await GenerateTokensAsync(user, deviceId);
-
-            
-            return new AuthResult
-            {
-                IsSuccess = true,
-                UserId = user.Id,
-                Token = tokens.Token,
-                RefreshToken = tokens.RefreshToken
-            };
-        }
-
-        private async Task<FacebookUserDto?> VerifyFacebookToken(string accessToken)
-        {
-            var appId = _configuration["Facebook:AppId"];
-            var appSecret = _configuration["Facebook:AppSecret"];
-            var url = $"https://graph.facebook.com/debug_token?input_token={accessToken}&access_token={appId}|{appSecret}";
-
-            using var client = new HttpClient();
-            var response = await client.GetStringAsync(url);
-            var debugData = JsonSerializer.Deserialize<FacebookDebugResponse>(response);
-
-            if (debugData?.Data?.IsValid != true)
-                return null;
-
-            
-            var userInfoUrl = $"https://graph.facebook.com/me?fields=id,name,email&access_token={accessToken}";
-            var userInfoResponse = await client.GetStringAsync(userInfoUrl);
-            return JsonSerializer.Deserialize<FacebookUserDto>(userInfoResponse);
-        }
-
-        private async Task<User> CreateUserAsync(FacebookUserDto fbUser)
-        {
-            var newUser = new User
-            {
-                Email = fbUser.Email,
-                UserName = fbUser.Email,
-                FullName = fbUser.Name
-            };
-            await _userManager.CreateAsync(newUser);
-            return newUser;
-        }
-        #endregion
-
         #region Search User. Token That == Argument Token , Check For This UsrToken ,Generate Token By Refresh Token & Add ExpiryDate
         public async Task<AuthResult> RefreshTokenAsync(string refreshToken, string deviceId)
         {
@@ -248,7 +150,7 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
         }
         #endregion
 
-        #region add claims , get Role of User By Identity , make roles to claims , create key , create Access token , Create Refresh Token
+        #region Generate Tokens
         private async Task<(string Token, string RefreshToken)> GenerateTokensAsync(User user , string deviceId)
         {
             var claims = new List<Claim>
@@ -289,6 +191,5 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
             return (new JwtSecurityTokenHandler().WriteToken(token), refreshToken);
         } 
         #endregion
-
     }
 }

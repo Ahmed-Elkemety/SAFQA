@@ -9,6 +9,9 @@ using System.Text;
 using System.Reflection.Metadata;
 using SAFQA.API.Middleware;
 using SAFQA.BLL.Managers.AccountManager.Auth;
+using SAFQA.BLL.Managers.AccountManager.Forget_Password;
+using SAFQA.BLL.Managers.AccountManager.Email_Sender;
+using SAFQA.BLL.Managers.AccountManager.OAuth;
 
 namespace SAFQA.API
 {
@@ -55,7 +58,11 @@ namespace SAFQA.API
                 .AddEntityFrameworkStores<SAFQA_Context>()
                 .AddDefaultTokenProviders();
 
+            builder.Services.AddScoped<IForgetPassword, ForgetPassword>();
+            builder.Services.AddScoped<IEmailSender, EmailSender>();
+            builder.Services.AddScoped<IOAuth, Oauth>();
             builder.Services.AddScoped<IAuthUser, AuthUser>();
+
 
             var jwtSettings = builder.Configuration.GetSection("JWT");
             builder.Services.Configure<ApiKeyOptions>(builder.Configuration.GetSection("ApiKey"));
@@ -89,6 +96,7 @@ namespace SAFQA.API
                     });
             });
 
+            builder.Services.AddHostedService<ExpiredOtpCleanupService>();
 
             var app = builder.Build(); // Fix for CS0841: Declare and initialize 'app' before using it
 
@@ -104,6 +112,7 @@ namespace SAFQA.API
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllers();
