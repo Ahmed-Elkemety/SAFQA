@@ -13,6 +13,8 @@ namespace SAFQA.DAL.Models
     public class User:IdentityUser
     {
         public string FullName { get; set; }
+        public string EmailOtp { get; set; }
+        public DateTime? OtpExpiry { get; set; }
         public byte[]? Image { get; set; }
         public DateOnly? BirthDate { get; set; }
         public GenderType? Gender { get; set; }
