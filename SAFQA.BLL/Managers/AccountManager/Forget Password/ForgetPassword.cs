@@ -71,26 +71,62 @@ namespace SAFQA.BLL.Managers.AccountManager.Forget_Password
         public async Task<AuthResult> VerifyOtpAsync(VerifyOtpDto dto)
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
-            if (user == null)
-                return new AuthResult { IsSuccess = false, Message = "User not found" };
 
-            // Cleanup أي OTPs منتهية
+            if (user == null)
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "User not found"
+                };
+
+            // حذف OTPs القديمة
             await CleanupOtpsAsync(user.Id);
 
-            var hashedInput = Helper.HashOtp(dto.Code, _configuration["Security:OtpSecret"]);
-
             var record = await _context.PasswordResetOtps
-                .Where(x => x.UserId == user.Id && !x.IsUsed && x.Expiration > DateTime.UtcNow)
-                .OrderByDescending(x => x.Id)
-                .FirstOrDefaultAsync(x => x.CodeHash == hashedInput);
+                .Where(x =>
+                    x.UserId == user.Id &&
+                    !x.IsUsed &&
+                    x.Expiration > DateTime.UtcNow)
+                .OrderByDescending(x => x.CreatedAt)
+                .FirstOrDefaultAsync();
 
             if (record == null)
-                return new AuthResult { IsSuccess = false, Message = "Invalid or expired OTP" };
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "Invalid or expired OTP"
+                };
+
+            // تحقق من عدد المحاولات
+            var maxAttempts = int.Parse(_configuration["Security:MaxOtpAttempts"]);
+
+            if (record.Attempts >= maxAttempts)
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "Too many attempts"
+                };
+
+            var hashedInput = Helper.HashOtp(dto.Code,
+                _configuration["Security:OtpSecret"]);
+
+            if (record.CodeHash != hashedInput)
+            {
+                record.Attempts++;
+                await _context.SaveChangesAsync();
+
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "Invalid OTP"
+                };
+            }
 
             record.IsUsed = true;
-            await _context.SaveChangesAsync();
 
             var sessionToken = Helper.GenerateSessionToken();
+
+            await _context.SaveChangesAsync();
 
             return new AuthResult
             {
@@ -131,6 +167,81 @@ namespace SAFQA.BLL.Managers.AccountManager.Forget_Password
 
             _context.PasswordResetOtps.RemoveRange(expiredOtps);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<AuthResult> ResendOtpAsync(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user == null)
+                return new AuthResult { IsSuccess = false, Message = "User not found" };
+
+            var lastOtp = await _context.PasswordResetOtps
+                .Where(x => x.UserId == user.Id)
+                .OrderByDescending(x => x.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            // cooldown
+            var cooldown = int.Parse(_configuration["Security:OtpCooldownSeconds"]);
+
+            if (lastOtp != null &&
+                lastOtp.CreatedAt > DateTime.UtcNow.AddSeconds(-cooldown))
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "Please wait before requesting another OTP"
+                };
+            }
+
+            // resend limit per hour
+            var resendLimit = int.Parse(_configuration["Security:MaxResendPerHour"]);
+
+            var resendCount = await _context.PasswordResetOtps
+                .CountAsync(x =>
+                    x.UserId == user.Id &&
+                    x.CreatedAt > DateTime.UtcNow.AddHours(-1));
+
+            if (resendCount >= resendLimit)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "Too many requests, try again later"
+                };
+            }
+
+            // delete old
+            var oldOtps = _context.PasswordResetOtps
+                .Where(x => x.UserId == user.Id);
+
+            _context.PasswordResetOtps.RemoveRange(oldOtps);
+            await _context.SaveChangesAsync();
+
+            var code = Helper.GenerateOtp();
+            var hash = Helper.HashOtp(code, _configuration["Security:OtpSecret"]);
+
+            var otp = new PasswordResetOtp
+            {
+                UserId = user.Id,
+                CodeHash = hash,
+                Expiration = DateTime.UtcNow.AddMinutes(
+                    int.Parse(_configuration["Security:OtpExpiryMinutes"]))
+            };
+
+            _context.PasswordResetOtps.Add(otp);
+            await _context.SaveChangesAsync();
+
+            await _emailSender.SendEmailAsync(
+                user.Email,
+                "Your OTP Code",
+                $"<h2>Your OTP is: {code}</h2>");
+
+            return new AuthResult
+            {
+                IsSuccess = true,
+                Message = "OTP resent successfully"
+            };
         }
     }
 }

@@ -57,5 +57,17 @@ namespace SAFQA.API.Controllers
             return Ok(result);
         }
 
+        [HttpPost("resend")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResendOtp([FromBody] RequestResetDto dto)
+        {
+            var result = await _forgetPassword.ResendOtpAsync(dto.Email);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
     }
 }
