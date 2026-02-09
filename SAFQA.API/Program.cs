@@ -16,6 +16,7 @@ using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.BLL.Managers.AccountManager.Forget_Password;
 using SAFQA.BLL.Managers.AccountManager.Email_Sender;
 using SAFQA.BLL.Managers.AccountManager.OAuth;
+using System.Security.Claims;
 
 namespace SAFQA.API
 {
@@ -84,9 +85,46 @@ namespace SAFQA.API
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
+                    ClockSkew = TimeSpan.Zero,
                     ValidIssuer = jwtSettings["ValidIssuer"],
                     ValidAudience = jwtSettings["ValidAudience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Secret"]))
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(jwtSettings["Secret"]))
+                };
+
+                options.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = async context =>
+                    {
+                        var userManager = context.HttpContext.RequestServices
+                            .GetRequiredService<UserManager<User>>();
+
+                        var userId = context.Principal
+                            .FindFirstValue(ClaimTypes.NameIdentifier);
+
+                        if (string.IsNullOrEmpty(userId))
+                        {
+                            context.Fail("Unauthorized");
+                            return;
+                        }
+
+                        var user = await userManager.FindByIdAsync(userId);
+
+                        if (user == null)
+                        {
+                            context.Fail("Unauthorized");
+                            return;
+                        }
+
+                        var securityStamp = context.Principal
+                            .FindFirstValue("SecurityStamp");
+
+                        if (string.IsNullOrEmpty(securityStamp) ||
+                            user.SecurityStamp != securityStamp)
+                        {
+                            context.Fail("Token expired due to security stamp change");
+                        }
+                    }
                 };
             });
             builder.Services.AddCors(options =>

@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SAFQA.BLL.Dtos.AccountDto.Forget_password;
-using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.BLL.Managers.AccountManager.Forget_Password;
 
 namespace SAFQA.API.Controllers
@@ -62,6 +61,20 @@ namespace SAFQA.API.Controllers
         public async Task<IActionResult> ResendOtp([FromBody] RequestResetDto dto)
         {
             var result = await _forgetPassword.ResendOtpAsync(dto.Email);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        [HttpPost("signout-all")]
+        [Authorize]
+        public async Task<IActionResult> SignOutAll()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var result = await _forgetPassword.SignOutAllDevicesAsync(userId);
 
             if (!result.IsSuccess)
                 return BadRequest(result);

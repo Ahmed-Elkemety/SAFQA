@@ -14,5 +14,7 @@ namespace SAFQA.BLL.Managers.AccountManager.Forget_Password
         Task<AuthResult> VerifyOtpAsync(VerifyOtpDto dto);
         Task<AuthResult> ResetPasswordAsync(ResetPasswordDto dto);
         Task<AuthResult> ResendOtpAsync(string email);
+        Task<AuthResult> SignOutAllDevicesAsync(string userId);
+
     }
 }

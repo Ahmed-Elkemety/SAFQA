@@ -243,5 +243,35 @@ namespace SAFQA.BLL.Managers.AccountManager.Forget_Password
                 Message = "OTP resent successfully"
             };
         }
+
+        public async Task<AuthResult> SignOutAllDevicesAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "User not found"
+                };
+
+            // 🔐 تغيير SecurityStamp
+            await _userManager.UpdateSecurityStampAsync(user);
+
+            // 🧹 حذف كل Refresh Tokens
+            var tokens = await _context.refreshTokens
+                .Where(x => x.UserId == userId)
+                .ToListAsync();
+
+            _context.refreshTokens.RemoveRange(tokens);
+
+            await _context.SaveChangesAsync();
+
+            return new AuthResult
+            {
+                IsSuccess = true,
+                Message = "Signed out from all devices successfully"
+            };
+        }
     }
 }

@@ -225,6 +225,7 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
         {
             var claims = new List<Claim>
         {
+            new Claim("SecurityStamp", user.SecurityStamp),
             new Claim(ClaimTypes.NameIdentifier, user.Id),
             new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.Name, user.FullName),
