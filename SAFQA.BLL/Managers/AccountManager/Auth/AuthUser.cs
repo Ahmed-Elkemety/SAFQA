@@ -1,24 +1,28 @@
-﻿using System;
+﻿using Google.Apis.Auth;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using SAFQA.BLL.Dtos.AccountDto.Facebook;
+using SAFQA.BLL.Dtos.AccountDto.User;
+using SAFQA.BLL.Enums;
+using SAFQA.BLL.Help;
+using SAFQA.BLL.Managers.AccountManager.SendEmail;
+using SAFQA.DAL.Database;
+using SAFQA.DAL.Models;
+using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net;
+using System.Net.Mail;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-using SAFQA.BLL.Enums;
-using SAFQA.DAL.Database;
-using SAFQA.DAL.Models;
-using Microsoft.EntityFrameworkCore;
-using SAFQA.BLL.Help;
 using System.Security.Cryptography;
-using Google.Apis.Auth;
-using SAFQA.BLL.Dtos.AccountDto.User;
-using SAFQA.BLL.Dtos.AccountDto.Facebook;
+using System.Text;
 using System.Text.Json;
 using SAFQA.BLL.Managers.AccountManager.OAuth;
+using System.Threading.Tasks;
 
 namespace SAFQA.BLL.Managers.AccountManager.Auth
 {
@@ -28,32 +32,33 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly IConfiguration _configuration;
+        private readonly IEmailService _emailService;
         private readonly SAFQA_Context _context;
 
         public AuthUser(UserManager<User> userManager
             , SignInManager<User> signInManager
             , IConfiguration configuration
+            , IEmailService emailService
             , SAFQA_Context context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
+            _emailService = emailService;
             _context = context;
         }
         #endregion
-        
+
+
         #region  check By Email , Create User Object , Assign Password To This Email , Add Role To User By Identity , Generate Token
-        public async Task<AuthResult> RegisterAsync(RegisterDto dto , string deviceId)
+         public async Task<AuthResult> RegisterAsync(RegisterDto dto, string deviceId)
         {
             var existingUser = await _userManager.FindByEmailAsync(dto.Email);
             if (existingUser != null)
-            {
-                return new AuthResult
-                {
-                    IsSuccess = false,
-                    Errors = new List<string> { "Email already in use" }
-                };
-            }
+                return new AuthResult { IsSuccess = false, Errors = new() { "Email already in use" } };
+
+            var otp = new Random().Next(100000, 999999).ToString();
+
             var user = new User
             {
                 FullName = dto.FullName,
@@ -63,29 +68,85 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 Email = dto.Email,
                 UserName = dto.Email,
                 PhoneNumber = dto.PhoneNumber,
-                CityId = dto.cityId
+                CityId = dto.cityId,
+                EmailConfirmed = false,
+                EmailOtp = otp,
+                OtpExpiry = DateTime.UtcNow.AddMinutes(5)
             };
+
             var result = await _userManager.CreateAsync(user, dto.Password);
             if (!result.Succeeded)
-            {
-                return new AuthResult
-                {
-                    IsSuccess = false,
-                    Errors = result.Errors.Select(e => e.Description).ToList()
-                };
-            }
+                return new AuthResult { IsSuccess = false, Errors = result.Errors.Select(e => e.Description).ToList() };
+
             await _userManager.AddToRoleAsync(user, "USER");
 
-            var token = await GenerateTokensAsync(user, deviceId);
+            // إرسال OTP
+            await _emailService.SendOtpEmailAsync(user.Email, otp);
 
             return new AuthResult
             {
                 IsSuccess = true,
-                UserId = user.Id,
-                Token = token.Token,
-                RefreshToken = token.RefreshToken
+                Message = "OTP sent to your email"
             };
+
         }
+        #endregion
+
+        public async Task SendOtpEmailAsync(string toEmail, string otp)
+        {
+            var message = new MailMessage();
+            message.From = new MailAddress("yourgmail@gmail.com", "Your App");
+            message.To.Add(toEmail);
+            message.Subject = "Email Confirmation OTP";
+            message.Body = $"Your OTP code is: {otp}";
+            message.IsBodyHtml = false;
+
+            using var smtp = new SmtpClient("smtp.gmail.com", 587);
+            smtp.Credentials = new NetworkCredential(
+                "yourgmail@gmail.com",
+                "APP_PASSWORD" 
+            );
+            smtp.EnableSsl = true;
+
+            await smtp.SendMailAsync(message);
+        }
+
+        public async Task<AuthResult> ConfirmEmailAsync(ConfirmEmailDto dto)
+        {
+            var user = await _userManager.FindByEmailAsync(dto.Email);
+            if (user == null)
+                return new AuthResult { IsSuccess = false, Errors = new List<string> { "User not found" } };
+
+            if (user.EmailConfirmed)
+                return new AuthResult { IsSuccess = false, Errors = new List<string> { "Email already confirmed" } };
+
+            if (user.EmailOtp != dto.Otp || user.OtpExpiry < DateTime.UtcNow)
+                return new AuthResult { IsSuccess = false, Errors = new List<string> { "Invalid or expired OTP" } };
+
+            user.EmailConfirmed = true;
+            user.EmailOtp = null;
+            user.OtpExpiry = null;
+
+            await _userManager.UpdateAsync(user);
+
+            return new AuthResult { IsSuccess = true, Message = "Email confirmed successfully" };
+        }
+
+
+        #region Dont need current
+        /*
+           await _userManager.AddToRoleAsync(user, "USER");
+
+           var token = await GenerateTokensAsync(user, deviceId);
+
+           return new AuthResult
+           {
+               IsSuccess = true,
+               UserId = user.Id,
+               Token = token.Token,
+               RefreshToken = token.RefreshToken
+           };
+           */
         #endregion
 
         #region  Search By Email , Check Password To This Email , Generate Token

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SAFQA.BLL.Dtos.AccountDto.Facebook;
 using SAFQA.BLL.Dtos.AccountDto.Google;
@@ -35,6 +36,18 @@ namespace SAFQA.API.Controllers
 
             return Ok(result);
         }
+
+        [HttpPost("confirm-email")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ConfirmEmail(ConfirmEmailDto dto)
+        {
+            var result = await _authUser.ConfirmEmailAsync(dto);
+            if (!result.IsSuccess)
+                return BadRequest(result.Errors);
+
+            return Ok(result.Message);
+        }
+
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
