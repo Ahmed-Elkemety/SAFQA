@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Configuration;
 using MimeKit;
-using MailKit.Net.Smtp;
 
 namespace SAFQA.BLL.Managers.AccountManager.Email_Sender
 {
@@ -33,12 +28,19 @@ namespace SAFQA.BLL.Managers.AccountManager.Email_Sender
                 int.Parse(_config["EmailSettings:Port"]),
                 SecureSocketOptions.StartTls
             );
+
             await smtp.AuthenticateAsync(
                 _config["EmailSettings:Username"],
                 _config["EmailSettings:Password"]
             );
+
             await smtp.SendAsync(email);
             await smtp.DisconnectAsync(true);
+        }
+
+        public async Task SendOtpEmailAsync(string to, string otp)
+        {
+            await SendEmailAsync(to, "Your OTP Code", $"Your OTP is: {otp}");
         }
     }
 }

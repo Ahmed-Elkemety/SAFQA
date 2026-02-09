@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SAFQA.API.Middleware;
 using SAFQA.BLL.Managers.AccountManager.Auth;
-using SAFQA.BLL.Managers.AccountManager.SendEmail;
+
 using SAFQA.DAL.Database;
 using SAFQA.DAL.Models;
 using System.Reflection.Metadata;
@@ -65,8 +65,6 @@ namespace SAFQA.API
             builder.Services.AddScoped<IForgetPassword, ForgetPassword>();
             builder.Services.AddScoped<IEmailSender, EmailSender>();
             builder.Services.AddScoped<IOAuth, Oauth>();
-           
-            builder.Services.AddScoped<IEmailService, SmtpEmailService>();
             builder.Services.AddScoped<IAuthUser, AuthUser>();
 
 

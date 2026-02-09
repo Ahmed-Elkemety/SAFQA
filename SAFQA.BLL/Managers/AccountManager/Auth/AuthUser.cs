@@ -1,30 +1,19 @@
-﻿using Google.Apis.Auth;
+﻿using SAFQA.BLL.Managers.AccountManager.Email_Sender;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using Org.BouncyCastle.Crypto.Generators;
-using SAFQA.BLL.Dtos.AccountDto.Facebook;
 using SAFQA.BLL.Dtos.AccountDto.User;
 using SAFQA.BLL.Enums;
 using SAFQA.BLL.Help;
-using SAFQA.BLL.Managers.AccountManager.OAuth;
-using SAFQA.BLL.Managers.AccountManager.SendEmail;
 using SAFQA.DAL.Database;
 using SAFQA.DAL.Models;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Net;
 using System.Net.Mail;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
-using BCrypt.Net;
+
 
 
 namespace SAFQA.BLL.Managers.AccountManager.Auth
@@ -35,25 +24,24 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly IConfiguration _configuration;
-        private readonly IEmailService _emailService;
+        private readonly IEmailSender _emailSender;
         private readonly SAFQA_Context _context;
 
         public AuthUser(UserManager<User> userManager
             , SignInManager<User> signInManager
             , IConfiguration configuration
-            , IEmailService emailService
+            , IEmailSender emailSender
             , SAFQA_Context context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
-            _emailService = emailService;
+            _emailSender = emailSender;
             _context = context;
         }
         #endregion
 
-
-        #region  check By Email , Create User Object , Assign Password To This Email , Add Role To User By Identity , Generate Token
+        #region  check By Email , Create User Object , Assign Password To This Email , Add Role To User By Identity
         public async Task<AuthResult> RegisterAsync(RegisterDto dto, string deviceId)
         {
             var existingUser = await _userManager.FindByEmailAsync(dto.Email);
@@ -64,7 +52,7 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                     Errors = new() { "Email already in use" }
                 };
 
-            var otp = RandomNumberGenerator
+            var otp = RandomNumberGenerator // Replace By Helper
                 .GetInt32(100000, 999999)
                 .ToString();
 
@@ -104,7 +92,7 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
             _context.PasswordResetOtps.Add(otpEntity);
             await _context.SaveChangesAsync();
 
-            await _emailService.SendOtpEmailAsync(user.Email, otp);
+            await _emailSender.SendOtpEmailAsync(user.Email, otp);
 
             return new AuthResult
             {
@@ -112,9 +100,9 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 Message = "OTP sent to your email"
             };
         }
-
         #endregion
 
+        #region Confirmation Email By Using OTP
         public async Task<AuthResult> ConfirmEmailAsync(ConfirmEmailDto dto)
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
@@ -168,22 +156,7 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 Message = "Email confirmed successfully"
             };
         }
-
-        #region Dont need current
-        /*
-           await _userManager.AddToRoleAsync(user, "USER");
-
-           var token = await GenerateTokensAsync(user, deviceId);
-
-           return new AuthResult
-           {
-               IsSuccess = true,
-               UserId = user.Id,
-               Token = token.Token,
-               RefreshToken = token.RefreshToken
-           };
-           */
-        #endregion
+        #endregion 
 
         #region  Search By Email , Check Password To This Email , Generate Token
         public async Task<AuthResult> LoginAsync(LoginDto dto , string deviceId)
