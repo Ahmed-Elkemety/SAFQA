@@ -4,10 +4,12 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Org.BouncyCastle.Crypto.Generators;
 using SAFQA.BLL.Dtos.AccountDto.Facebook;
 using SAFQA.BLL.Dtos.AccountDto.User;
 using SAFQA.BLL.Enums;
 using SAFQA.BLL.Help;
+using SAFQA.BLL.Managers.AccountManager.OAuth;
 using SAFQA.BLL.Managers.AccountManager.SendEmail;
 using SAFQA.DAL.Database;
 using SAFQA.DAL.Models;
@@ -21,8 +23,9 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using SAFQA.BLL.Managers.AccountManager.OAuth;
 using System.Threading.Tasks;
+using BCrypt.Net;
+
 
 namespace SAFQA.BLL.Managers.AccountManager.Auth
 {
@@ -51,13 +54,19 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
 
 
         #region  check By Email , Create User Object , Assign Password To This Email , Add Role To User By Identity , Generate Token
-         public async Task<AuthResult> RegisterAsync(RegisterDto dto, string deviceId)
+        public async Task<AuthResult> RegisterAsync(RegisterDto dto, string deviceId)
         {
             var existingUser = await _userManager.FindByEmailAsync(dto.Email);
             if (existingUser != null)
-                return new AuthResult { IsSuccess = false, Errors = new() { "Email already in use" } };
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Errors = new() { "Email already in use" }
+                };
 
-            var otp = new Random().Next(100000, 999999).ToString();
+            var otp = RandomNumberGenerator
+                .GetInt32(100000, 999999)
+                .ToString();
 
             var user = new User
             {
@@ -69,18 +78,32 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 UserName = dto.Email,
                 PhoneNumber = dto.PhoneNumber,
                 CityId = dto.cityId,
-                EmailConfirmed = false,
-                EmailOtp = otp,
-                OtpExpiry = DateTime.UtcNow.AddMinutes(5)
+                EmailConfirmed = false
             };
 
             var result = await _userManager.CreateAsync(user, dto.Password);
             if (!result.Succeeded)
-                return new AuthResult { IsSuccess = false, Errors = result.Errors.Select(e => e.Description).ToList() };
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Errors = result.Errors.Select(e => e.Description).ToList()
+                };
+            }
 
             await _userManager.AddToRoleAsync(user, "USER");
 
-            // إرسال OTP
+            var otpEntity = new PasswordResetOtp
+            {
+                UserId = user.Id, 
+                CodeHash = BCrypt.Net.BCrypt.HashPassword(otp),
+                Expiration = DateTime.UtcNow.AddMinutes(5),
+                IsUsed = false
+            };
+
+            _context.PasswordResetOtps.Add(otpEntity);
+            await _context.SaveChangesAsync();
+
             await _emailService.SendOtpEmailAsync(user.Email, otp);
 
             return new AuthResult
@@ -88,50 +111,63 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 IsSuccess = true,
                 Message = "OTP sent to your email"
             };
-
         }
+
         #endregion
-
-        public async Task SendOtpEmailAsync(string toEmail, string otp)
-        {
-            var message = new MailMessage();
-            message.From = new MailAddress("yourgmail@gmail.com", "Your App");
-            message.To.Add(toEmail);
-            message.Subject = "Email Confirmation OTP";
-            message.Body = $"Your OTP code is: {otp}";
-            message.IsBodyHtml = false;
-
-            using var smtp = new SmtpClient("smtp.gmail.com", 587);
-            smtp.Credentials = new NetworkCredential(
-                "yourgmail@gmail.com",
-                "APP_PASSWORD" 
-            );
-            smtp.EnableSsl = true;
-
-            await smtp.SendMailAsync(message);
-        }
 
         public async Task<AuthResult> ConfirmEmailAsync(ConfirmEmailDto dto)
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
-                return new AuthResult { IsSuccess = false, Errors = new List<string> { "User not found" } };
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Errors = new() { "User not found" }
+                };
 
             if (user.EmailConfirmed)
-                return new AuthResult { IsSuccess = false, Errors = new List<string> { "Email already confirmed" } };
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Errors = new() { "Email already confirmed" }
+                };
 
-            if (user.EmailOtp != dto.Otp || user.OtpExpiry < DateTime.UtcNow)
-                return new AuthResult { IsSuccess = false, Errors = new List<string> { "Invalid or expired OTP" } };
+            var otpEntity = await _context.PasswordResetOtps
+                .Where(x =>
+                    x.UserId == user.Id &&
+                    !x.IsUsed &&
+                    x.Expiration > DateTime.UtcNow
+                )
+                .OrderByDescending(x => x.Id)
+                .FirstOrDefaultAsync();
+
+            if (otpEntity == null)
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Errors = new() { "Invalid or expired OTP" }
+                };
+
+            var isValidOtp = BCrypt.Net.BCrypt.Verify(dto.Otp, otpEntity.CodeHash);
+            if (!isValidOtp)
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Errors = new() { "Invalid or expired OTP" }
+                };
 
             user.EmailConfirmed = true;
-            user.EmailOtp = null;
-            user.OtpExpiry = null;
-
             await _userManager.UpdateAsync(user);
 
-            return new AuthResult { IsSuccess = true, Message = "Email confirmed successfully" };
-        }
+            otpEntity.IsUsed = true;
+            await _context.SaveChangesAsync();
 
+            return new AuthResult
+            {
+                IsSuccess = true,
+                Message = "Email confirmed successfully"
+            };
+        }
 
         #region Dont need current
         /*
