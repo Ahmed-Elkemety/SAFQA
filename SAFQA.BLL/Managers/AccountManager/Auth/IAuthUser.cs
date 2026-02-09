@@ -11,5 +11,7 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
         Task<AuthResult> RegisterAsync(RegisterDto dto, string deciceId);
         Task<AuthResult> LoginAsync(LoginDto dto , string deciceId);
         Task<AuthResult> RefreshTokenAsync(string refreshToken , string deciceId);
+        Task<AuthResult> ConfirmEmailAsync(ConfirmEmailDto dto);
+
     }
 }

@@ -1,10 +1,14 @@
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using SAFQA.API.Middleware;
+using SAFQA.BLL.Managers.AccountManager.Auth;
+
 using SAFQA.DAL.Database;
 using SAFQA.DAL.Models;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Reflection.Metadata;
 using SAFQA.API.Middleware;
