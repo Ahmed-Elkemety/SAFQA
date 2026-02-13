@@ -42,8 +42,9 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
         #endregion
 
         #region  check By Email , Create User Object , Assign Password To This Email , Add Role To User By Identity
-        public async Task<AuthResult> RegisterAsync(RegisterDto dto, string deviceId)
+        public async Task<AuthResult> RegisterAsync(RegisterDto dto , string deviceId)
         {
+            // التأكد من أن الإيميل مش موجود بالفعل
             var existingUser = await _userManager.FindByEmailAsync(dto.Email);
             if (existingUser != null)
                 return new AuthResult
@@ -52,47 +53,58 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                     Errors = new() { "Email already in use" }
                 };
 
-            var otp = RandomNumberGenerator // Replace By Helper
-                .GetInt32(100000, 999999)
-                .ToString();
+            // التأكد لو في pending user موجود
+            var pendingUser = await _context.PendingUserRegistrations
+                .FirstOrDefaultAsync(x => x.Email == dto.Email && !x.IsUsed);
 
-            var user = new User
+            if (pendingUser != null)
             {
-                FullName = dto.FullName,
-                Gender = dto.Gender,
-                BirthDate = dto.BirthDate,
-                Status = UserStatus.Active,
-                Email = dto.Email,
-                UserName = dto.Email,
-                PhoneNumber = dto.PhoneNumber,
-                CityId = dto.cityId,
-                EmailConfirmed = false
-            };
-
-            var result = await _userManager.CreateAsync(user, dto.Password);
-            if (!result.Succeeded)
-            {
-                return new AuthResult
+                // إذا صلاحية OTP انتهت نقدر نعيد إرسال OTP
+                if (pendingUser.OtpExpiration < DateTime.UtcNow)
                 {
-                    IsSuccess = false,
-                    Errors = result.Errors.Select(e => e.Description).ToList()
-                };
+                    _context.PendingUserRegistrations.Remove(pendingUser);
+                    await _context.SaveChangesAsync();
+                }
+                else
+                {
+                    return new AuthResult
+                    {
+                        IsSuccess = false,
+                        Errors = new() { "OTP already sent. Please check your email." }
+                    };
+                }
             }
 
-            await _userManager.AddToRoleAsync(user, "USER");
+            // توليد OTP
+            var otp = Helper.GenerateOtp();
 
-            var otpEntity = new PasswordResetOtp
+            // أخذ secret ومدة انتهاء صلاحية OTP من config
+            string otpSecret = _configuration["Security:OtpSecret"];
+            int otpExpiryMinutes = 5; // default
+            var otpExpiryConfig = _configuration["Security:OtpExpiryMinutes"];
+            if (!string.IsNullOrEmpty(otpExpiryConfig))
+                otpExpiryMinutes = int.Parse(otpExpiryConfig);
+
+            // إنشاء PendingUserRegistration مع تخزين plain password مؤقتًا
+            var pending = new PendingUserRegistration
             {
-                UserId = user.Id, 
-                CodeHash = BCrypt.Net.BCrypt.HashPassword(otp),
-                Expiration = DateTime.UtcNow.AddMinutes(5),
+                FullName = dto.FullName,
+                Email = dto.Email,
+                PasswordHash = dto.Password,  // مؤقت حتى تأكيد OTP
+                PhoneNumber = dto.PhoneNumber,
+                Gender = dto.Gender,
+                BirthDate = dto.BirthDate,
+                CityId = dto.cityId,
+                OtpHash = Helper.HashOtp(otp, otpSecret),
+                OtpExpiration = DateTime.UtcNow.AddMinutes(otpExpiryMinutes),
                 IsUsed = false
             };
 
-            _context.PasswordResetOtps.Add(otpEntity);
+            _context.PendingUserRegistrations.Add(pending);
             await _context.SaveChangesAsync();
 
-            await _emailSender.SendOtpEmailAsync(user.Email, otp);
+            // إرسال OTP
+            await _emailSender.SendOtpEmailAsync(dto.Email, otp);
 
             return new AuthResult
             {
@@ -102,61 +114,68 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
         }
         #endregion
 
-        #region Confirmation Email By Using OTP
+        #region Confirm Email and Create User
         public async Task<AuthResult> ConfirmEmailAsync(ConfirmEmailDto dto)
         {
-            var user = await _userManager.FindByEmailAsync(dto.Email);
-            if (user == null)
-                return new AuthResult
-                {
-                    IsSuccess = false,
-                    Errors = new() { "User not found" }
-                };
-
-            if (user.EmailConfirmed)
-                return new AuthResult
-                {
-                    IsSuccess = false,
-                    Errors = new() { "Email already confirmed" }
-                };
-
-            var otpEntity = await _context.PasswordResetOtps
-                .Where(x =>
-                    x.UserId == user.Id &&
-                    !x.IsUsed &&
-                    x.Expiration > DateTime.UtcNow
-                )
-                .OrderByDescending(x => x.Id)
+            // استرجاع pending user
+            var pending = await _context.PendingUserRegistrations
+                .Where(x => x.Email == dto.Email && !x.IsUsed && x.OtpExpiration > DateTime.UtcNow)
                 .FirstOrDefaultAsync();
 
-            if (otpEntity == null)
+            if (pending == null)
                 return new AuthResult
                 {
                     IsSuccess = false,
                     Errors = new() { "Invalid or expired OTP" }
                 };
 
-            var isValidOtp = BCrypt.Net.BCrypt.Verify(dto.Otp, otpEntity.CodeHash);
-            if (!isValidOtp)
+            // التحقق من OTP
+            var otpHash = Helper.HashOtp(dto.Otp, _configuration["Security:OtpSecret"]);
+            if (otpHash != pending.OtpHash)
                 return new AuthResult
                 {
                     IsSuccess = false,
-                    Errors = new() { "Invalid or expired OTP" }
+                    Errors = new() { "Invalid OTP" }
                 };
 
-            user.EmailConfirmed = true;
-            await _userManager.UpdateAsync(user);
+            // إنشاء المستخدم النهائي باستخدام plain password
+            var user = new User
+            {
+                FullName = pending.FullName,
+                Email = pending.Email,
+                UserName = pending.Email,
+                PhoneNumber = pending.PhoneNumber,
+                Gender = pending.Gender,
+                BirthDate = pending.BirthDate,
+                CityId = pending.CityId,
+                Status = UserStatus.Active,
+                EmailConfirmed = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                LastLogin = DateTime.UtcNow,
+                IsProfileCompleted = false,
+                IsDeleted = false
+            };
 
-            otpEntity.IsUsed = true;
+            var result = await _userManager.CreateAsync(user, pending.PasswordHash);
+            if (!result.Succeeded)
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Errors = result.Errors.Select(e => e.Description).ToList()
+                };
+
+            // تعليم pending user انه تم استخدامه وحذف الـ plain password
+            pending.IsUsed = true;
             await _context.SaveChangesAsync();
 
             return new AuthResult
             {
                 IsSuccess = true,
-                Message = "Email confirmed successfully"
+                Message = "Email confirmed and account created successfully"
             };
         }
-        #endregion 
+        #endregion
 
         #region  Search By Email , Check Password To This Email , Generate Token
         public async Task<AuthResult> LoginAsync(LoginDto dto , string deviceId)
@@ -260,7 +279,7 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
             await _context.SaveChangesAsync();
 
             return (new JwtSecurityTokenHandler().WriteToken(token), refreshToken);
-        } 
+        }
         #endregion
     }
 }

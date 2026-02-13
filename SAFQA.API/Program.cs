@@ -17,6 +17,7 @@ using SAFQA.BLL.Managers.AccountManager.Forget_Password;
 using SAFQA.BLL.Managers.AccountManager.Email_Sender;
 using SAFQA.BLL.Managers.AccountManager.OAuth;
 using System.Security.Claims;
+using Google;
 
 namespace SAFQA.API
 {
@@ -127,6 +128,21 @@ namespace SAFQA.API
                     }
                 };
             });
+
+            builder.Services.AddDbContext<SAFQA_Context>(options =>
+                options.UseSqlServer(
+                    builder.Configuration.GetConnectionString("DefaultConnection"),
+                    sqlOptions =>
+                    {
+                        sqlOptions.EnableRetryOnFailure(
+                            maxRetryCount: 5,         // ÃÞÕì ÚÏÏ ãÍÇæáÇÊ ÅÚÇÏÉ ÇáÇÊÕÇá
+                            maxRetryDelay: TimeSpan.FromSeconds(10), // æÞÊ ÇáÇäÊÙÇÑ Èíä ÇáãÍÇæáÇÊ
+                            errorNumbersToAdd: null   // áæ ÚÇíÒ ÊÍÏÏ ÃÑÞÇã errors ãÚíäÉ
+                        );
+                    }
+                )
+            );
+
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowAll",

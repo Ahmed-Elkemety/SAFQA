@@ -43,6 +43,7 @@ namespace SAFQA.DAL.Database
             modelBuilder.ApplyConfiguration(new WalletConfigration());
             modelBuilder.ApplyConfiguration(new RefreshTokenConfig());
             modelBuilder.ApplyConfiguration(new AuctionUserConfiguration());
+            modelBuilder.ApplyConfiguration(new PendingUserRegistrationConfig());
 
 
 
@@ -74,6 +75,7 @@ namespace SAFQA.DAL.Database
         public DbSet<RefreshToken> refreshTokens { get; set; }
         public DbSet<AuctionUser> AuctionUsers { get; set; }
         public DbSet<PasswordResetOtp> PasswordResetOtps { get; set; }
+        public DbSet<PendingUserRegistration> PendingUserRegistrations { get; set; }
 
     }
 }
