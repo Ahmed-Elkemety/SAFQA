@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Threading.Tasks;
+using Google;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using SAFQA.DAL.Configration;
@@ -24,26 +25,7 @@ namespace SAFQA.DAL.Database
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.ApplyConfiguration(new AuctionConfigration());
-            modelBuilder.ApplyConfiguration(new BidConfigration());
-            modelBuilder.ApplyConfiguration(new CategoryAttributesConfigration());
-            modelBuilder.ApplyConfiguration(new CategoryConfigration());
-            modelBuilder.ApplyConfiguration(new CityConfigration());
-            modelBuilder.ApplyConfiguration(new CountryConfigration());
-            modelBuilder.ApplyConfiguration(new DeliveryConfigration());
-            modelBuilder.ApplyConfiguration(new DisputesConfigration());
-            modelBuilder.ApplyConfiguration(new ImagesConfigration());
-            modelBuilder.ApplyConfiguration(new ItemAttributesValueConfigration());
-            modelBuilder.ApplyConfiguration(new ItemConfigration());
-            modelBuilder.ApplyConfiguration(new NotificationConfigration());
-            modelBuilder.ApplyConfiguration(new ProxyBiddingConfigration());
-            modelBuilder.ApplyConfiguration(new ReviewConfigration());
-            modelBuilder.ApplyConfiguration(new SellerConfigration());
-            modelBuilder.ApplyConfiguration(new TransactionConfigration());
-            modelBuilder.ApplyConfiguration(new WalletConfigration());
-            modelBuilder.ApplyConfiguration(new RefreshTokenConfig());
-            modelBuilder.ApplyConfiguration(new AuctionUserConfiguration());
-            modelBuilder.ApplyConfiguration(new PendingUserRegistrationConfig());
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(SAFQA_Context).Assembly);
 
 
 
@@ -76,6 +58,9 @@ namespace SAFQA.DAL.Database
         public DbSet<AuctionUser> AuctionUsers { get; set; }
         public DbSet<PasswordResetOtp> PasswordResetOtps { get; set; }
         public DbSet<PendingUserRegistration> PendingUserRegistrations { get; set; }
+        public DbSet<SavedCard> savedCards { get; set; }
+        public DbSet<PersonalSeller> personalSellers { get; set; }
+        public DbSet<BusinessSeller> businessSellers { get; set; }
 
     }
 }

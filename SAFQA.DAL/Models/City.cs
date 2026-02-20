@@ -13,6 +13,7 @@ namespace SAFQA.DAL.Models
         public int CountryId { get; set; }
         public Country Country { get; set; }
         public ICollection<User> users { get; set; }
+        public ICollection<Seller> sellers { get; set; }
 
     }
 }

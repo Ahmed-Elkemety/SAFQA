@@ -14,6 +14,7 @@ namespace SAFQA.DAL.Models
     {
         public int Id { get; set; }
         public string title { get; set; }
+        public int Count { get; set; }
         public string Description { get; set; }
         public ItemCondition Condition { get; set; }
         public string WarrantyInfo { get; set; }

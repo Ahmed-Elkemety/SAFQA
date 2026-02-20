@@ -33,6 +33,7 @@ namespace SAFQA.DAL.Models
         public int ViewsCount { get; set; }
         public int TotalBids { get; set; }
         public bool IsFeatured { get; set; }
+        public int? CountDown { get; set; }
         public bool IsTrending { get; set; }
         public bool HotScore { get; set; }
         public DateTime CreatedAt { get; set; }

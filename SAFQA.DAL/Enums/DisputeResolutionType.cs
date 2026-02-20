@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SAFQA.BLL.Enums
+namespace SAFQA.DAL.Enums
 {
-    public enum SellerBusinessType
+    public enum DisputeResolutionType
     {
-        Personal = 1,
-        Business = 2,
+        FullRefund = 1,
+        PartialRefund = 2
     }
 }

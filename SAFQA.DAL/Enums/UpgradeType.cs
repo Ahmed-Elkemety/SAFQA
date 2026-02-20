@@ -4,11 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SAFQA.BLL.Enums
+namespace SAFQA.DAL.Enums
 {
-    public enum SellerBusinessType
+    public enum UpgradeType
     {
-        Personal = 1,
-        Business = 2,
+        None = 0,
+        Basic = 1,
+        Premium = 2,
+        Elite = 3
     }
 }

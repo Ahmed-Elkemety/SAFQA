@@ -14,6 +14,8 @@ namespace SAFQA.DAL.Models
         public DateTime UpdatedAt { get; set; }
         public string UserId { get; set; }
         public User User { get; set; }
-        public ICollection<Transactions> Transactions { get; set; } 
+        public ICollection<Transactions> Transactions { get; set; }
+        public ICollection<SavedCard> SavedCards { get; set; } = new List<SavedCard>();
+
     }
 }
