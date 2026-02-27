@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SAFQA.DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class init : Migration
+    public partial class _ : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -50,6 +50,28 @@ namespace SAFQA.DAL.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_countries", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PendingUserRegistrations",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    FullName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
+                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Gender = table.Column<int>(type: "int", nullable: false),
+                    BirthDate = table.Column<DateOnly>(type: "date", nullable: true),
+                    CityId = table.Column<int>(type: "int", nullable: false),
+                    OtpHash = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    OtpExpiration = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsUsed = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PendingUserRegistrations", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -121,16 +143,16 @@ namespace SAFQA.DAL.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    FullName = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
                     Image = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
-                    BirthDate = table.Column<DateOnly>(type: "date", nullable: true),
-                    Gender = table.Column<int>(type: "int", nullable: true),
+                    BirthDate = table.Column<DateOnly>(type: "date", nullable: true, defaultValueSql: "GETDATE()"),
+                    Gender = table.Column<int>(type: "int", maxLength: 10, nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LastLogin = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETDATE()"),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETDATE()"),
+                    LastLogin = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETDATE()"),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", maxLength: 50, nullable: true),
                     IsProfileCompleted = table.Column<bool>(type: "bit", nullable: false),
                     CityId = table.Column<int>(type: "int", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -270,6 +292,30 @@ namespace SAFQA.DAL.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "PasswordResetOtps",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    CodeHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Expiration = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsUsed = table.Column<bool>(type: "bit", nullable: false),
+                    Attempts = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PasswordResetOtps", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PasswordResetOtps_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "refreshTokens",
                 columns: table => new
                 {
@@ -299,16 +345,16 @@ namespace SAFQA.DAL.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    CityId = table.Column<int>(type: "int", nullable: true),
                     StoreLogo = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
                     StoreName = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
                     PhoneNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     BussinessType = table.Column<int>(type: "int", nullable: false),
+                    upgradeType = table.Column<int>(type: "int", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
                     Rating = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     Followers = table.Column<int>(type: "int", nullable: false),
                     AuctionCount = table.Column<int>(type: "int", nullable: false),
-                    CommercialRegister = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    CommercialRegisterImage = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
                     VerificationStatus = table.Column<int>(type: "int", nullable: false),
                     StoreStatus = table.Column<int>(type: "int", nullable: false),
                     SellerAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETDATE()"),
@@ -322,6 +368,12 @@ namespace SAFQA.DAL.Migrations
                         name: "FK_Sellers_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Sellers_cities_CityId",
+                        column: x => x.CityId,
+                        principalTable: "cities",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -370,6 +422,7 @@ namespace SAFQA.DAL.Migrations
                     ViewsCount = table.Column<int>(type: "int", nullable: false),
                     TotalBids = table.Column<int>(type: "int", nullable: false),
                     IsFeatured = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    CountDown = table.Column<int>(type: "int", nullable: true),
                     IsTrending = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     HotScore = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETDATE()"),
@@ -384,6 +437,81 @@ namespace SAFQA.DAL.Migrations
                         name: "FK_Auctions_Sellers_SellerId",
                         column: x => x.SellerId,
                         principalTable: "Sellers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "BusinessSellers",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    SellerId = table.Column<int>(type: "int", nullable: false),
+                    CommercialRegister = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    TaxId = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    OwnerNationalIdFront = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    OwnerNationalIdBack = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    BankName = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
+                    AccountName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IBAN = table.Column<string>(type: "nvarchar(34)", maxLength: 34, nullable: false),
+                    LocalAccountNumber = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BusinessSellers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_BusinessSellers_Sellers_SellerId",
+                        column: x => x.SellerId,
+                        principalTable: "Sellers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PersonalSellers",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    SellerId = table.Column<int>(type: "int", nullable: false),
+                    NationalIdFront = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    NationalIdBack = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    SelfieWithId = table.Column<byte[]>(type: "varbinary(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PersonalSellers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PersonalSellers_Sellers_SellerId",
+                        column: x => x.SellerId,
+                        principalTable: "Sellers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SavedCards",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Last4Digits = table.Column<string>(type: "nvarchar(4)", maxLength: 4, nullable: false),
+                    CardBrand = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    ExpiryMonth = table.Column<int>(type: "int", nullable: false),
+                    ExpiryYear = table.Column<int>(type: "int", nullable: false),
+                    PaymentToken = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    IsDefault = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    WalletId = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SavedCards", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SavedCards_Wallets_WalletId",
+                        column: x => x.WalletId,
+                        principalTable: "Wallets",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -484,6 +612,7 @@ namespace SAFQA.DAL.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Count = table.Column<int>(type: "int", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
                     Condition = table.Column<int>(type: "int", nullable: false),
                     WarrantyInfo = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
@@ -584,6 +713,10 @@ namespace SAFQA.DAL.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
+                    ProblemType = table.Column<int>(type: "int", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ResolutionType = table.Column<int>(type: "int", nullable: false),
+                    Evidences = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Reason = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETDATE()"),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
@@ -768,6 +901,12 @@ namespace SAFQA.DAL.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_BusinessSellers_SellerId",
+                table: "BusinessSellers",
+                column: "SellerId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Category_Id",
                 table: "Category",
                 column: "Id");
@@ -850,6 +989,23 @@ namespace SAFQA.DAL.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PasswordResetOtps_UserId",
+                table: "PasswordResetOtps",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PendingUserRegistrations_Email",
+                table: "PendingUserRegistrations",
+                column: "Email",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PersonalSellers_SellerId",
+                table: "PersonalSellers",
+                column: "SellerId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_proxyBiddings_AuctionId",
                 table: "proxyBiddings",
                 column: "AuctionId");
@@ -880,6 +1036,17 @@ namespace SAFQA.DAL.Migrations
                 name: "IX_Reviews_UserId",
                 table: "Reviews",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SavedCards_WalletId_PaymentToken",
+                table: "SavedCards",
+                columns: new[] { "WalletId", "PaymentToken" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Sellers_CityId",
+                table: "Sellers",
+                column: "CityId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Sellers_UserId",
@@ -925,6 +1092,9 @@ namespace SAFQA.DAL.Migrations
                 name: "Bids");
 
             migrationBuilder.DropTable(
+                name: "BusinessSellers");
+
+            migrationBuilder.DropTable(
                 name: "Disputes");
 
             migrationBuilder.DropTable(
@@ -937,10 +1107,22 @@ namespace SAFQA.DAL.Migrations
                 name: "Notifications");
 
             migrationBuilder.DropTable(
+                name: "PasswordResetOtps");
+
+            migrationBuilder.DropTable(
+                name: "PendingUserRegistrations");
+
+            migrationBuilder.DropTable(
+                name: "PersonalSellers");
+
+            migrationBuilder.DropTable(
                 name: "refreshTokens");
 
             migrationBuilder.DropTable(
                 name: "Reviews");
+
+            migrationBuilder.DropTable(
+                name: "SavedCards");
 
             migrationBuilder.DropTable(
                 name: "Transactions");
