@@ -281,5 +281,60 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
             return (new JwtSecurityTokenHandler().WriteToken(token), refreshToken);
         }
         #endregion
+
+        public async Task<AuthResult> ResendRegistrationOtpAsync(string email)
+        {
+            // نجيب ال pending user
+            var pendingUser = await _context.PendingUserRegistrations
+                .FirstOrDefaultAsync(u => u.Email == email);
+
+            if (pendingUser == null)
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "Pending user not found"
+                };
+
+            // cooldown بالدقيقة (60 ثانية)
+            var cooldown = int.Parse(_configuration["Security:OtpCooldownSeconds"]);
+
+            // تحقق من وقت آخر ارسال OTP
+            if (pendingUser.LastOtpSentAt.HasValue &&
+                pendingUser.LastOtpSentAt.Value.AddSeconds(cooldown) > DateTime.UtcNow)
+            {
+                var waitTime = (pendingUser.LastOtpSentAt.Value.AddSeconds(cooldown) - DateTime.UtcNow).Seconds;
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = $"Please wait {waitTime} seconds before requesting another OTP"
+                };
+            }
+
+            // generate new OTP
+            var code = Helper.GenerateOtp();
+            var hash = Helper.HashOtp(code, _configuration["Security:OtpSecret"]);
+
+            // update pending user OTP
+            pendingUser.OtpHash = hash;
+            pendingUser.OtpExpiration = DateTime.UtcNow.AddMinutes(
+                int.Parse(_configuration["Security:OtpExpiryMinutes"]));
+            pendingUser.IsUsed = false;
+            pendingUser.LastOtpSentAt = DateTime.UtcNow; // تحديث وقت آخر إرسال
+
+            _context.PendingUserRegistrations.Update(pendingUser);
+            await _context.SaveChangesAsync();
+
+            // ارسال الايميل
+            await _emailSender.SendEmailAsync(
+                pendingUser.Email,
+                "Your Registration OTP",
+                $"<h2>Your OTP is: {code}</h2>");
+
+            return new AuthResult
+            {
+                IsSuccess = true,
+                Message = "Registration OTP resent successfully"
+            };
+        }
     }
 }

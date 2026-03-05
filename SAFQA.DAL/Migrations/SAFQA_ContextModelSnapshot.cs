@@ -789,6 +789,9 @@ namespace SAFQA.DAL.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
+                    b.Property<DateTime?>("LastOtpSentAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("OtpExpiration")
                         .HasColumnType("datetime2");
 

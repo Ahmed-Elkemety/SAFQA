@@ -20,6 +20,8 @@ namespace SAFQA.DAL.Models
         public string OtpHash { get; set; }
         public DateTime OtpExpiration { get; set; }
         public bool IsUsed { get; set; } = false;
+        public DateTime? LastOtpSentAt { get; set; }
+
     }
 
 }

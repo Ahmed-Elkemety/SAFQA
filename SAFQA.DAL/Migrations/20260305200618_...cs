@@ -67,7 +67,8 @@ namespace SAFQA.DAL.Migrations
                     CityId = table.Column<int>(type: "int", nullable: false),
                     OtpHash = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     OtpExpiration = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsUsed = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
+                    IsUsed = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    LastOtpSentAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {

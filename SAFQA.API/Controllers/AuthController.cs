@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SAFQA.BLL.Dtos.AccountDto.Facebook;
+using SAFQA.BLL.Dtos.AccountDto.Forget_password;
 using SAFQA.BLL.Dtos.AccountDto.Google;
 using SAFQA.BLL.Dtos.AccountDto.User;
 using SAFQA.BLL.Managers.AccountManager.Auth;
@@ -102,5 +103,16 @@ namespace SAFQA.API.Controllers
             return Ok(result);
         }
 
+        [HttpPost("resend")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResendOtp([FromBody] RequestResetDto dto)
+        {
+            var result = await _authUser.ResendRegistrationOtpAsync(dto.Email);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
     }
 }

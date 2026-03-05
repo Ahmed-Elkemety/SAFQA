@@ -12,7 +12,7 @@ using SAFQA.DAL.Database;
 namespace SAFQA.DAL.Migrations
 {
     [DbContext(typeof(SAFQA_Context))]
-    [Migration("20260221143837_.")]
+    [Migration("20260305200618_..")]
     partial class _
     {
         /// <inheritdoc />
@@ -791,6 +791,9 @@ namespace SAFQA.DAL.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
+
+                    b.Property<DateTime?>("LastOtpSentAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("OtpExpiration")
                         .HasColumnType("datetime2");
