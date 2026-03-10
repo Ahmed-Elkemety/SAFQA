@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.UserSecrets;
-using SAFQA.BLL.Dtos.AccountDto.Forget_password;
+using SAFQA.DAL.Dtos.AccountDto.Forget_password;
 using SAFQA.BLL.Help;
 using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.DAL.Database;

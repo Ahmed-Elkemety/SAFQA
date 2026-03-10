@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SAFQA.DAL.Database;
 
@@ -11,9 +12,11 @@ using SAFQA.DAL.Database;
 namespace SAFQA.DAL.Migrations
 {
     [DbContext(typeof(SAFQA_Context))]
-    partial class SAFQA_ContextModelSnapshot : ModelSnapshot
+    [Migration("20260307123901_Use Facebook-Id")]
+    partial class UseFacebookId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -175,6 +178,7 @@ namespace SAFQA.DAL.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("DeletedAt")
+                        .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(max)")
                         .HasDefaultValueSql("GETDATE()");
@@ -194,9 +198,6 @@ namespace SAFQA.DAL.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
-
-                    b.Property<byte[]>("Image")
-                        .HasColumnType("varbinary(max)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -383,10 +384,6 @@ namespace SAFQA.DAL.Migrations
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
-
-                    b.Property<byte[]>("Image")
-                        .IsRequired()
-                        .HasColumnType("varbinary(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -625,6 +622,7 @@ namespace SAFQA.DAL.Migrations
                         .HasColumnType("int");
 
                     b.Property<int?>("CategoryId")
+                        .IsRequired()
                         .HasColumnType("int");
 
                     b.Property<int>("Condition")
@@ -1049,6 +1047,7 @@ namespace SAFQA.DAL.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("DeletedAt")
+                        .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(max)")
                         .HasDefaultValueSql("GETDATE()");
@@ -1080,6 +1079,7 @@ namespace SAFQA.DAL.Migrations
                         .HasDefaultValueSql("GETDATE()");
 
                     b.Property<byte[]>("StoreLogo")
+                        .IsRequired()
                         .HasColumnType("varbinary(max)");
 
                     b.Property<string>("StoreName")

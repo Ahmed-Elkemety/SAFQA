@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SAFQA.BLL.Dtos.AccountDto.Forget_password;
+using SAFQA.DAL.Dtos.AccountDto.Forget_password;
 using SAFQA.BLL.Managers.AccountManager.Forget_Password;
 
 namespace SAFQA.API.Controllers

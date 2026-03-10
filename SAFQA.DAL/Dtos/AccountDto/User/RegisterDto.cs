@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authentication;
 using SAFQA.BLL.Enums;
 using SAFQA.DAL.Enums;
 
-namespace SAFQA.BLL.Dtos.AccountDto.User
+namespace SAFQA.DAL.Dtos.AccountDto.User
 {
     public class RegisterDto
     {

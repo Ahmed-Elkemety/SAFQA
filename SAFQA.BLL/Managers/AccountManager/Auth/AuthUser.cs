@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using SAFQA.BLL.Dtos.AccountDto.User;
+using SAFQA.DAL.Dtos.AccountDto.User;
 using SAFQA.BLL.Enums;
 using SAFQA.BLL.Help;
 using SAFQA.DAL.Database;
@@ -90,7 +90,7 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
             {
                 FullName = dto.FullName,
                 Email = dto.Email,
-                PasswordHash = dto.Password,  // مؤقت حتى تأكيد OTP
+                PasswordHash = dto.Password.Hash(),
                 PhoneNumber = dto.PhoneNumber,
                 Gender = dto.Gender,
                 BirthDate = dto.BirthDate,

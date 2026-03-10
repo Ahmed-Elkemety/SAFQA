@@ -10,7 +10,7 @@ using Google.Apis.Auth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using SAFQA.BLL.Dtos.AccountDto.Facebook;
+using SAFQA.DAL.Dtos.AccountDto.Facebook;
 using SAFQA.BLL.Help;
 using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.DAL.Models;
@@ -90,13 +90,11 @@ namespace SAFQA.BLL.Managers.AccountManager.OAuth
             if (fbUser == null)
                 return new AuthResult { IsSuccess = false, Message = "Invalid Facebook token" };
 
-
-            var user = await _userManager.FindByEmailAsync(fbUser.Email)
+            // جرب نجيب المستخدم عن طريق FacebookId أولاً
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.FacebookId == fbUser.Id)
                        ?? await CreateUserAsync(fbUser);
 
-
             var tokens = await GenerateTokensAsync(user, deviceId);
-
 
             return new AuthResult
             {
@@ -105,7 +103,6 @@ namespace SAFQA.BLL.Managers.AccountManager.OAuth
                 Token = tokens.Token,
                 RefreshToken = tokens.RefreshToken
             };
-
         }
 
         private async Task<FacebookUserDto?> VerifyFacebookToken(string accessToken)
@@ -131,8 +128,9 @@ namespace SAFQA.BLL.Managers.AccountManager.OAuth
         {
             var newUser = new User
             {
-                Email = fbUser.Email,
-                UserName = fbUser.Email,
+                FacebookId = fbUser.Id,
+                Email = fbUser.Email, // ممكن يكون null
+                UserName = fbUser.Email ?? fbUser.Id, // لو مفيش ايميل استخدم الـ id
                 FullName = fbUser.Name
             };
             await _userManager.CreateAsync(newUser);

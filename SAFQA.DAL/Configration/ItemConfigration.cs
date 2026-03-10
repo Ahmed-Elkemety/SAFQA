@@ -29,7 +29,7 @@ namespace SAFQA.DAL.Configration
             builder.Property(i => i.Condition).IsRequired();
             builder.Property(i => i.WarrantyInfo).IsRequired().HasMaxLength(500);
             builder.Property(i => i.AuctionId).IsRequired();
-            builder.Property(i => i.CategoryId).IsRequired();
+            builder.Property(i => i.CategoryId);
         }
     }
 }

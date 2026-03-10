@@ -2,10 +2,10 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using SAFQA.BLL.Dtos.AccountDto.Facebook;
-using SAFQA.BLL.Dtos.AccountDto.Forget_password;
-using SAFQA.BLL.Dtos.AccountDto.Google;
-using SAFQA.BLL.Dtos.AccountDto.User;
+using SAFQA.DAL.Dtos.AccountDto.Facebook;
+using SAFQA.DAL.Dtos.AccountDto.Forget_password;
+using SAFQA.DAL.Dtos.AccountDto.Google;
+using SAFQA.DAL.Dtos.AccountDto.User;
 using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.BLL.Managers.AccountManager.OAuth;
 

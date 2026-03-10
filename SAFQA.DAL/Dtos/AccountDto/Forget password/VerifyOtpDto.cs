@@ -4,12 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SAFQA.BLL.Dtos.AccountDto.Forget_password
+namespace SAFQA.DAL.Dtos.AccountDto.Forget_password
 {
-    public class ResetPasswordDto
+    public class VerifyOtpDto
     {
         public string Email { get; set; }
-        public string Token { get; set; }
-        public string NewPassword { get; set; }
+        public string Code { get; set; } 
     }
 }

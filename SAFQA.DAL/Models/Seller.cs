@@ -19,7 +19,7 @@ namespace SAFQA.DAL.Models
         public int? CityId { get; set; }
         public City City { get; set; }
 
-        public byte[] StoreLogo { get; set; }
+        public byte[]? StoreLogo { get; set; }
         public string StoreName { get; set; }
         public string PhoneNumber { get; set; }
         public SellerBusinessType BussinessType { get; set; } // Individual - Company - Government - NonProfit
@@ -33,7 +33,7 @@ namespace SAFQA.DAL.Models
         public StoreStatus StoreStatus { get; set; } // Active - Inactive - Suspended - Closed
         public DateTime SellerAt { get; set; }
         public bool IsDeleted { get; set; }
-        public string DeletedAt { get; set; }
+        public string? DeletedAt { get; set; }
 
         // Navigation
         public PersonalSeller? PersonalSeller { get; set; }

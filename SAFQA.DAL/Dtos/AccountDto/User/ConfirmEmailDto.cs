@@ -4,12 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SAFQA.BLL.Dtos.AccountDto.Facebook
+namespace SAFQA.DAL.Dtos.AccountDto.User
 {
-    public class FacebookUserDto
+    public class ConfirmEmailDto
     {
-        public string Id { get; set; }
-        public string Name { get; set; }
         public string Email { get; set; }
+        public string Otp { get; set; }
     }
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SAFQA.BLL.Dtos.AccountDto.User;
+using SAFQA.DAL.Dtos.AccountDto.User;
 namespace SAFQA.BLL.Managers.AccountManager.Auth
 {
     public interface IAuthUser

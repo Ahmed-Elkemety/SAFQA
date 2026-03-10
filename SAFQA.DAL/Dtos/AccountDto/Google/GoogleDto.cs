@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SAFQA.BLL.Dtos.AccountDto.Facebook
+namespace SAFQA.DAL.Dtos.AccountDto.Google
 {
-    public class FacebookLoginDto
+    public class GoogleDto
     {
-        public string AccessToken { get; set; }
+        public string IdToken { get; set; }
     }
 }

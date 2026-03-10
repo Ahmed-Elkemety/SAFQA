@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SAFQA.BLL.Dtos.AccountDto.Forget_password;
+using SAFQA.DAL.Dtos.AccountDto.Forget_password;
 using SAFQA.BLL.Managers.AccountManager.Auth;
 
 namespace SAFQA.BLL.Managers.AccountManager.Forget_Password

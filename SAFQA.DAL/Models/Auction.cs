@@ -18,6 +18,7 @@ namespace SAFQA.DAL.Models
         public Seller Seller { get; set; }
         public string WinnerUserId { get; set; }
         public string Title { get; set; }
+        public byte[]? Image { get; set; }
         public string Description { get; set; }
         public decimal StartingPrice { get; set; }
         public decimal CurrentPrice { get; set; }
@@ -39,7 +40,7 @@ namespace SAFQA.DAL.Models
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public bool IsDeleted { get; set; }
-        public string DeletedAt { get; set; }
+        public string? DeletedAt { get; set; }
 
 
 

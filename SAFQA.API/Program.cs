@@ -18,6 +18,8 @@ using SAFQA.BLL.Managers.AccountManager.Email_Sender;
 using SAFQA.BLL.Managers.AccountManager.OAuth;
 using System.Security.Claims;
 using Google;
+using SAFQA.BLL.Managers.UserAppManager.Home_Manager;
+using SAFQA.DAL.Repository.Home;
 
 namespace SAFQA.API
 {
@@ -26,6 +28,8 @@ namespace SAFQA.API
         public static async Task Main(string[] args) // Fix for CS4033: Mark Main method as async and change return type to Task
         {
             var builder = WebApplication.CreateBuilder(args);
+
+
 
             // Add services to the container.
 
@@ -68,6 +72,8 @@ namespace SAFQA.API
             builder.Services.AddScoped<IEmailSender, EmailSender>();
             builder.Services.AddScoped<IOAuth, Oauth>();
             builder.Services.AddScoped<IAuthUser, AuthUser>();
+            builder.Services.AddScoped<IHomeRepository, HomeRepository>();
+            builder.Services.AddScoped<IHomeService, HomeService>();
 
 
             var jwtSettings = builder.Configuration.GetSection("JWT");
@@ -157,6 +163,8 @@ namespace SAFQA.API
             builder.Services.AddHostedService<ExpiredOtpCleanupService>();
 
             var app = builder.Build(); // Fix for CS0841: Declare and initialize 'app' before using it
+
+          
 
 
             // Configure the HTTP request pipeline.
