@@ -90,7 +90,7 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
             {
                 FullName = dto.FullName,
                 Email = dto.Email,
-                PasswordHash = dto.Password.Hash(),
+                PasswordHash = dto.Password,
                 PhoneNumber = dto.PhoneNumber,
                 Gender = dto.Gender,
                 BirthDate = dto.BirthDate,
