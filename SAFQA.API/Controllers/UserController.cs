@@ -6,16 +6,16 @@ namespace SAFQA.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class HomeController : ControllerBase
+    public class UserController : ControllerBase
     {
         private readonly IUserService _homeService;
 
-        public HomeController(IUserService homeService)
+        public UserController(IUserService homeService)
         {
             _homeService = homeService;
         }
 
-        [HttpGet]
+        [HttpGet ("Home")]
         public async Task<IActionResult> GetHomeData()
         {
             var trending = await _homeService.GetTrendingAuctionsAsync();
