@@ -1,25 +1,27 @@
 
+using Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SAFQA.API.Middleware;
-using SAFQA.BLL.Managers.AccountManager.Auth;
-
-using SAFQA.DAL.Database;
-using SAFQA.DAL.Models;
-using System.Reflection.Metadata;
-using System.Text;
-using System.Reflection.Metadata;
 using SAFQA.API.Middleware;
 using SAFQA.BLL.Managers.AccountManager.Auth;
-using SAFQA.BLL.Managers.AccountManager.Forget_Password;
+using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.BLL.Managers.AccountManager.Email_Sender;
+using SAFQA.BLL.Managers.AccountManager.Forget_Password;
 using SAFQA.BLL.Managers.AccountManager.OAuth;
-using System.Security.Claims;
-using Google;
+using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard;
 using SAFQA.BLL.Managers.UserAppManager.Home_Manager;
+using SAFQA.DAL.Database;
+using SAFQA.DAL.Models;
 using SAFQA.DAL.Repository.Home;
+using SAFQA.DAL.Repository.SellerDashboard;
+using System.Reflection.Metadata;
+using System.Reflection.Metadata;
+using System.Security.Claims;
+using System.Text;
+
 
 namespace SAFQA.API
 {
@@ -74,6 +76,15 @@ namespace SAFQA.API
             builder.Services.AddScoped<IAuthUser, AuthUser>();
             builder.Services.AddScoped<IHomeRepository, HomeRepository>();
             builder.Services.AddScoped<IHomeService, HomeService>();
+            builder.Services.AddScoped<IAuctionManager, AuctionManager>();
+            builder.Services.AddScoped<IAuctionRepository, AuctionRepository>();
+            builder.Services.AddScoped<IitemsRepository, ItemRepository>();
+            builder.Services.AddScoped<IItemManager, ItemManager>(); 
+            builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+            builder.Services.AddScoped<ITransactionManager, TransactionManager>();
+            builder.Services.AddScoped<IBidRepository, BidRepository>();
+            builder.Services.AddScoped<IBidManager, BidManager>();
+            
 
 
             var jwtSettings = builder.Configuration.GetSection("JWT");
