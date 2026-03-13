@@ -2,12 +2,13 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using SAFQA.DAL.Dtos.AccountDto.Facebook;
-using SAFQA.DAL.Dtos.AccountDto.Forget_password;
-using SAFQA.DAL.Dtos.AccountDto.Google;
-using SAFQA.DAL.Dtos.AccountDto.User;
+using SAFQA.BLL.Dtos.AccountDto.Facebook;
+using SAFQA.BLL.Dtos.AccountDto.Forget_password;
+using SAFQA.BLL.Dtos.AccountDto.Google;
+using SAFQA.BLL.Dtos.AccountDto.User;
 using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.BLL.Managers.AccountManager.OAuth;
+using System.Security.Claims;
 
 namespace SAFQA.API.Controllers
 {
@@ -103,9 +104,9 @@ namespace SAFQA.API.Controllers
             return Ok(result);
         }
 
-        [HttpPost("resend")]
+        [HttpPost("resendRegistrationOtp")]
         [AllowAnonymous]
-        public async Task<IActionResult> ResendOtp([FromBody] RequestResetDto dto)
+        public async Task<IActionResult> ResendRegistrationOtp([FromBody] RequestResetDto dto)
         {
             var result = await _authUser.ResendRegistrationOtpAsync(dto.Email);
 
@@ -114,5 +115,71 @@ namespace SAFQA.API.Controllers
 
             return Ok(result);
         }
+
+        // 1️⃣ ارسال OTP
+        [HttpPost("request")]
+        [AllowAnonymous]
+        public async Task<IActionResult> RequestOtp([FromBody] RequestResetDto dto)
+        {
+            var result = await _authUser.RequestPasswordResetAsync(dto.Email);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        // 2️⃣ تأكيد OTP
+        [HttpPost("verify")]
+        [AllowAnonymous]
+        public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpDto dto)
+        {
+            var result = await _authUser.VerifyOtpAsync(dto);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        // 3️⃣ تغيير الباسورد
+        [HttpPost("reset")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+        {
+            var result = await _authUser.ResetPasswordAsync(dto);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        [HttpPost("resendOtp")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResendOtp([FromBody] RequestResetDto dto)
+        {
+            var result = await _authUser.ResendOtpAsync(dto.Email);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        [HttpPost("signout-all")]
+        [Authorize]
+        public async Task<IActionResult> SignOutAll()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var result = await _authUser.SignOutAllDevicesAsync(userId);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
     }
 }

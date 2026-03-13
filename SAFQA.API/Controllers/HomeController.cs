@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using SAFQA.BLL.Managers.UserAppManager.Home_Manager;
+using SAFQA.BLL.Managers.UserAppManager;
 
 namespace SAFQA.API.Controllers
 {
@@ -8,9 +8,9 @@ namespace SAFQA.API.Controllers
     [ApiController]
     public class HomeController : ControllerBase
     {
-        private readonly IHomeService _homeService;
+        private readonly IUserService _homeService;
 
-        public HomeController(IHomeService homeService)
+        public HomeController(IUserService homeService)
         {
             _homeService = homeService;
         }

@@ -10,13 +10,13 @@ using Google.Apis.Auth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using SAFQA.DAL.Dtos.AccountDto.Facebook;
 using SAFQA.BLL.Help;
 using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.DAL.Models;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using SAFQA.DAL.Database;
+using SAFQA.BLL.Dtos.AccountDto.Facebook;
 
 namespace SAFQA.BLL.Managers.AccountManager.OAuth
 {

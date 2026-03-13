@@ -12,14 +12,13 @@ using System.Reflection.Metadata;
 using System.Text;
 using System.Reflection.Metadata;
 using SAFQA.API.Middleware;
-using SAFQA.BLL.Managers.AccountManager.Auth;
-using SAFQA.BLL.Managers.AccountManager.Forget_Password;
 using SAFQA.BLL.Managers.AccountManager.Email_Sender;
 using SAFQA.BLL.Managers.AccountManager.OAuth;
 using System.Security.Claims;
 using Google;
-using SAFQA.BLL.Managers.UserAppManager.Home_Manager;
-using SAFQA.DAL.Repository.Home;
+using SAFQA.BLL.Managers.UserAppManager;
+using SAFQA.DAL.Repository.Auction;
+using SAFQA.DAL.Repository.Category;
 
 namespace SAFQA.API
 {
@@ -68,12 +67,12 @@ namespace SAFQA.API
                 .AddEntityFrameworkStores<SAFQA_Context>()
                 .AddDefaultTokenProviders();
 
-            builder.Services.AddScoped<IForgetPassword, ForgetPassword>();
             builder.Services.AddScoped<IEmailSender, EmailSender>();
             builder.Services.AddScoped<IOAuth, Oauth>();
             builder.Services.AddScoped<IAuthUser, AuthUser>();
-            builder.Services.AddScoped<IHomeRepository, HomeRepository>();
-            builder.Services.AddScoped<IHomeService, HomeService>();
+            builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IcategoryRepo, categoryRepo>();
+            builder.Services.AddScoped<IAuctionRepo, AuctionRepo>();
 
 
             var jwtSettings = builder.Configuration.GetSection("JWT");
