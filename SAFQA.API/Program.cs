@@ -1,15 +1,20 @@
 
+using Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SAFQA.API.Middleware;
+using SAFQA.API.Middleware;
 using SAFQA.BLL.Managers.AccountManager.Auth;
-
+using SAFQA.BLL.Managers.AccountManager.Auth;
+using SAFQA.BLL.Managers.AccountManager.Email_Sender;
+using SAFQA.BLL.Managers.AccountManager.OAuth;
+using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard;
 using SAFQA.DAL.Database;
 using SAFQA.DAL.Models;
+using SAFQA.DAL.Repository.SellerDashboard;
 using System.Reflection.Metadata;
-using System.Text;
 using System.Reflection.Metadata;
 using SAFQA.API.Middleware;
 using SAFQA.BLL.Managers.AccountManager.Email_Sender;
@@ -19,6 +24,8 @@ using Google;
 using SAFQA.BLL.Managers.UserAppManager;
 using SAFQA.DAL.Repository.Auction;
 using SAFQA.DAL.Repository.Category;
+using System.Text;
+
 
 namespace SAFQA.API
 {
@@ -73,6 +80,15 @@ namespace SAFQA.API
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IcategoryRepo, categoryRepo>();
             builder.Services.AddScoped<IAuctionRepo, AuctionRepo>();
+            builder.Services.AddScoped<IAuctionManager, AuctionManager>();
+            builder.Services.AddScoped<IAuctionRepository, AuctionRepository>();
+            builder.Services.AddScoped<IitemsRepository, ItemRepository>();
+            builder.Services.AddScoped<IItemManager, ItemManager>(); 
+            builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+            builder.Services.AddScoped<ITransactionManager, TransactionManager>();
+            builder.Services.AddScoped<IBidRepository, BidRepository>();
+            builder.Services.AddScoped<IBidManager, BidManager>();
+            
 
 
             var jwtSettings = builder.Configuration.GetSection("JWT");
