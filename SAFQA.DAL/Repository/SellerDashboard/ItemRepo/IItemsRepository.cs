@@ -5,14 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard
+namespace SAFQA.DAL.Repository.SellerDashboard.ItemRepo
 {
-    public interface IItemManager
+    public interface IitemsRepository
     {
         IQueryable<Item> GetSellerProducts(int sellerId);
-
         IQueryable<Item> GetProductsByCategory(int sellerId, string categoryName);
-
         IQueryable<Item> GetMostPopularProducts(int sellerId, int top = 5);
+        Task<List<(string CategoryName, int Count)>> GetSellerCategoryProductCounts(int sellerId);
     }
 }

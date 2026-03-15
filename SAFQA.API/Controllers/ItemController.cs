@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard;
+using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.ItemService.ItemManager.ItemManager;
 
 namespace SAFQA.API.Controllers
 {
@@ -41,6 +41,14 @@ namespace SAFQA.API.Controllers
                 .ToList();
 
             return Ok(products);
+        }
+
+        [HttpGet("seller-categories-stats/{sellerId}")]
+        public async Task<IActionResult> GetSellerCategoryStats(int sellerId)
+        {
+            var result = await _itemManager.GetSellerCategoryStats(sellerId);
+
+            return Ok(result);
         }
     }
 }
