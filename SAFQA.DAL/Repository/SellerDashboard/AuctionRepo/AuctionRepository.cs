@@ -34,7 +34,7 @@ namespace SAFQA.DAL.Repository.SellerDashboard.AuctionRepo
         }
 
 
-        public async Task<List<(User User, Seller Seller, Models.Auction AuctionDetails)>> GetSellerWinnersRawAsync(int sellerId)
+        public async Task<List<(User User, Models.Seller seller , Models.Auction AuctionDetails)>> GetSellerWinnersRawAsync(int sellerId)
         {
             var query = await _context.Auctions
         .Where(a => a.SellerId == sellerId &&
@@ -46,7 +46,7 @@ namespace SAFQA.DAL.Repository.SellerDashboard.AuctionRepo
             u => u.Id,
             (a, u) => new { Auction = a, User = u }
         )
-        .Where(x => x.Auction != null && x.User != null && x.Auction.Seller != null) // تجاهل أي null
+        .Where(x => x.Auction != null && x.User != null && x.Auction.Seller != null)
         .ToListAsync();
 
             return query.Select(x => (x.User, x.Auction.Seller, AuctionDetails: x.Auction)).ToList();

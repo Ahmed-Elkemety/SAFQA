@@ -31,7 +31,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.AuctionService
             var rawData = await _auctionRepository.GetSellerWinnersRawAsync(sellerId);
             
             var dtoList = rawData
-                .GroupBy(x => new { x.User.Id, x.User.FullName, x.User.Email, x.Seller.StoreName })
+                .GroupBy(x => new { x.User.Id, x.User.FullName, x.User.Email, x.seller.StoreName })
                 .Select(g => new SellerWinnerDto
                 {
                     UserFullName = g.Key.FullName,

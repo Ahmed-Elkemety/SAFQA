@@ -5,11 +5,13 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SAFQA.API.Middleware;
-using SAFQA.API.Middleware;
-using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.BLL.Managers.AccountManager.Email_Sender;
 using SAFQA.BLL.Managers.AccountManager.OAuth;
+<<<<<<< HEAD
+using SAFQA.DAL.Database;
+using SAFQA.DAL.Models;
+=======
 <<<<<<< HEAD
 using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard;
 using SAFQA.DAL.Database;
@@ -24,12 +26,25 @@ using System.Reflection.Metadata;
 using SAFQA.API.Middleware;
 using SAFQA.BLL.Managers.AccountManager.Email_Sender;
 using SAFQA.BLL.Managers.AccountManager.OAuth;
+>>>>>>> e8bc9c8dc1d0c4b30051a2006163b084409f9b65
 using System.Security.Claims;
-using Google;
 using SAFQA.BLL.Managers.UserAppManager;
 using SAFQA.DAL.Repository.Auction;
 using SAFQA.DAL.Repository.Category;
 using System.Text;
+<<<<<<< HEAD
+using SAFQA.BLL.Managers.SellerAppManager;
+using SAFQA.DAL.Repository.Seller;
+using SAFQA.DAL.Repository.SellerDashboard.TransactionRepo;
+using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.ItemService.ItemManager.ItemManager;
+using SAFQA.DAL.Repository.SellerDashboard.ItemRepo;
+using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.TransactionService;
+using SAFQA.DAL.Repository.SellerDashboard.BidRepo;
+using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.BidService;
+using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.AuctionService;
+using SAFQA.DAL.Repository.SellerDashboard.AuctionRepo;
+
+=======
 <<<<<<< HEAD
 using SAFQA.BLL.Managers.SellerAppManager;
 using SAFQA.DAL.Repository.Seller;
@@ -43,6 +58,7 @@ using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.BidService;
 using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.TransactionService;
 using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.ItemService.ItemManager.ItemManager;
 >>>>>>> 8e34427b76cc56b5c630c9d0abcc35edcb25e89d
+>>>>>>> e8bc9c8dc1d0c4b30051a2006163b084409f9b65
 
 
 namespace SAFQA.API
@@ -99,10 +115,16 @@ namespace SAFQA.API
             builder.Services.AddScoped<IcategoryRepo, categoryRepo>();
             builder.Services.AddScoped<IAuctionRepo, AuctionRepo>();
 <<<<<<< HEAD
+
+            builder.Services.AddScoped<IAuctionManager, AuctionManager>();
+            builder.Services.AddScoped<IAuctionRepository, AuctionRepository>();
+=======
+<<<<<<< HEAD
 =======
             builder.Services.AddScoped<IAuctionManager, AuctionManager>();
             builder.Services.AddScoped<IAuctionRepository, AuctionRepository>();
 >>>>>>> 8e34427b76cc56b5c630c9d0abcc35edcb25e89d
+>>>>>>> e8bc9c8dc1d0c4b30051a2006163b084409f9b65
             builder.Services.AddScoped<IitemsRepository, ItemRepository>();
             builder.Services.AddScoped<IItemManager, ItemManager>(); 
             builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
@@ -110,14 +132,20 @@ namespace SAFQA.API
             builder.Services.AddScoped<IBidRepository, BidRepository>();
             builder.Services.AddScoped<IBidManager, BidManager>();
 <<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> e8bc9c8dc1d0c4b30051a2006163b084409f9b65
             builder.Services.AddScoped<IsellerManager, sellerManager>();
             builder.Services.AddScoped<IsellerRepo, sellerRepo>();
 
 
+<<<<<<< HEAD
+=======
 =======
             
 >>>>>>> 8e34427b76cc56b5c630c9d0abcc35edcb25e89d
 
+>>>>>>> e8bc9c8dc1d0c4b30051a2006163b084409f9b65
 
             var jwtSettings = builder.Configuration.GetSection("JWT");
             builder.Services.Configure<ApiKeyOptions>(builder.Configuration.GetSection("ApiKey"));
