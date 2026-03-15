@@ -83,6 +83,8 @@ namespace SAFQA.API
             builder.Services.AddScoped<IAuctionManager, AuctionManager>();
             builder.Services.AddScoped<IAuctionRepository, AuctionRepository>();
 
+<<<<<<< HEAD
+=======
             builder.Services.AddScoped<IAuctionManager, AuctionManager>();
             builder.Services.AddScoped<IAuctionRepository, AuctionRepository>();
 
@@ -92,11 +94,12 @@ namespace SAFQA.API
             builder.Services.AddScoped<ITransactionManager, TransactionManager>();
             builder.Services.AddScoped<IBidRepository, BidRepository>();
             builder.Services.AddScoped<IBidManager, BidManager>();
-
+<<<<<<< HEAD
             builder.Services.AddScoped<IsellerManager, sellerManager>();
             builder.Services.AddScoped<IsellerRepo, sellerRepo>();
 
 
+>>>>>>> e8bc9c8dc1d0c4b30051a2006163b084409f9b65
 
             var jwtSettings = builder.Configuration.GetSection("JWT");
             builder.Services.Configure<ApiKeyOptions>(builder.Configuration.GetSection("ApiKey"));
