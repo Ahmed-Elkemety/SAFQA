@@ -17,14 +17,12 @@ namespace SAFQA.DAL.Configration
             builder
                 .HasOne(a => a.User)
                 .WithOne(e => e.Seller)
-                .HasForeignKey<Seller>(a => a.UserId)
-                .IsRequired(false);
+                .HasForeignKey<Seller>(a => a.UserId);
 
             builder
                 .HasOne(c => c.City)
                 .WithMany(u => u.sellers)
-                .HasForeignKey(c => c.CityId)
-                .IsRequired(false);
+                .HasForeignKey(c => c.CityId);
 
             // Seller 1 - 1 PersonalSeller
             builder.HasOne(s => s.PersonalSeller)
@@ -40,13 +38,12 @@ namespace SAFQA.DAL.Configration
             builder.Property(s => s.StoreName).IsRequired().HasMaxLength(150);
             builder.Property(s => s.PhoneNumber).IsRequired().HasMaxLength(20);
             builder.Property(s => s.Description).HasMaxLength(1000);
-            builder.Property(s => s.Rating).HasDefaultValue(0);
+            builder.Property(s => s.Rating);
             builder.Property(s => s.StoreLogo).HasColumnType("varbinary(max)");
             builder.Property(s => s.SellerAt).HasDefaultValueSql("GETDATE()");
             builder.Property(s => s.BussinessType).IsRequired();
             builder.Property(s => s.VerificationStatus).IsRequired();
             builder.Property(s => s.StoreStatus).IsRequired();
-            builder.Property(s => s.DeletedAt).HasDefaultValueSql("GETDATE()");
         }
     }
 }

@@ -14,6 +14,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using SAFQA.BLL.Dtos.AccountDto.Forget_password;
+using Newtonsoft.Json.Linq;
 
 
 
@@ -147,7 +148,7 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 UserName = pending.Email,
                 PhoneNumber = pending.PhoneNumber,
                 Gender = pending.Gender,
-                BirthDate = pending.BirthDate,
+                BirthDate = (DateOnly)pending.BirthDate,
                 CityId = pending.CityId,
                 Status = UserStatus.Active,
                 EmailConfirmed = true,
@@ -165,6 +166,9 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                     IsSuccess = false,
                     Errors = result.Errors.Select(e => e.Description).ToList()
                 };
+
+
+            await _userManager.AddToRoleAsync(user, "USER");
 
             // تعليم pending user انه تم استخدامه وحذف الـ plain password
             pending.IsUsed = true;
@@ -219,8 +223,10 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 };
             }
 
+
             // 4️⃣ Generate Tokens
             var token = await GenerateTokensAsync(user, deviceId);
+
             return new AuthResult
             {
                 IsSuccess = true,
@@ -262,34 +268,41 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
         #endregion
 
         #region Generate Tokens
-        private async Task<(string Token, string RefreshToken)> GenerateTokensAsync(User user , string deviceId)
+        private async Task<(string Token, string RefreshToken)> GenerateTokensAsync(User user, string deviceId)
         {
+            // 1️⃣ إعداد الـ Claims الأساسية
             var claims = new List<Claim>
-        {
-            new Claim("SecurityStamp", user.SecurityStamp),
-            new Claim(ClaimTypes.NameIdentifier, user.Id),
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Name, user.FullName),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-        };
+    {
+        new Claim(ClaimTypes.NameIdentifier, user.Id),
+        new Claim(ClaimTypes.Email, user.Email),
+        new Claim(ClaimTypes.Name, user.FullName),
+        new Claim("SecurityStamp", user.SecurityStamp),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+    };
 
-            var roles = await _userManager.GetRolesAsync(user);
-            foreach (var role in roles)
-                claims.Add(new Claim(ClaimTypes.Role, role));
 
+            // 2️⃣ إضافة الـ Roles كـ Claims
+            //var roles = await _userManager.GetRolesAsync(user);
+            //foreach (var role in roles)
+            //    claims.Add(new Claim(ClaimTypes.Role, role));
+
+            // 3️⃣ إنشاء الـ JWT Token
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
             var token = new JwtSecurityToken(
                 issuer: _configuration["JWT:ValidIssuer"],
                 audience: _configuration["JWT:ValidAudience"],
-                expires: DateTime.UtcNow.AddMinutes(30),
                 claims: claims,
-                signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
+                expires: DateTime.UtcNow.AddMinutes(30),
+                signingCredentials: creds
             );
 
+            // 4️⃣ إنشاء Refresh Token آمن
             var refreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
-            var refreshTokenHash = refreshToken.Hash();
+            var refreshTokenHash = refreshToken.Hash(); // تأكد إنك عندك extension method Hash()
 
-
+            // 5️⃣ تخزين Refresh Token في الـ Database
             _context.refreshTokens.Add(new RefreshToken
             {
                 TokenHash = refreshTokenHash,
@@ -298,8 +311,10 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 ExpiryDate = DateTime.UtcNow.AddDays(7),
                 IsRevoked = false
             });
+
             await _context.SaveChangesAsync();
 
+            // 6️⃣ إعادة الـ Token و الـ Refresh Token
             return (new JwtSecurityTokenHandler().WriteToken(token), refreshToken);
         }
         #endregion

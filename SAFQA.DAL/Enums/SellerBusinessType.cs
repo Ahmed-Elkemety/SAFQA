@@ -8,6 +8,7 @@ namespace SAFQA.BLL.Enums
 {
     public enum SellerBusinessType
     {
+        None = 0,
         Personal = 1,
         Business = 2,
     }

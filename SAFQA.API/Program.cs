@@ -25,6 +25,8 @@ using SAFQA.BLL.Managers.UserAppManager;
 using SAFQA.DAL.Repository.Auction;
 using SAFQA.DAL.Repository.Category;
 using System.Text;
+using SAFQA.BLL.Managers.SellerAppManager;
+using SAFQA.DAL.Repository.Seller;
 
 
 namespace SAFQA.API
@@ -53,19 +55,19 @@ namespace SAFQA.API
                 });
 
                 c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
-    {
-        {
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-            {
-                Reference = new Microsoft.OpenApi.Models.OpenApiReference
                 {
-                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                    Id = "ApiKey"
-                }
-            },
-            Array.Empty<string>()
-        }
-    });
+                    {
+                        new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                        {
+                            Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                            {
+                                Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                                Id = "ApiKey"
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
+                });
             });
 
             builder.Services.AddDbContext<SAFQA_Context>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("cs")));
@@ -86,7 +88,10 @@ namespace SAFQA.API
             builder.Services.AddScoped<ITransactionManager, TransactionManager>();
             builder.Services.AddScoped<IBidRepository, BidRepository>();
             builder.Services.AddScoped<IBidManager, BidManager>();
-            
+            builder.Services.AddScoped<IsellerManager, sellerManager>();
+            builder.Services.AddScoped<IsellerRepo, sellerRepo>();
+
+
 
 
             var jwtSettings = builder.Configuration.GetSection("JWT");
