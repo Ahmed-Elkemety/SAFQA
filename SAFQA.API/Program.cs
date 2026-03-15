@@ -29,8 +29,8 @@ using SAFQA.DAL.Repository.SellerDashboard.ItemRepo;
 using SAFQA.DAL.Repository.SellerDashboard.TransactionRepo;
 using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.AuctionService;
 using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.BidService;
-using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.ItemManager;
 using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.TransactionService;
+using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.ItemService.ItemManager.ItemManager;
 
 
 namespace SAFQA.API
