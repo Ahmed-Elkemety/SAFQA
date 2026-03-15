@@ -11,6 +11,6 @@ namespace SAFQA.DAL.Repository.SellerDashboard.AuctionRepo
     {
         Task<int> GetActiveSellerAuctions(int sellerId);
         Task<int> CountAuctionsBySeller(int sellerId);
-        Task<List<(User User, Seller Seller, Models.Auction AuctionDetails)>> GetSellerWinnersRawAsync(int sellerId);
+        Task<List<(User User, Models.Seller seller, Models.Auction AuctionDetails)>> GetSellerWinnersRawAsync(int sellerId);
     }
 }

@@ -61,7 +61,7 @@ namespace SAFQA.API.Controllers
 
         [HttpGet("basic")]
         [Authorize(Roles = "SELLER")] // لازم التوكن
-        public async Task<IActionResult> GetMySellerBasic()
+        public async Task<IActionResult> GetMySellerHome()
         {
             // جلب UserId من التوكن
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
