@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SAFQA.BLL.Managers.Dtos;
 using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard;
 
 namespace SAFQA.API.Controllers
@@ -17,18 +18,10 @@ namespace SAFQA.API.Controllers
 
         // GET: api/Transaction/pending/5
         [HttpGet("pending/{sellerId}")]
-        public IActionResult GetPendingPayments(int sellerId)
+        public async Task<IActionResult> GetPendingPayments(int sellerId)
         {
-            var pendingPayments = _transactionManager.GetPendingPayments(sellerId).ToList();
+            var pendingPayments = await _transactionManager.GetTotalPendingPayments(sellerId);
             return Ok(pendingPayments);
-        }
-
-        // GET: api/Transaction/all/5
-        [HttpGet("all/{sellerId}")]
-        public IActionResult GetSellerPayments(int sellerId)
-        {
-            var sellerPayments = _transactionManager.GetSellerPayments(sellerId).ToList();
-            return Ok(sellerPayments);
         }
 
         // GET: api/Transaction/revenue/5
@@ -37,6 +30,15 @@ namespace SAFQA.API.Controllers
         {
             var totalRevenue = await _transactionManager.GetTotalRevenueAsync(sellerId);
             return Ok(totalRevenue);
+        }
+
+        [HttpGet("MonthlyRevenue/{sellerId}")]
+        public async Task<ActionResult<List<SellerMonthlyRevenueDto>>> GetSellerMonthlyRevenue(int sellerId)
+        {
+            // جلب البيانات من Manager
+            var result = await _transactionManager.GetSellerMonthlyRevenueAsync(sellerId);
+
+            return Ok(result);
         }
     }
 }

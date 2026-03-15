@@ -1,4 +1,5 @@
-﻿using SAFQA.DAL.Models;
+﻿using SAFQA.BLL.Managers.Dtos;
+using SAFQA.DAL.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,8 +10,10 @@ namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard
 {
     public interface IBidManager
     {
-        IQueryable<Bid> GetBidsByCategory(int sellerId, int categoryId);
+        Task<int> GetBidsByCategory(int sellerId, int categoryId);
 
-        IQueryable<Bid> GetSellerBids(int sellerId);
+        Task<int> GetSellerBids(int sellerId);
+
+        Task<List<AuctionBidsDto>> GetTop4AuctionsBySeller(int sellerId);
     }
 }

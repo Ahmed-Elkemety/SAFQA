@@ -1,4 +1,5 @@
-﻿using SAFQA.DAL.Models;
+﻿using SAFQA.BLL.Managers.Dtos;
+using SAFQA.DAL.Models;
 using SAFQA.DAL.Repository.SellerDashboard;
 using System;
 using System.Collections.Generic;
@@ -17,19 +18,27 @@ namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard
             _transactionRepository = transactionRepository;
         }
 
-        public IQueryable<Transactions> GetPendingPayments(int sellerId)
+        public Task<int> GetTotalPendingPayments(int sellerId)
         {
-            return (IQueryable<Transactions>)_transactionRepository.GetPendingPayments(sellerId);
-        }
-
-        public IQueryable<Transactions> GetSellerPayments(int sellerId)
-        {
-            return (IQueryable<Transactions>)_transactionRepository.GetSellerPayments(sellerId);
+            return _transactionRepository.GetTotalPendingPayments(sellerId);
         }
 
         public async Task<decimal> GetTotalRevenueAsync(int sellerId)
         {
             return await _transactionRepository.GetTotalRevenueAsync(sellerId);
+        }
+
+         public async Task<List<SellerMonthlyRevenueDto>> GetSellerMonthlyRevenueAsync(int sellerId)
+         {
+            var revenueData = await _transactionRepository.GetSellerMonthlyRevenue(sellerId);
+
+            return revenueData
+                .Select(r => new SellerMonthlyRevenueDto
+                {
+                    Month = r.Month,
+                    Revenue = r.Revenue
+                })
+                .ToList();
         }
     }
 }

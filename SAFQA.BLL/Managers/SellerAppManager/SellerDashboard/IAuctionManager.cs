@@ -9,8 +9,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard
 {
     public interface IAuctionManager
     {
-        Task<int> GetTotalAuctionsAsync(int sellerId);
-        IQueryable<Auction> GetActiveAuctions(int sellerId);
-        IQueryable<Auction> GetAllAuctions(int sellerId);
+        Task<int> GetTotalSellerAuctions(int sellerId);
+        Task<int> GetActiveSellerAuctions(int sellerId);
     }
 }

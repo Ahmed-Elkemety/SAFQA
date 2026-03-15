@@ -9,7 +9,8 @@ namespace SAFQA.DAL.Repository.SellerDashboard
 {
     public interface IBidRepository
     {
-        IQueryable<Bid> GetSellerBids(int sellerId);
-        IQueryable<Bid> GetBidsByCategory(int sellerId, int categoryId);
+        Task<int> GetSellerBids(int sellerId);
+        Task<int> GetBidsByCategory(int sellerId, int categoryId);
+        Task<List<(int AuctionId, string AuctionTitle, List<string> ProductNames, int TotalBids)>> GetAuctionsWithBidsRawBySellerAsync(int sellerId);
     }
 }

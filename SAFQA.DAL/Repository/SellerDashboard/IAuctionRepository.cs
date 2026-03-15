@@ -9,12 +9,7 @@ namespace SAFQA.DAL.Repository.SellerDashboard
 {
     public interface IAuctionRepository
     {
-        IQueryable<Auction> GetSellerAuctions(int sellerId);
-        IQueryable<Auction> GetActiveSellerAuctions(int sellerId);
-        Task<int> CountAuctionsBySellerAsync(int sellerId);
+        Task<int> GetActiveSellerAuctions(int sellerId);
+        Task<int> CountAuctionsBySeller(int sellerId);
     }
 }
-
-/*   
-    _context.Auctions.where(a => a.SellerId == Seller.SellerId) 
-*/ 

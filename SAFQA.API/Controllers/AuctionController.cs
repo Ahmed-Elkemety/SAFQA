@@ -15,19 +15,11 @@ namespace SAFQA.API.Controllers
             _auctionManager = auctionManager;
         }
 
-        // GET: api/Auction/all/5
-        [HttpGet("all/{sellerId}")]
-        public IActionResult GetAllAuctions(int sellerId)
-        {
-            var auctions = _auctionManager.GetAllAuctions(sellerId).ToList();
-            return Ok(auctions);
-        }
-
         // GET: api/Auction/active/5
         [HttpGet("active/{sellerId}")]
-        public IActionResult GetActiveAuctions(int sellerId)
+        public async Task<IActionResult> GetActiveAuctions(int sellerId)
         {
-            var activeAuctions = _auctionManager.GetActiveAuctions(sellerId).ToList();
+            var activeAuctions = await _auctionManager.GetActiveSellerAuctions(sellerId);
             return Ok(activeAuctions);
         }
 
@@ -35,7 +27,7 @@ namespace SAFQA.API.Controllers
         [HttpGet("total/{sellerId}")]
         public async Task<IActionResult> GetTotalAuctions(int sellerId)
         {
-            var total = await _auctionManager.GetTotalAuctionsAsync(sellerId);
+            var total = await _auctionManager.GetTotalSellerAuctions(sellerId);
             return Ok(total);
         }
     }

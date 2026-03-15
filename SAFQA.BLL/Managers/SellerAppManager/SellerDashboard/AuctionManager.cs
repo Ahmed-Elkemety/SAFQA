@@ -15,18 +15,12 @@ namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard
         {
             _auctionRepository = auctionRepository;
         }
-
-        public IQueryable<Auction> GetAllAuctions(int sellerId)
+        public Task<int> GetTotalSellerAuctions(int sellerId)
         {
-            return _auctionRepository.GetSellerAuctions(sellerId);
+            return _auctionRepository.CountAuctionsBySeller(sellerId);
         }
 
-        public Task<int> GetTotalAuctionsAsync(int sellerId)
-        {
-            return _auctionRepository.CountAuctionsBySellerAsync(sellerId);
-        }
-
-        public IQueryable<Auction> GetActiveAuctions(int sellerId)
+        public Task<int> GetActiveSellerAuctions(int sellerId)
         {
             return _auctionRepository.GetActiveSellerAuctions(sellerId);
         }

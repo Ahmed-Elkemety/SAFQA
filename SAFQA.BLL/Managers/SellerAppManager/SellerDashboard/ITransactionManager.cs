@@ -1,4 +1,5 @@
-﻿using SAFQA.DAL.Models;
+﻿using SAFQA.BLL.Managers.Dtos;
+using SAFQA.DAL.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,10 +10,10 @@ namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard
 {
     public interface ITransactionManager
     {
-        IQueryable<Transactions> GetPendingPayments(int sellerId);
-
-        IQueryable<Transactions> GetSellerPayments(int sellerId);
+        Task<int> GetTotalPendingPayments(int sellerId);
 
         Task<decimal> GetTotalRevenueAsync(int sellerId);
+        Task<List<SellerMonthlyRevenueDto>> GetSellerMonthlyRevenueAsync(int sellerId);
+
     }
 }

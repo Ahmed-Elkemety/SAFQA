@@ -10,8 +10,9 @@ namespace SAFQA.DAL.Repository.SellerDashboard
 {
     public interface ITransactionRepository
     {
-        IQueryable<Transactions> GetSellerPayments(int sellerId);
-        IQueryable<Transactions> GetPendingPayments(int sellerId);
+        Task<int> GetTotalPendingPayments(int sellerId);
         Task<decimal> GetTotalRevenueAsync(int sellerId);
+        Task<List<(int Month, decimal Revenue)>> GetSellerMonthlyRevenue(int sellerId);
+
     }
 }

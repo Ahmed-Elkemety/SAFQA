@@ -19,26 +19,18 @@ namespace SAFQA.DAL.Repository.SellerDashboard
             _context = context;
         }
 
-        // CountAuctionsBySellerAsync
-        public Task<int> CountAuctionsBySellerAsync(int sellerId)
+        public Task<int> CountAuctionsBySeller(int sellerId)
         {
             return _context.Auctions
                     .Where(a => a.SellerId == sellerId)
                     .CountAsync();
         }
 
-        public IQueryable<Auction> GetActiveSellerAuctions(int sellerId)
+        public Task<int> GetActiveSellerAuctions(int sellerId)
         {
             return _context.Auctions
                             .Where(a => a.SellerId == sellerId && a.Status == AuctionStatus.Active)
-                            .OrderByDescending(a => a.StartDate);
-        }
-
-        public IQueryable<Auction> GetSellerAuctions(int sellerId)
-        {
-            return _context.Auctions
-                            .Where(a => a.SellerId == sellerId)
-                            .OrderByDescending(a => a.StartDate);
+                            .CountAsync();
         }
     }
 }

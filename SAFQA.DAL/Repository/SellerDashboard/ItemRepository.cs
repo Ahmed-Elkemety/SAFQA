@@ -28,6 +28,7 @@ namespace SAFQA.DAL.Repository.SellerDashboard
             return _context.Items
                 .Where(i => i.Auction.SellerId == sellerId && i.Category.Name == categoryName);
         }
+        
         //  return _context.Items.Where(a => a.CategoryId == categoryId);  
         public IQueryable<Item> GetSellerProducts(int sellerId)
         {
