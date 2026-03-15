@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SAFQA.BLL.Managers.Dtos
+namespace SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto
 {
     public class AuctionBidsDto
     {

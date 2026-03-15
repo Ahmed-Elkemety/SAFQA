@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SAFQA.DAL.Dtos.SellerDashboardDto.DashboardDto
+namespace SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto
 {
-    public class MonthlyRevenueDto
+    public class SellerMonthlyRevenueDto
     {
-        public string Month { get; set; }
+        public int Month { get; set; }
         public decimal Revenue { get; set; }
     }
 }

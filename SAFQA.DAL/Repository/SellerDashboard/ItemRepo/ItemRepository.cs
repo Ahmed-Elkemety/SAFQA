@@ -1,4 +1,6 @@
-﻿using SAFQA.DAL.Database;
+﻿using Microsoft.EntityFrameworkCore;
+using SAFQA.BLL.Enums;
+using SAFQA.DAL.Database;
 using SAFQA.DAL.Models;
 using System;
 using System.Collections.Generic;
@@ -6,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SAFQA.DAL.Repository.SellerDashboard
+namespace SAFQA.DAL.Repository.SellerDashboard.ItemRepo
 {
     public class ItemRepository : IitemsRepository
     {   
@@ -29,11 +31,27 @@ namespace SAFQA.DAL.Repository.SellerDashboard
                 .Where(i => i.Auction.SellerId == sellerId && i.Category.Name == categoryName);
         }
         
-        //  return _context.Items.Where(a => a.CategoryId == categoryId);  
         public IQueryable<Item> GetSellerProducts(int sellerId)
         {
             return _context.Items
                     .Where(a => a.Auction.SellerId == sellerId);
+        }
+
+        public async Task<List<(string CategoryName, int Count)>>GetSellerCategoryProductCounts(int sellerId)
+        {
+            var result = await _context.Items
+                .Where(i =>
+                    i.Auction.SellerId == sellerId && 
+                    (i.Auction.Status == AuctionStatus.Active ||
+                        i.Auction.Status == AuctionStatus.Finished))
+                        .GroupBy(i => i.Category.Name)
+                        .Select(g => new ValueTuple<string, int>(
+                                g.Key,
+                                g.Count()
+                        ))
+                        .ToListAsync();
+
+            return result;
         }
     }
 }

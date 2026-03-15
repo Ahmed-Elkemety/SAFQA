@@ -10,10 +10,8 @@ using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.BLL.Managers.AccountManager.Email_Sender;
 using SAFQA.BLL.Managers.AccountManager.OAuth;
-using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard;
 using SAFQA.DAL.Database;
 using SAFQA.DAL.Models;
-using SAFQA.DAL.Repository.SellerDashboard;
 using System.Reflection.Metadata;
 using System.Reflection.Metadata;
 using SAFQA.API.Middleware;
@@ -25,6 +23,14 @@ using SAFQA.BLL.Managers.UserAppManager;
 using SAFQA.DAL.Repository.Auction;
 using SAFQA.DAL.Repository.Category;
 using System.Text;
+using SAFQA.DAL.Repository.SellerDashboard.AuctionRepo;
+using SAFQA.DAL.Repository.SellerDashboard.BidRepo;
+using SAFQA.DAL.Repository.SellerDashboard.ItemRepo;
+using SAFQA.DAL.Repository.SellerDashboard.TransactionRepo;
+using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.AuctionService;
+using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.BidService;
+using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.ItemManager;
+using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.TransactionService;
 
 
 namespace SAFQA.API

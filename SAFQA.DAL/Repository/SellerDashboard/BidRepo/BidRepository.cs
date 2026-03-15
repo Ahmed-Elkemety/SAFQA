@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SAFQA.DAL.Repository.SellerDashboard
+namespace SAFQA.DAL.Repository.SellerDashboard.BidRepo
 {
     public class BidRepository : IBidRepository
     {
@@ -45,4 +45,6 @@ namespace SAFQA.DAL.Repository.SellerDashboard
                         .ToListAsync();
         }
     }
+
+
 }

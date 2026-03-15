@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard;
+using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
+using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.AuctionService;
 
 namespace SAFQA.API.Controllers
 {
@@ -29,6 +30,20 @@ namespace SAFQA.API.Controllers
         {
             var total = await _auctionManager.GetTotalSellerAuctions(sellerId);
             return Ok(total);
+        }
+
+        [HttpGet("{sellerId}")]
+        public async Task<ActionResult<List<SellerWinnerDto>>> GetSellerWinners(int sellerId)
+        {
+            if (sellerId <= 0)
+                return BadRequest("SellerId must be greater than zero.");
+
+            var winners = await _auctionManager.GetSellerWinnersAsync(sellerId);
+
+            if (winners == null || winners.Count == 0)
+                return NotFound("No winners found for this seller.");
+
+            return Ok(winners);
         }
     }
 }

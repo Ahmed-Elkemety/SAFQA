@@ -31,5 +31,6 @@ namespace SAFQA.DAL.Repository.Auction
                 })
                 .ToListAsync();
         }
+
     }
 }

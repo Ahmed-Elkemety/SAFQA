@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SAFQA.DAL.Repository.SellerDashboard
+namespace SAFQA.DAL.Repository.SellerDashboard.AuctionRepo
 {
     public class AuctionRepository : IAuctionRepository
     {
@@ -31,6 +31,25 @@ namespace SAFQA.DAL.Repository.SellerDashboard
             return _context.Auctions
                             .Where(a => a.SellerId == sellerId && a.Status == AuctionStatus.Active)
                             .CountAsync();
+        }
+
+
+        public async Task<List<(User User, Seller Seller, Models.Auction AuctionDetails)>> GetSellerWinnersRawAsync(int sellerId)
+        {
+            var query = await _context.Auctions
+        .Where(a => a.SellerId == sellerId &&
+                    !string.IsNullOrEmpty(a.WinnerUserId) &&
+                    a.Status == AuctionStatus.Finished)
+        .Join(
+            _context.Users,
+            a => a.WinnerUserId,
+            u => u.Id,
+            (a, u) => new { Auction = a, User = u }
+        )
+        .Where(x => x.Auction != null && x.User != null && x.Auction.Seller != null) // تجاهل أي null
+        .ToListAsync();
+
+            return query.Select(x => (x.User, x.Auction.Seller, AuctionDetails: x.Auction)).ToList();
         }
     }
 }

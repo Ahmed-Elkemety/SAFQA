@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using SAFQA.BLL.Managers.Dtos;
-using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard;
+using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
+using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.TransactionService;
 
 namespace SAFQA.API.Controllers
 {
@@ -35,7 +35,7 @@ namespace SAFQA.API.Controllers
         [HttpGet("MonthlyRevenue/{sellerId}")]
         public async Task<ActionResult<List<SellerMonthlyRevenueDto>>> GetSellerMonthlyRevenue(int sellerId)
         {
-            // جلب البيانات من Manager
+           
             var result = await _transactionManager.GetSellerMonthlyRevenueAsync(sellerId);
 
             return Ok(result);

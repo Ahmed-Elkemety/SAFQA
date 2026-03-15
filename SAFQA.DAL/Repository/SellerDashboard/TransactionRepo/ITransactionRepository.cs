@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Transactions;
 
-namespace SAFQA.DAL.Repository.SellerDashboard
+namespace SAFQA.DAL.Repository.SellerDashboard.TransactionRepo
 {
     public interface ITransactionRepository
     {

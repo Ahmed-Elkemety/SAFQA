@@ -14,8 +14,4 @@
     <ProjectReference Include="..\SAFQA.DAL\SAFQA.DAL.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Managers\SellerAppManager\" />
-  </ItemGroup>
-
 </Project>

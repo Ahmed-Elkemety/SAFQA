@@ -1,13 +1,13 @@
-﻿using SAFQA.BLL.Managers.Dtos;
+﻿using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
 using SAFQA.DAL.Models;
-using SAFQA.DAL.Repository.SellerDashboard;
+using SAFQA.DAL.Repository.SellerDashboard.TransactionRepo;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard
+namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.TransactionService
 {
     public class TransactionManager : ITransactionManager
     {
@@ -39,6 +39,6 @@ namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard
                     Revenue = r.Revenue
                 })
                 .ToList();
-        }
+         }
     }
 }
