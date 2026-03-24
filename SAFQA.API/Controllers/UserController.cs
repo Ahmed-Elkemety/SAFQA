@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SAFQA.BLL.Managers.UserAppManager;
 
@@ -6,16 +7,17 @@ namespace SAFQA.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class HomeController : ControllerBase
+    [Authorize(Roles = "USER")]
+    public class UserController : ControllerBase
     {
         private readonly IUserService _homeService;
 
-        public HomeController(IUserService homeService)
+        public UserController(IUserService homeService)
         {
             _homeService = homeService;
         }
 
-        [HttpGet]
+        [HttpGet ("Home")]
         public async Task<IActionResult> GetHomeData()
         {
             var trending = await _homeService.GetTrendingAuctionsAsync();

@@ -14,8 +14,8 @@ namespace SAFQA.DAL.Models
     {
         public string FullName { get; set; }
         public byte[]? Image { get; set; }
-        public DateOnly? BirthDate { get; set; }
-        public GenderType? Gender { get; set; }
+        public DateOnly BirthDate { get; set; }
+        public GenderType Gender { get; set; }
         public UserStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
@@ -25,7 +25,7 @@ namespace SAFQA.DAL.Models
 
         public bool IsProfileCompleted { get; set; }
 
-        public int? CityId { get; set; }
+        public int CityId { get; set; }
         public City City { get; set; }
 
         public Seller Seller { get; set; }

@@ -14,6 +14,8 @@ namespace SAFQA.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [AllowAnonymous]
+
     public class AuthController : ControllerBase
     {
         private readonly IAuthUser _authUser;
@@ -26,7 +28,6 @@ namespace SAFQA.API.Controllers
         }
 
         [HttpPost("register")]
-        [AllowAnonymous]
         public async Task<IActionResult> Register([FromBody] RegisterDto dto)
         {
             var deviceId = Request.Headers["DeviceId"].FirstOrDefault() ?? Guid.NewGuid().ToString();
@@ -40,7 +41,6 @@ namespace SAFQA.API.Controllers
         }
 
         [HttpPost("confirm-email")]
-        [AllowAnonymous]
         public async Task<IActionResult> ConfirmEmail(ConfirmEmailDto dto)
         {
             var result = await _authUser.ConfirmEmailAsync(dto);
@@ -65,7 +65,6 @@ namespace SAFQA.API.Controllers
         }
 
         [HttpPost("google")]
-        [AllowAnonymous]
         public async Task<IActionResult> GoogleLogin([FromBody] GoogleDto dto)
         {
             var deviceId = Request.Headers["DeviceId"].FirstOrDefault() ?? Guid.NewGuid().ToString();
@@ -79,7 +78,6 @@ namespace SAFQA.API.Controllers
         }
 
         [HttpPost("facebook")]
-        [AllowAnonymous]
         public async Task<IActionResult> FacebookLogin([FromBody] FacebookLoginDto dto)
         {
             var deviceId = Request.Headers["DeviceId"].FirstOrDefault() ?? Guid.NewGuid().ToString();
@@ -105,7 +103,6 @@ namespace SAFQA.API.Controllers
         }
 
         [HttpPost("resendRegistrationOtp")]
-        [AllowAnonymous]
         public async Task<IActionResult> ResendRegistrationOtp([FromBody] RequestResetDto dto)
         {
             var result = await _authUser.ResendRegistrationOtpAsync(dto.Email);
@@ -118,7 +115,6 @@ namespace SAFQA.API.Controllers
 
         // 1️⃣ ارسال OTP
         [HttpPost("request")]
-        [AllowAnonymous]
         public async Task<IActionResult> RequestOtp([FromBody] RequestResetDto dto)
         {
             var result = await _authUser.RequestPasswordResetAsync(dto.Email);
@@ -131,7 +127,6 @@ namespace SAFQA.API.Controllers
 
         // 2️⃣ تأكيد OTP
         [HttpPost("verify")]
-        [AllowAnonymous]
         public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpDto dto)
         {
             var result = await _authUser.VerifyOtpAsync(dto);
@@ -144,7 +139,6 @@ namespace SAFQA.API.Controllers
 
         // 3️⃣ تغيير الباسورد
         [HttpPost("reset")]
-        [AllowAnonymous]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
         {
             var result = await _authUser.ResetPasswordAsync(dto);
@@ -156,7 +150,6 @@ namespace SAFQA.API.Controllers
         }
 
         [HttpPost("resendOtp")]
-        [AllowAnonymous]
         public async Task<IActionResult> ResendOtp([FromBody] RequestResetDto dto)
         {
             var result = await _authUser.ResendOtpAsync(dto.Email);
@@ -168,7 +161,6 @@ namespace SAFQA.API.Controllers
         }
 
         [HttpPost("signout-all")]
-        [Authorize]
         public async Task<IActionResult> SignOutAll()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

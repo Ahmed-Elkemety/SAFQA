@@ -1,36 +1,29 @@
-
-using Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SAFQA.API.Middleware;
-using SAFQA.API.Middleware;
-using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.BLL.Managers.AccountManager.Email_Sender;
 using SAFQA.BLL.Managers.AccountManager.OAuth;
 using SAFQA.DAL.Database;
 using SAFQA.DAL.Models;
-using System.Reflection.Metadata;
-using System.Reflection.Metadata;
-using SAFQA.API.Middleware;
-using SAFQA.BLL.Managers.AccountManager.Email_Sender;
-using SAFQA.BLL.Managers.AccountManager.OAuth;
-using System.Security.Claims;
-using Google;
-using SAFQA.BLL.Managers.UserAppManager;
+using SAFQA.BLL.Managers.SellerAppManager;
+using SAFQA.DAL.Repository.Seller;
+using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.BidService;
+using SAFQA.DAL.Repository.SellerDashboard.BidRepo;
+using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.TransactionService;
+using SAFQA.DAL.Repository.SellerDashboard.TransactionRepo;
+using SAFQA.DAL.Repository.SellerDashboard.ItemRepo;
+using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.ItemService.ItemManager.ItemManager;
+using SAFQA.DAL.Repository.SellerDashboard.AuctionRepo;
+using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.AuctionService;
 using SAFQA.DAL.Repository.Auction;
 using SAFQA.DAL.Repository.Category;
+using SAFQA.BLL.Managers.UserAppManager;
+using System.Security.Claims;
 using System.Text;
-using SAFQA.DAL.Repository.SellerDashboard.AuctionRepo;
-using SAFQA.DAL.Repository.SellerDashboard.BidRepo;
-using SAFQA.DAL.Repository.SellerDashboard.ItemRepo;
-using SAFQA.DAL.Repository.SellerDashboard.TransactionRepo;
-using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.AuctionService;
-using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.BidService;
-using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.TransactionService;
-using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.ItemService.ItemManager.ItemManager;
+
 
 
 namespace SAFQA.API
@@ -59,19 +52,19 @@ namespace SAFQA.API
                 });
 
                 c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
-    {
-        {
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-            {
-                Reference = new Microsoft.OpenApi.Models.OpenApiReference
                 {
-                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                    Id = "ApiKey"
-                }
-            },
-            Array.Empty<string>()
-        }
-    });
+                    {
+                        new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                        {
+                            Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                            {
+                                Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                                Id = "ApiKey"
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
+                });
             });
 
             builder.Services.AddDbContext<SAFQA_Context>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("cs")));
@@ -86,15 +79,20 @@ namespace SAFQA.API
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IcategoryRepo, categoryRepo>();
             builder.Services.AddScoped<IAuctionRepo, AuctionRepo>();
+
             builder.Services.AddScoped<IAuctionManager, AuctionManager>();
             builder.Services.AddScoped<IAuctionRepository, AuctionRepository>();
+            builder.Services.AddScoped<IAuctionManager, AuctionManager>();
+            builder.Services.AddScoped<IAuctionRepository, AuctionRepository>();
+
             builder.Services.AddScoped<IitemsRepository, ItemRepository>();
             builder.Services.AddScoped<IItemManager, ItemManager>(); 
             builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
             builder.Services.AddScoped<ITransactionManager, TransactionManager>();
             builder.Services.AddScoped<IBidRepository, BidRepository>();
             builder.Services.AddScoped<IBidManager, BidManager>();
-            
+            builder.Services.AddScoped<IsellerManager, sellerManager>();
+            builder.Services.AddScoped<IsellerRepo, sellerRepo>();
 
 
             var jwtSettings = builder.Configuration.GetSection("JWT");

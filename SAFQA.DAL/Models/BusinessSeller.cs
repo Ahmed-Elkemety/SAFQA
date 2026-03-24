@@ -20,6 +20,7 @@ namespace SAFQA.DAL.Models
     public byte[] OwnerNationalIdBack { get; set; }
 
     // Financial Details
+    public int? instaPayNumber { get; set; }
     public string BankName { get; set; }
     public string AccountName { get; set; }
     public string IBAN { get; set; }

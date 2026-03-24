@@ -34,7 +34,7 @@ namespace SAFQA.DAL.Repository.SellerDashboard.AuctionRepo
         }
 
 
-        public async Task<List<(User User, Seller Seller, Models.Auction AuctionDetails)>> GetSellerWinnersRawAsync(int sellerId)
+        public async Task<List<(User User, Models.Seller seller , Models.Auction AuctionDetails)>> GetSellerWinnersRawAsync(int sellerId)
         {
             var query = await _context.Auctions
         .Where(a => a.SellerId == sellerId &&

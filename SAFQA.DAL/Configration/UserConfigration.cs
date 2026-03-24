@@ -17,8 +17,7 @@ namespace SAFQA.DAL.Configration
             builder
                 .HasOne(c => c.City)
                 .WithMany(u => u.users)
-                .HasForeignKey(c => c.CityId)
-                .IsRequired(false);
+                .HasForeignKey(c => c.CityId);
 
 
 

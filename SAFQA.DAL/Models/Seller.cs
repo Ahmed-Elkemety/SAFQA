@@ -13,10 +13,10 @@ namespace SAFQA.DAL.Models
         public int Id { get; set; }
 
         // FK to User (1-to-1)
-        public string? UserId { get; set; }
+        public string UserId { get; set; }
         public User User { get; set; }
 
-        public int? CityId { get; set; }
+        public int CityId { get; set; }
         public City City { get; set; }
 
         public byte[]? StoreLogo { get; set; }
@@ -25,7 +25,7 @@ namespace SAFQA.DAL.Models
         public SellerBusinessType BussinessType { get; set; } // Individual - Company - Government - NonProfit
         public UpgradeType upgradeType { get; set; }
         public string Description { get; set; }
-        public int Rating { get; set; }
+        public float Rating { get; set; }
         public int Followers { get; set; }
         public int AuctionCount { get; set; }
 
