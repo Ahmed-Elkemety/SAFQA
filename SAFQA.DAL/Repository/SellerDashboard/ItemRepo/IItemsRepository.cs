@@ -13,5 +13,6 @@ namespace SAFQA.DAL.Repository.SellerDashboard.ItemRepo
         IQueryable<Item> GetProductsByCategory(int sellerId, string categoryName);
         IQueryable<Item> GetMostPopularProducts(int sellerId, int top = 5);
         Task<List<(string CategoryName, int Count)>> GetSellerCategoryProductCounts(int sellerId);
+        Task<List<(string CategoryName, int Count)>> GetCategoryCountsBySellerAsync(int sellerId);
     }
 }

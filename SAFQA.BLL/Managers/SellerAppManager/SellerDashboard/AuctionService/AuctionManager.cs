@@ -45,6 +45,20 @@ namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.AuctionService
             return dtoList;
         }
 
+        public async Task<List<TopCustomerDto>> GetTopCustomersAsync()
+        {
+            var data = await _auctionRepository.GetTopCustomersAsync();
 
+            var result = data.Select(x => new TopCustomerDto
+            {
+                Name = x.Name,
+                Email = x.Email,
+                CompanyName = x.CompanyName,
+                ParticipatedAuctions = x.ParticipatedAuctions,
+                TotalPaid = x.TotalPaid
+            }).ToList();
+
+            return result;
+        }
     }
 }

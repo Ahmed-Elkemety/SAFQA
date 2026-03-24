@@ -47,5 +47,27 @@ namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.ItemService.ItemMa
             }).OrderByDescending(x => x.Percentage)
               .ToList();
         }
+
+        public async Task<List<CategoryPercentageDto>> GetCategoryPercentageAsync(int sellerId)
+        {
+
+            var data = await _itemsRepository.GetCategoryCountsBySellerAsync(sellerId);
+
+
+            var total = data.Sum(x => x.Count);
+
+
+            if (total == 0)
+                return new List<CategoryPercentageDto>();
+
+
+            var result = data.Select(x => new CategoryPercentageDto
+            {
+                CategoryName = x.CategoryName,
+                Percentage = Math.Round((double)x.Count / total * 100, 2)
+            }).ToList();
+
+            return result;
+        }
     }
 }

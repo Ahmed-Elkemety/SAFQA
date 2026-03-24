@@ -45,5 +45,16 @@ namespace SAFQA.API.Controllers
 
             return Ok(winners);
         }
+
+        [HttpGet("Top Buyers")]
+        public async Task<ActionResult<List<TopCustomerDto>>> GetTopCustomers()
+        {
+            var topCustomers = await _auctionManager.GetTopCustomersAsync();
+
+            if (topCustomers == null || topCustomers.Count == 0)
+                return NotFound("No customers found.");
+
+            return Ok(topCustomers);
+        }
     }
 }
