@@ -272,19 +272,19 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
         {
             // 1️⃣ إعداد الـ Claims الأساسية
             var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.NameIdentifier, user.Id),
-        new Claim(ClaimTypes.Email, user.Email),
-        new Claim(ClaimTypes.Name, user.FullName),
-        new Claim("SecurityStamp", user.SecurityStamp),
-        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-    };
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Name, user.FullName),
+                new Claim("SecurityStamp", user.SecurityStamp),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
 
 
-            // 2️⃣ إضافة الـ Roles كـ Claims
-            //var roles = await _userManager.GetRolesAsync(user);
-            //foreach (var role in roles)
-            //    claims.Add(new Claim(ClaimTypes.Role, role));
+            //2️⃣ إضافة الـ Roles كـ Claims
+           var roles = await _userManager.GetRolesAsync(user);
+            foreach (var role in roles)
+                claims.Add(new Claim(ClaimTypes.Role, role));
 
             // 3️⃣ إنشاء الـ JWT Token
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
