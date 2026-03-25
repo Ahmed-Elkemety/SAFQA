@@ -27,15 +27,10 @@ namespace SAFQA.BLL.Managers.SellerAppManager
     {
         private readonly SAFQA_Context _context;
         private readonly UserManager<User> _userManager;
-<<<<<<< HEAD
         private readonly IConfiguration _configuration;
-
-        public sellerManager( IConfiguration configuration , SAFQA_Context context , UserManager<User> userManager)
-=======
         private readonly IsellerRepo _IsellerRepo;
 
-        public sellerManager(SAFQA_Context context , UserManager<User> userManager, IsellerRepo isellerRepo)
->>>>>>> a5e452654819aea897a02ba14612dd29b8d7e791
+        public sellerManager(SAFQA_Context context , IConfiguration configuration,  UserManager<User> userManager, IsellerRepo isellerRepo)
         {
             _configuration = configuration;
             _context = context;
@@ -45,7 +40,6 @@ namespace SAFQA.BLL.Managers.SellerAppManager
 
         private async Task<(string Token, string RefreshToken)> GenerateTokensAsync(User user, string deviceId)
         {
-<<<<<<< HEAD
             // 1️⃣ إعداد الـ Claims الأساسية
             var claims = new List<Claim>
             {
@@ -105,9 +99,6 @@ namespace SAFQA.BLL.Managers.SellerAppManager
                     Message = "User not found"
                 };
             }
-
-=======
->>>>>>> a5e452654819aea897a02ba14612dd29b8d7e791
             var existingSeller = await _context.Sellers
                 .FirstOrDefaultAsync(s => s.UserId == userId);
 
