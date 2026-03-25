@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SAFQA.BLL.Managers.UserAppManager;
 
@@ -7,7 +8,7 @@ namespace SAFQA.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "USER")]
+
     public class UserController : ControllerBase
     {
         private readonly IUserService _homeService;
@@ -17,7 +18,7 @@ namespace SAFQA.API.Controllers
             _homeService = homeService;
         }
 
-        [HttpGet ("Home")]
+        [HttpGet("Home")]
         public async Task<IActionResult> GetHomeData()
         {
             var trending = await _homeService.GetTrendingAuctionsAsync();
@@ -29,5 +30,33 @@ namespace SAFQA.API.Controllers
                 Categories = categories
             });
         }
+
+        [HttpGet("total-users")]
+        public async Task<IActionResult> GetTotalUsers()
+        {
+            var totalUsers = await _homeService.GetTotalUsersAsync();
+
+            return Ok(new
+            {
+                TotalUsers = totalUsers
+            });
+        }
+
+
+        [HttpGet("active-count")]
+        public async Task<IActionResult> GetActiveUsersCount()
+        {
+            int count = await _homeService.GetActiveUsersCountAsync();
+            return Ok(new { ActiveUsersCount = count });
+        }
+
+        [HttpGet("blocked-count")]
+        public async Task<IActionResult> GetBlockedUsersCount()
+        {
+            int blockedCount = await _homeService.GetBlockedUsersCountAsync();
+            return Ok(new { Count = blockedCount });
+        }
+
+        
     }
 }

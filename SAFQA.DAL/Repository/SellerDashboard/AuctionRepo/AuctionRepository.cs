@@ -34,7 +34,7 @@ namespace SAFQA.DAL.Repository.SellerDashboard.AuctionRepo
         }
 
 
-        public async Task<List<(User User, Models.Seller seller , Models.Auction AuctionDetails)>> GetSellerWinnersRawAsync(int sellerId)
+        public async Task<List<(User User, Models.Seller Seller, Models.Auction AuctionDetails)>> GetSellerWinnersRawAsync(int sellerId)
         {
             var query = await _context.Auctions
         .Where(a => a.SellerId == sellerId &&
@@ -51,6 +51,7 @@ namespace SAFQA.DAL.Repository.SellerDashboard.AuctionRepo
 
             return query.Select(x => (x.User, x.Auction.Seller, AuctionDetails: x.Auction)).ToList();
         }
+
 
         public async Task<List<(string UserId, string Name, string Email, string CompanyName, int ParticipatedAuctions, decimal TotalPaid)>> GetTopCustomersAsync()
         {
@@ -89,5 +90,39 @@ namespace SAFQA.DAL.Repository.SellerDashboard.AuctionRepo
             return result;
         }
 
+        public async Task<int> GetTotalAuctionsCount()
+        {
+            return await _context.Auctions
+                                 .Where(a => !a.IsDeleted)
+                                 .CountAsync();
+        }
+        public async Task<int> GetActiveAuctionsCount()
+        {
+            return await _context.Auctions
+                .Where(a => !a.IsDeleted
+                            && (a.Status == AuctionStatus.Active
+                                || a.Status == AuctionStatus.EndingSoon))
+                .CountAsync();
+        }
+        public async Task<int> GetExpiredAuctionsCount()
+        {
+            DateTime now = DateTime.UtcNow;
+
+            return await _context.Auctions
+                .Where(a => !a.IsDeleted
+                            && (
+                                a.Status == AuctionStatus.Finished
+                                || a.Status == AuctionStatus.Cancelled
+                                || a.EndDate < now
+                               ))
+                .CountAsync();
+        }
+        public async Task<int> GetUpcomingAuctionsCount()
+        {
+            return await _context.Auctions
+                .Where(a => !a.IsDeleted
+                            && a.Status == AuctionStatus.Upcoming)
+                .CountAsync();
+        }
     }
 }

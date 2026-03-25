@@ -13,6 +13,7 @@ using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.DAL.Database;
 using SAFQA.DAL.Enums;
 using SAFQA.DAL.Models;
+using SAFQA.DAL.Repository.Seller;
 
 namespace SAFQA.BLL.Managers.SellerAppManager
 {
@@ -20,16 +21,17 @@ namespace SAFQA.BLL.Managers.SellerAppManager
     {
         private readonly SAFQA_Context _context;
         private readonly UserManager<User> _userManager;
+        private readonly IsellerRepo _IsellerRepo;
 
-        public sellerManager(SAFQA_Context context , UserManager<User> userManager)
+        public sellerManager(SAFQA_Context context , UserManager<User> userManager, IsellerRepo isellerRepo)
         {
             _context = context;
             _userManager = userManager;
+            _IsellerRepo = isellerRepo;
         }
 
         public async Task CreateSellerAsync(string userId, CreateSellerDto dto)
         {
-
             var existingSeller = await _context.Sellers
             .FirstOrDefaultAsync(s => s.UserId == userId);
 
@@ -186,7 +188,6 @@ namespace SAFQA.BLL.Managers.SellerAppManager
                 };
             }
         }
-
         public async Task<SellerBasicDto?> GetMySellerHomeAsync(string userId)
         {
             return await _context.Sellers
@@ -197,6 +198,21 @@ namespace SAFQA.BLL.Managers.SellerAppManager
                     StoreLogo = s.StoreLogo
                 })
                 .FirstOrDefaultAsync();
+        }
+
+        public async Task<int> GetTotalSellersCount()
+        {
+            return await _IsellerRepo.GetTotalSellersCount();
+        }
+
+        public async Task<int> GetVerifiedSellersCount()
+        {
+            return await _IsellerRepo.GetVerifiedSellersCount();
+        }
+
+        public async Task<int> GetPendingSellersCount()
+        {
+            return await _IsellerRepo.CountPendingSellers();
         }
     }
 }

@@ -59,5 +59,24 @@ namespace SAFQA.DAL.Repository.SellerDashboard.TransactionRepo
 
             return totalDeposits;
         }
+
+        public async Task<int> GetTotalTransactionsCount()
+        {
+            return await _context.Transactions
+                .CountAsync();
+        }
+        public async Task<int> GetSuccessfulTransactionsCount()
+        {
+            return await _context.Transactions
+                .Where(t => t.Status == Enums.TransactionStatus.Completed)
+                .CountAsync();
+        }
+
+        public async Task<int> GetFailedTransactionsCount()
+        {
+            return await _context.Transactions
+                .Where(t => t.Status == Enums.TransactionStatus.Failed)
+                .CountAsync();
+        }
     }
 }

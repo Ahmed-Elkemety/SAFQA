@@ -11,5 +11,9 @@ namespace SAFQA.BLL.Managers.UserAppManager
         //Home
         Task<List<TrendingAuctionDto>> GetTrendingAuctionsAsync();
         Task<List<CategoryWithDetailsDto>> GetCategoriesWithDetailsAsync();
+        Task<int> GetTotalUsersAsync();
+        Task<int> GetActiveUsersCountAsync();
+        Task<int> GetBlockedUsersCountAsync();
+        
     }
 }

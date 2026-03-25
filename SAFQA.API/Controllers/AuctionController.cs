@@ -46,15 +46,44 @@ namespace SAFQA.API.Controllers
             return Ok(winners);
         }
 
+
         [HttpGet("Top Buyers")]
         public async Task<ActionResult<List<TopCustomerDto>>> GetTopCustomers()
         {
-            var topCustomers = await _auctionManager.GetTopCustomersAsync();
+            var topCustomers = await _auctionManager.GetTopCustomers();
 
             if (topCustomers == null || topCustomers.Count == 0)
                 return NotFound("No customers found.");
 
             return Ok(topCustomers);
+        }
+
+        [HttpGet("total-auctions")]
+        public async Task<IActionResult> GetTotalAuctions()
+        {
+            int total = await _auctionManager.GetTotalAuctions();
+            return Ok(new { totalAuctions = total });
+        }
+
+        [HttpGet("active-auctions")]
+        public async Task<IActionResult> GetActiveAuctionsCount()
+        {
+            int count = await _auctionManager.GetActiveAuctionsCount();
+            return Ok(new { activeAuctions = count });
+        }
+
+        [HttpGet("expired-auctions")]
+        public async Task<IActionResult> GetExpiredAuctionsCount()
+        {
+            int count = await _auctionManager.GetExpiredAuctionsCount();
+            return Ok(new { expiredAuctions = count });
+        }
+
+        [HttpGet("upcoming-auctions")]
+        public async Task<IActionResult> GetUpcomingAuctionsCount()
+        {
+            int count = await _auctionManager.GetUpcomingAuctionsCount();
+            return Ok(new { upcomingAuctions = count });
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
 using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.TransactionService;
@@ -38,6 +39,27 @@ namespace SAFQA.API.Controllers
            
             var result = await _transactionManager.GetSellerMonthlyRevenueAsync(sellerId);
 
+            return Ok(result);
+        }
+
+        [HttpGet("Total-Transactions")]
+        public async Task<IActionResult> GetTotal()
+        {
+            var result = await _transactionManager.GetTotalTransactionsCount();
+            return Ok(result);
+        }
+
+        [HttpGet("successful")]
+        public async Task<IActionResult> GetSuccessful()
+        {
+            var result = await _transactionManager.GetSuccessfulTransactionsCount();
+            return Ok(result);
+        }
+
+        [HttpGet("failed")]
+        public async Task<IActionResult> GetFailed()
+        {
+            var result = await _transactionManager.GetFailedTransactionsCount();
             return Ok(result);
         }
     }

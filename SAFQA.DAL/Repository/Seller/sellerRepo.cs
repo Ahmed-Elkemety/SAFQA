@@ -1,12 +1,13 @@
-﻿using System;
+﻿using Google;
+using Microsoft.EntityFrameworkCore;
+using SAFQA.BLL.Enums;
+using SAFQA.DAL.Database;
+using SAFQA.DAL.RepoDtos.SellerApp.Home;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Google;
-using Microsoft.EntityFrameworkCore;
-using SAFQA.DAL.Database;
-using SAFQA.DAL.RepoDtos.SellerApp.Home;
 
 namespace SAFQA.DAL.Repository.Seller
 {
@@ -29,6 +30,47 @@ namespace SAFQA.DAL.Repository.Seller
                     StoreLogo = s.StoreLogo
                 })
                 .FirstOrDefaultAsync();
+        }
+
+        public async Task<int> GetTotalSellersCount()
+        {
+            var activeSellers = await _context.Users
+                .Where(u => u.Seller != null && u.Status == UserStatus.Active && !u.IsDeleted)
+                .CountAsync();
+
+
+            var blockedOrDeletedSellers = await _context.Users
+                .Where(u => u.Seller != null && (u.Status == UserStatus.Blocked || u.IsDeleted))
+                .CountAsync();
+
+
+            return activeSellers + blockedOrDeletedSellers;
+        }
+
+        public async Task<int> GetVerifiedSellersCount()
+        {
+            return await _context.Sellers
+                .Where(s => s.VerificationStatus == SellerVerificationStatus.Verified
+                            && !s.IsDeleted
+                            && s.User != null
+                            && !s.User.IsDeleted
+                            && s.User.Status == UserStatus.Active)
+                .CountAsync();
+        }
+
+        public async Task<int> CountPendingSellers()
+        {
+            var pendingRegistered = await _context.Sellers
+                .Where(s => s.VerificationStatus == SellerVerificationStatus.Pending
+                            && !s.IsDeleted
+                            && s.User != null
+                            && !s.User.IsDeleted)
+                .CountAsync();
+
+            
+            
+
+            return pendingRegistered;
         }
     }
 }

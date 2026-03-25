@@ -1,12 +1,15 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using SAFQA.BLL.Dtos.UserAppDto.HomeDto;
+using SAFQA.BLL.Enums;
+using SAFQA.DAL.Repository;
+using SAFQA.DAL.Repository.AdminDashboard.Users;
+using SAFQA.DAL.Repository.Auction;
+using SAFQA.DAL.Repository.Category;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SAFQA.BLL.Dtos.UserAppDto.HomeDto;
-using SAFQA.DAL.Repository;
-using SAFQA.DAL.Repository.Auction;
-using SAFQA.DAL.Repository.Category;
 
 namespace SAFQA.BLL.Managers.UserAppManager
 {
@@ -14,11 +17,13 @@ namespace SAFQA.BLL.Managers.UserAppManager
     {
         private readonly IcategoryRepo _categoryRepo;
         private readonly IAuctionRepo _auctionRepo;
+        private readonly IUserRepo _userRepo;
 
-        public UserService(IcategoryRepo categoryRepo , IAuctionRepo auctionRepo)
+        public UserService(IcategoryRepo categoryRepo , IAuctionRepo auctionRepo, IUserRepo userRepo)
         {
             _categoryRepo = categoryRepo;
             _auctionRepo = auctionRepo;
+            _userRepo = userRepo;
         }
 
         public async Task<List<TrendingAuctionDto>> GetTrendingAuctionsAsync()
@@ -54,6 +59,20 @@ namespace SAFQA.BLL.Managers.UserAppManager
 
             return result;
         }
-    }
 
+        public async Task<int> GetTotalUsersAsync()
+        {
+            return await _userRepo.GetTotalUsers();
+        }
+
+        public async Task<int> GetActiveUsersCountAsync()
+        {
+            return await _userRepo.GetActiveUsersCount();
+        }
+
+        public async Task<int> GetBlockedUsersCountAsync()
+        {
+            return await _userRepo.GetBlockedUsersCount();
+        }
+    }
 }

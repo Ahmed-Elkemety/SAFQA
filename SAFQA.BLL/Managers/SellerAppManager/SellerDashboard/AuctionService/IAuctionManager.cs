@@ -13,5 +13,10 @@ namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.AuctionService
         Task<int> GetTotalSellerAuctions(int sellerId);
         Task<int> GetActiveSellerAuctions(int sellerId);
         Task<List<SellerWinnerDto>> GetSellerWinnersAsync(int sellerId);
+        Task<List<TopCustomerDto>> GetTopCustomers();
+        Task<int> GetTotalAuctions();
+        Task<int> GetActiveAuctionsCount();
+        Task<int> GetExpiredAuctionsCount();
+        Task<int> GetUpcomingAuctionsCount();
     }
 }

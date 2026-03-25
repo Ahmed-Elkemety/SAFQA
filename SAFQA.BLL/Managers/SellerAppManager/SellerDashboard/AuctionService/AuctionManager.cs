@@ -31,7 +31,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.AuctionService
             var rawData = await _auctionRepository.GetSellerWinnersRawAsync(sellerId);
             
             var dtoList = rawData
-                .GroupBy(x => new { x.User.Id, x.User.FullName, x.User.Email, x.seller.StoreName })
+                .GroupBy(x => new { x.User.Id, x.User.FullName, x.User.Email, x.Seller.StoreName })
                 .Select(g => new SellerWinnerDto
                 {
                     UserFullName = g.Key.FullName,
@@ -45,7 +45,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.AuctionService
             return dtoList;
         }
 
-        public async Task<List<TopCustomerDto>> GetTopCustomersAsync()
+        public async Task<List<TopCustomerDto>> GetTopCustomers()
         {
             var data = await _auctionRepository.GetTopCustomersAsync();
 
@@ -59,6 +59,23 @@ namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.AuctionService
             }).ToList();
 
             return result;
+        }
+
+        public async Task<int> GetTotalAuctions()
+        {
+            return await _auctionRepository.GetTotalAuctionsCount();
+        }
+        public async Task<int> GetActiveAuctionsCount()
+        {
+            return await _auctionRepository.GetActiveAuctionsCount();
+        }
+        public async Task<int> GetExpiredAuctionsCount()
+        {
+            return await _auctionRepository.GetExpiredAuctionsCount();
+        }
+        public async Task<int> GetUpcomingAuctionsCount()
+        {
+            return await _auctionRepository.GetUpcomingAuctionsCount();
         }
     }
 }

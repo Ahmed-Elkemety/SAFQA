@@ -40,5 +40,20 @@ namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.TransactionService
                 })
                 .ToList();
          }
+
+        public async Task<int> GetTotalTransactionsCount()
+        {
+            return await _transactionRepository.GetTotalTransactionsCount();
+        }
+
+        public async Task<int> GetSuccessfulTransactionsCount()
+        {
+            return await _transactionRepository.GetSuccessfulTransactionsCount();
+        }
+
+        public async Task<int> GetFailedTransactionsCount()
+        {
+            return await _transactionRepository.GetFailedTransactionsCount();
+        }
     }
 }
