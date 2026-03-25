@@ -6,21 +6,22 @@ using SAFQA.API.Middleware;
 using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.BLL.Managers.AccountManager.Email_Sender;
 using SAFQA.BLL.Managers.AccountManager.OAuth;
+using SAFQA.BLL.Managers.SellerAppManager;
+using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.AuctionService;
+using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.BidService;
+using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.ItemService.ItemManager.ItemManager;
+using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.TransactionService;
+using SAFQA.BLL.Managers.UserAppManager;
 using SAFQA.DAL.Database;
 using SAFQA.DAL.Models;
-using SAFQA.BLL.Managers.SellerAppManager;
-using SAFQA.DAL.Repository.Seller;
-using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.BidService;
-using SAFQA.DAL.Repository.SellerDashboard.BidRepo;
-using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.TransactionService;
-using SAFQA.DAL.Repository.SellerDashboard.TransactionRepo;
-using SAFQA.DAL.Repository.SellerDashboard.ItemRepo;
-using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.ItemService.ItemManager.ItemManager;
-using SAFQA.DAL.Repository.SellerDashboard.AuctionRepo;
-using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.AuctionService;
+using SAFQA.DAL.Repository.AdminDashboard.Users;
 using SAFQA.DAL.Repository.Auction;
 using SAFQA.DAL.Repository.Category;
-using SAFQA.BLL.Managers.UserAppManager;
+using SAFQA.DAL.Repository.Seller;
+using SAFQA.DAL.Repository.SellerDashboard.AuctionRepo;
+using SAFQA.DAL.Repository.SellerDashboard.BidRepo;
+using SAFQA.DAL.Repository.SellerDashboard.ItemRepo;
+using SAFQA.DAL.Repository.SellerDashboard.TransactionRepo;
 using System.Security.Claims;
 using System.Text;
 
@@ -93,6 +94,7 @@ namespace SAFQA.API
             builder.Services.AddScoped<IBidManager, BidManager>();
             builder.Services.AddScoped<IsellerManager, sellerManager>();
             builder.Services.AddScoped<IsellerRepo, sellerRepo>();
+            builder.Services.AddScoped<IUserRepo, UserRepo>();
 
 
             var jwtSettings = builder.Configuration.GetSection("JWT");

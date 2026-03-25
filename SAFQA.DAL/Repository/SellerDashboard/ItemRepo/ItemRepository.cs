@@ -53,5 +53,20 @@ namespace SAFQA.DAL.Repository.SellerDashboard.ItemRepo
 
             return result;
         }
+        public async Task<List<(string CategoryName, int Count)>> GetCategoryCountsBySellerAsync(int sellerId)
+        {
+            return await _context.Items
+                            .Where(i =>
+                            i.Auction.SellerId == sellerId &&
+                            (i.Auction.Status == AuctionStatus.Active ||
+                                i.Auction.Status == AuctionStatus.Finished)
+                            )
+                            .GroupBy(i => i.Category.Name)
+                            .Select(g => new ValueTuple<string, int>(
+                                g.Key,
+                                g.Count()
+                            ))
+                            .ToListAsync();
+        }
     }
 }

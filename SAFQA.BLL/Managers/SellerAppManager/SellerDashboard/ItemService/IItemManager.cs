@@ -16,5 +16,6 @@ namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.ItemService.ItemMa
 
         IQueryable<Item> GetMostPopularProducts(int sellerId, int top = 5);
         Task<List<CategoryStatsDto>> GetSellerCategoryStats(int sellerId);
+        Task<List<CategoryPercentageDto>> GetCategoryPercentageAsync(int sellerId);
     }
 }

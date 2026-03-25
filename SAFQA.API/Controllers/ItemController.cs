@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
 using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.ItemService.ItemManager.ItemManager;
 
 namespace SAFQA.API.Controllers
@@ -47,6 +48,17 @@ namespace SAFQA.API.Controllers
         public async Task<IActionResult> GetSellerCategoryStats(int sellerId)
         {
             var result = await _itemManager.GetSellerCategoryStats(sellerId);
+
+            return Ok(result);
+        }
+
+        [HttpGet("category-percentage/{sellerId}")]
+        public async Task<IActionResult> GetCategoryPercentage(int sellerId)
+        {
+            var result = await _itemManager.GetCategoryPercentageAsync(sellerId);
+
+            if (result == null || !result.Any())
+                return Ok(new List<CategoryPercentageDto>()); // أو ممكن ترجع NoContent()
 
             return Ok(result);
         }

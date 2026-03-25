@@ -10,5 +10,8 @@ namespace SAFQA.DAL.Repository.Seller
     public interface IsellerRepo
     {
         Task<SellerBasic?> GetSellerBasicAsync(string userId);
+        Task<int> GetTotalSellersCount();
+        Task<int> GetVerifiedSellersCount();
+        Task<int> CountPendingSellers();
     }
 }

@@ -14,6 +14,9 @@ namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.TransactionService
 
         Task<decimal> GetTotalRevenueAsync(int sellerId);
         Task<List<SellerMonthlyRevenueDto>> GetSellerMonthlyRevenueAsync(int sellerId);
+        Task<int> GetTotalTransactionsCount();
+        Task<int> GetSuccessfulTransactionsCount();
+        Task<int> GetFailedTransactionsCount();
 
     }
 }

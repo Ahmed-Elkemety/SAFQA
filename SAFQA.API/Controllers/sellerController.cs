@@ -13,7 +13,7 @@ namespace SAFQA.API.Controllers
     public class sellerController : ControllerBase
     {
         private readonly IsellerManager _sellerService;
-
+        
         public sellerController(IsellerManager sellerService)
         {
             _sellerService = sellerService;
@@ -105,6 +105,27 @@ namespace SAFQA.API.Controllers
                 return NotFound(new { message = "Seller not found" });
 
             return Ok(seller);
+        }
+
+        [HttpGet("total-sellers")]
+        public async Task<IActionResult> GetTotalSellers()
+        {
+            var count = await _sellerService.GetTotalSellersCount();
+            return Ok(new { totalSellers = count });
+        }
+        
+        [HttpGet("verified-sellers")]
+        public async Task<IActionResult> GetVerifiedSellers()
+        {
+            var count = await _sellerService.GetVerifiedSellersCount();
+            return Ok(new { verifiedSellers = count });
+        }
+
+        [HttpGet("pending-sellers")]
+        public async Task<IActionResult> GetPendingSellers()
+        {
+            var count = await _sellerService.GetPendingSellersCount();
+            return Ok(new { pendingSellers = count });
         }
     }
 }

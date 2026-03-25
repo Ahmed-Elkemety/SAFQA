@@ -13,6 +13,8 @@ namespace SAFQA.DAL.Repository.SellerDashboard.TransactionRepo
         Task<int> GetTotalPendingPayments(int sellerId);
         Task<decimal> GetTotalRevenueAsync(int sellerId);
         Task<List<(int Month, decimal Revenue)>> GetSellerMonthlyRevenue(int sellerId);
-
+        Task<int> GetTotalTransactionsCount();
+        Task<int> GetSuccessfulTransactionsCount();
+        Task<int> GetFailedTransactionsCount();
     }
 }

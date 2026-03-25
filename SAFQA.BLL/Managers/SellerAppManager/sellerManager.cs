@@ -19,6 +19,7 @@ using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.DAL.Database;
 using SAFQA.DAL.Enums;
 using SAFQA.DAL.Models;
+using SAFQA.DAL.Repository.Seller;
 
 namespace SAFQA.BLL.Managers.SellerAppManager
 {
@@ -26,17 +27,25 @@ namespace SAFQA.BLL.Managers.SellerAppManager
     {
         private readonly SAFQA_Context _context;
         private readonly UserManager<User> _userManager;
+<<<<<<< HEAD
         private readonly IConfiguration _configuration;
 
         public sellerManager( IConfiguration configuration , SAFQA_Context context , UserManager<User> userManager)
+=======
+        private readonly IsellerRepo _IsellerRepo;
+
+        public sellerManager(SAFQA_Context context , UserManager<User> userManager, IsellerRepo isellerRepo)
+>>>>>>> a5e452654819aea897a02ba14612dd29b8d7e791
         {
             _configuration = configuration;
             _context = context;
             _userManager = userManager;
+            _IsellerRepo = isellerRepo;
         }
 
         private async Task<(string Token, string RefreshToken)> GenerateTokensAsync(User user, string deviceId)
         {
+<<<<<<< HEAD
             // 1️⃣ إعداد الـ Claims الأساسية
             var claims = new List<Claim>
             {
@@ -97,6 +106,8 @@ namespace SAFQA.BLL.Managers.SellerAppManager
                 };
             }
 
+=======
+>>>>>>> a5e452654819aea897a02ba14612dd29b8d7e791
             var existingSeller = await _context.Sellers
                 .FirstOrDefaultAsync(s => s.UserId == userId);
 
@@ -356,7 +367,6 @@ namespace SAFQA.BLL.Managers.SellerAppManager
                 };
             }
         }
-
         public async Task<SellerBasicDto?> GetMySellerHomeAsync(string userId)
         {
             return await _context.Sellers
@@ -367,6 +377,21 @@ namespace SAFQA.BLL.Managers.SellerAppManager
                     StoreLogo = s.StoreLogo
                 })
                 .FirstOrDefaultAsync();
+        }
+
+        public async Task<int> GetTotalSellersCount()
+        {
+            return await _IsellerRepo.GetTotalSellersCount();
+        }
+
+        public async Task<int> GetVerifiedSellersCount()
+        {
+            return await _IsellerRepo.GetVerifiedSellersCount();
+        }
+
+        public async Task<int> GetPendingSellersCount()
+        {
+            return await _IsellerRepo.CountPendingSellers();
         }
     }
 }
