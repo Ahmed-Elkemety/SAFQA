@@ -48,12 +48,28 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
         {
             // التأكد من أن الإيميل مش موجود بالفعل
             var existingUser = await _userManager.FindByEmailAsync(dto.Email);
-            if (existingUser != null)
+            var isSeller = await _context.Sellers
+                    .AnyAsync(s => s.UserId == existingUser.Id);
+
+            if (isSeller)
+            {
                 return new AuthResult
                 {
                     IsSuccess = false,
-                    Errors = new() { "Email already in use" }
+                    Errors = new() { "Email already registered as Seller" }
                 };
+            }
+            else if (existingUser != null)
+            {
+                // 🔍 Check if user is Seller
+
+
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Errors = new() { "Email already Used" }
+                };
+            }
 
             // التأكد لو في pending user موجود
             var pendingUser = await _context.PendingUserRegistrations
