@@ -107,6 +107,23 @@ namespace SAFQA.API.Controllers
             return Ok(seller);
         }
 
+        [HttpGet("business-account")]
+        [Authorize(Roles = "SELLER")]
+        public async Task<IActionResult> GetBusinessAccount()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("User Not Found");
+
+            var result = await _sellerService.GetBusinessAccountAsync(userId);
+
+            if (result == null)
+                return NotFound("Seller not found");
+
+            return Ok(result);
+        }
+
         [HttpGet("total-sellers")]
         public async Task<IActionResult> GetTotalSellers()
         {

@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using SAFQA.BLL.Dtos.AccountDto.Seller;
+using SAFQA.BLL.Dtos.SellerAppDto.BussinessAccountDto;
 using SAFQA.BLL.Dtos.SellerAppDto.HomeDto;
 using SAFQA.BLL.Enums;
 using SAFQA.BLL.Help;
@@ -28,14 +29,14 @@ namespace SAFQA.BLL.Managers.SellerAppManager
         private readonly SAFQA_Context _context;
         private readonly UserManager<User> _userManager;
         private readonly IConfiguration _configuration;
-        private readonly IsellerRepo _IsellerRepo;
+        private readonly IsellerRepo _sellerRepo;
 
-        public sellerManager(SAFQA_Context context , IConfiguration configuration,  UserManager<User> userManager, IsellerRepo isellerRepo)
+        public sellerManager(SAFQA_Context context , IConfiguration configuration,  UserManager<User> userManager, IsellerRepo sellerRepo)
         {
             _configuration = configuration;
             _context = context;
             _userManager = userManager;
-            _IsellerRepo = isellerRepo;
+            _sellerRepo = sellerRepo;
         }
 
         private async Task<(string Token, string RefreshToken)> GenerateTokensAsync(User user, string deviceId)
@@ -370,19 +371,40 @@ namespace SAFQA.BLL.Managers.SellerAppManager
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<BusinessAccountDto?> GetBusinessAccountAsync(string userId)
+        {
+            var data = await _sellerRepo.GetBusinessAccountAsync(userId);
+
+            if (data == null) return null;
+
+            return new BusinessAccountDto
+            {
+                StoreName = data.StoreName,
+                Email = data.Email,
+                PhoneNumber = data.PhoneNumber,
+                City = data.City,
+                Country = data.Country,
+                SellerRating = data.SellerRating,
+                Followers = data.Followers,
+                AuctionsCount = data.AuctionsCount,
+                UpgradeType = data.UpgradeType,
+                StoreLogo = data.StoreLogo
+            };
+        }
+
         public async Task<int> GetTotalSellersCount()
         {
-            return await _IsellerRepo.GetTotalSellersCount();
+            return await _sellerRepo.GetTotalSellersCount();
         }
 
         public async Task<int> GetVerifiedSellersCount()
         {
-            return await _IsellerRepo.GetVerifiedSellersCount();
+            return await _sellerRepo.GetVerifiedSellersCount();
         }
 
         public async Task<int> GetPendingSellersCount()
         {
-            return await _IsellerRepo.CountPendingSellers();
+            return await _sellerRepo.CountPendingSellers();
         }
     }
 }
