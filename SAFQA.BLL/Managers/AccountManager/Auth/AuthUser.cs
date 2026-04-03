@@ -199,7 +199,7 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
         #endregion
 
         #region  Search By Email , Check Password To This Email , Generate Token
-        public async Task<AuthResult> LoginAsync(LoginDto dto, string deviceId)
+        public async Task<AuthResult> LoginAsync(LoginDto dto, string deviceId , string role)
         {
             // 1️⃣ نبحث في جدول Users
             var user = await _userManager.FindByEmailAsync(dto.Email);
@@ -243,13 +243,42 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
             // 4️⃣ Generate Tokens
             var token = await GenerateTokensAsync(user, deviceId);
 
-            return new AuthResult
+            if(role == "seller")
             {
-                IsSuccess = true,
-                UserId = user.Id,
-                Token = token.Token,
-                RefreshToken = token.RefreshToken
-            };
+                var isSeller = await _context.Sellers
+                    .AnyAsync(s => s.UserId == user.Id);
+                if (!isSeller)
+                {
+                    return new AuthResult
+                    {
+                        IsSuccess = false,
+                        Errors = new List<string> { "Please Complete Seller Profile" }
+                    };
+                }
+                else
+                {
+                    return new AuthResult
+                    {
+                        IsSuccess = true,
+                        UserId = user.Id,
+                        Token = token.Token,
+                        RefreshToken = token.RefreshToken,
+                        Message = "Login successful As Seller"
+
+                    };
+                }
+            }
+            else
+            {
+                return new AuthResult
+                {
+                    IsSuccess = true,
+                    UserId = user.Id,
+                    Token = token.Token,
+                    RefreshToken = token.RefreshToken,
+                    Message = "Login successful As User"
+                };
+            }
         }
         #endregion
 

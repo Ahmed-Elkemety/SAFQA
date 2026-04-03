@@ -52,12 +52,12 @@ namespace SAFQA.API.Controllers
 
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto dto)
+        public async Task<IActionResult> Login([FromBody] LoginDto dto , string role)
         {
             var deviceId = Request.Headers["DeviceId"].FirstOrDefault() ?? Guid.NewGuid().ToString();
 
 
-            var result = await _authUser.LoginAsync(dto, deviceId);
+            var result = await _authUser.LoginAsync(dto, deviceId , role);
             if (!result.IsSuccess)
                 return Unauthorized(result);
 
