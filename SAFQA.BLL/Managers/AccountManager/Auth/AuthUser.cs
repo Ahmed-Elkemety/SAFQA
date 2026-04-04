@@ -48,21 +48,19 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
         {
             // التأكد من أن الإيميل مش موجود بالفعل
             var existingUser = await _userManager.FindByEmailAsync(dto.Email);
-            var isSeller = await _context.Sellers
+            if (existingUser != null)
+            {
+                var isSeller = await _context.Sellers
                     .AnyAsync(s => s.UserId == existingUser.Id);
 
-            if (isSeller)
-            {
-                return new AuthResult
+                if (isSeller)
                 {
-                    IsSuccess = false,
-                    Errors = new() { "Email already registered as Seller" }
-                };
-            }
-            else if (existingUser != null)
-            {
-                // 🔍 Check if user is Seller
-
+                    return new AuthResult
+                    {
+                        IsSuccess = false,
+                        Errors = new() { "Email already registered as Seller" }
+                    };
+                }
 
                 return new AuthResult
                 {
@@ -91,6 +89,25 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                         Errors = new() { "OTP already sent. Please check your email." }
                     };
                 }
+            }
+
+            var passwordValidator = new PasswordValidator<User>();
+
+            var user = new User
+            {
+                UserName = dto.Email,
+                Email = dto.Email
+            };
+
+            var validationResult = await passwordValidator.ValidateAsync(_userManager, user, dto.Password);
+
+            if (!validationResult.Succeeded)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Errors = validationResult.Errors.Select(e => e.Description).ToList()
+                };
             }
 
             // توليد OTP
@@ -251,7 +268,7 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 {
                     return new AuthResult
                     {
-                        IsSuccess = false,
+                        IsSuccess = true,
                         Errors = new List<string> { "Please Complete Seller Profile" }
                     };
                 }
