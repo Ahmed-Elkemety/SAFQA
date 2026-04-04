@@ -8,10 +8,10 @@ namespace SAFQA.DAL.Enums
 {
     public enum NotificationTypes
     {
-        System = 1,
-        UserMessage = 2,
-        AuctionUpdate = 3,
-        Payment = 4,
-        Delivery = 5
+        AuctionsActivity = 1,
+        AuctionsStatus = 2,
+        Orders = 3,
+        Wallet = 4,
+        Admin = 5
     }
 }

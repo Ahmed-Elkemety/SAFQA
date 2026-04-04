@@ -7,6 +7,7 @@ using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.BLL.Managers.AccountManager.Email_Sender;
 using SAFQA.BLL.Managers.AccountManager.OAuth;
 using SAFQA.BLL.Managers.SellerAppManager;
+using SAFQA.BLL.Managers.SellerAppManager.Notification;
 using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.AuctionService;
 using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.BidService;
 using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.ItemService.ItemManager.ItemManager;
@@ -17,6 +18,7 @@ using SAFQA.DAL.Models;
 using SAFQA.DAL.Repository.AdminDashboard.Users;
 using SAFQA.DAL.Repository.Auction;
 using SAFQA.DAL.Repository.Category;
+using SAFQA.DAL.Repository.Notification;
 using SAFQA.DAL.Repository.Seller;
 using SAFQA.DAL.Repository.SellerDashboard.AuctionRepo;
 using SAFQA.DAL.Repository.SellerDashboard.BidRepo;
@@ -80,12 +82,10 @@ namespace SAFQA.API
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IcategoryRepo, categoryRepo>();
             builder.Services.AddScoped<IAuctionRepo, AuctionRepo>();
-
             builder.Services.AddScoped<IAuctionManager, AuctionManager>();
             builder.Services.AddScoped<IAuctionRepository, AuctionRepository>();
             builder.Services.AddScoped<IAuctionManager, AuctionManager>();
             builder.Services.AddScoped<IAuctionRepository, AuctionRepository>();
-
             builder.Services.AddScoped<IitemsRepository, ItemRepository>();
             builder.Services.AddScoped<IItemManager, ItemManager>(); 
             builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
@@ -95,6 +95,8 @@ namespace SAFQA.API
             builder.Services.AddScoped<IsellerManager, sellerManager>();
             builder.Services.AddScoped<IsellerRepo, sellerRepo>();
             builder.Services.AddScoped<IUserRepo, UserRepo>();
+            builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+            builder.Services.AddScoped<INotificationManager, NotificationManager>();
 
 
             var jwtSettings = builder.Configuration.GetSection("JWT");
