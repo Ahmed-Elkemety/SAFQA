@@ -269,7 +269,7 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                     return new AuthResult
                     {
                         IsSuccess = true,
-                        Errors = new List<string> { "Please Complete Seller Profile" }
+                        Message = "Login successful As User"
                     };
                 }
                 else
