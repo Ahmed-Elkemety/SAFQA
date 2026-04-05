@@ -114,7 +114,7 @@ namespace SAFQA.API.Controllers
         }
 
         // 1️⃣ ارسال OTP
-        [HttpPost("request")]
+        [HttpPost("request-ForgetPassword")]
         public async Task<IActionResult> RequestOtp([FromBody] RequestResetDto dto)
         {
             var result = await _authUser.RequestPasswordResetAsync(dto.Email);
@@ -126,7 +126,7 @@ namespace SAFQA.API.Controllers
         }
 
         // 2️⃣ تأكيد OTP
-        [HttpPost("verify")]
+        [HttpPost("verify-ForgetPassword")]
         public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpDto dto)
         {
             var result = await _authUser.VerifyOtpAsync(dto);
@@ -138,7 +138,7 @@ namespace SAFQA.API.Controllers
         }
 
         // 3️⃣ تغيير الباسورد
-        [HttpPost("reset")]
+        [HttpPost("reset-ForgetPassword")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
         {
             var result = await _authUser.ResetPasswordAsync(dto);
@@ -169,6 +169,26 @@ namespace SAFQA.API.Controllers
 
             if (!result.IsSuccess)
                 return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        // 🔹 Get Countries
+        [HttpGet("countries")]
+        public async Task<IActionResult> GetCountries()
+        {
+            var result = await _authUser.GetCountriesAsync();
+            return Ok(result);
+        }
+
+        // 🔹 Get Cities by CountryId
+        [HttpGet("cities/{countryId}")]
+        public async Task<IActionResult> GetCities(int countryId)
+        {
+            if (countryId <= 0)
+                return BadRequest("Invalid CountryId");
+
+            var result = await _authUser.GetCitiesByCountryIdAsync(countryId);
 
             return Ok(result);
         }

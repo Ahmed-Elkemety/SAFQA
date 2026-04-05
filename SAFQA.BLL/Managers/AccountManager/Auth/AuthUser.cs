@@ -15,6 +15,8 @@ using System.Security.Cryptography;
 using System.Text;
 using SAFQA.BLL.Dtos.AccountDto.Forget_password;
 using Newtonsoft.Json.Linq;
+using static SAFQA.BLL.Dtos.AccountDto.User.LocationDto;
+using SAFQA.DAL.Repository.Location;
 
 
 
@@ -28,18 +30,21 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
         private readonly IConfiguration _configuration;
         private readonly IEmailSender _emailSender;
         private readonly SAFQA_Context _context;
+        private readonly ILocationRepo _locationRepo;
 
         public AuthUser(UserManager<User> userManager
             , SignInManager<User> signInManager
             , IConfiguration configuration
             , IEmailSender emailSender
-            , SAFQA_Context context)
+            , SAFQA_Context context,
+            ILocationRepo locationRepo)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
             _emailSender = emailSender;
             _context = context;
+            _locationRepo = locationRepo;
         }
         #endregion
 
@@ -110,6 +115,18 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 };
             }
 
+            // ✅ التأكد إن الـ City موجودة
+            var city = await _context.cities
+                .FirstOrDefaultAsync(c => c.Id == dto.cityId);
+
+            if (city == null)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Errors = new() { "Invalid City" }
+                };
+            }
             // توليد OTP
             var otp = Helper.GenerateOtp();
 
@@ -356,7 +373,7 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 issuer: _configuration["JWT:ValidIssuer"],
                 audience: _configuration["JWT:ValidAudience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(30),
+                expires: DateTime.UtcNow.AddHours(5),
                 signingCredentials: creds
             );
 
@@ -669,6 +686,28 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 IsSuccess = true,
                 Message = "Signed out from all devices successfully"
             };
+        }
+
+        public async Task<List<CountryDto>> GetCountriesAsync()
+        {
+            var data = await _locationRepo.GetCountriesAsync();
+
+            return data.Select(c => new CountryDto
+            {
+                Id = c.Id,
+                Name = c.Name
+            }).ToList();
+        }
+
+        public async Task<List<CityDto>> GetCitiesByCountryIdAsync(int countryId)
+        {
+            var data = await _locationRepo.GetCitiesByCountryIdAsync(countryId);
+
+            return data.Select(c => new CityDto
+            {
+                Id = c.Id,
+                Name = c.Name
+            }).ToList();
         }
     }
 }

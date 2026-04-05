@@ -1,0 +1,23 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace SAFQA.DAL.Models
+{
+    public class AuctionLike
+    {
+        public int Id { get; set; }
+
+        // الربط مع المستخدم
+        public string UserId { get; set; }
+        public User User { get; set; }
+
+        // الربط مع المزاد
+        public int AuctionId { get; set; }
+        public Auction Auction { get; set; }
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    }
+}
