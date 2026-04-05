@@ -18,6 +18,7 @@ using SAFQA.DAL.Models;
 using SAFQA.DAL.Repository.AdminDashboard.Users;
 using SAFQA.DAL.Repository.Auction;
 using SAFQA.DAL.Repository.Category;
+using SAFQA.DAL.Repository.Location;
 using SAFQA.DAL.Repository.Notification;
 using SAFQA.DAL.Repository.Seller;
 using SAFQA.DAL.Repository.SellerDashboard.AuctionRepo;
@@ -97,6 +98,7 @@ namespace SAFQA.API
             builder.Services.AddScoped<IUserRepo, UserRepo>();
             builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
             builder.Services.AddScoped<INotificationManager, NotificationManager>();
+            builder.Services.AddScoped<ILocationRepo, LocationRepo>();
 
 
             var jwtSettings = builder.Configuration.GetSection("JWT");
