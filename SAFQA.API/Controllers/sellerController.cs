@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SAFQA.BLL.Dtos.AccountDto.Seller;
+using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.BLL.Managers.SellerAppManager;
 
 namespace SAFQA.API.Controllers
@@ -18,49 +19,78 @@ namespace SAFQA.API.Controllers
             _sellerService = sellerService;
         }
 
+        [Authorize(Roles = "USER")]
         [HttpPost("CreateSeller")]
-        [AllowAnonymous]
+        [Consumes("multipart/form-data")]
+
         public async Task<IActionResult> CreateSeller(CreateSellerDto dto)
         {
 
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var deviceId = Request.Headers["DeviceId"].FirstOrDefault() ?? Guid.NewGuid().ToString();
+
 
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("User Not Found");
 
             try
             {
-                await _sellerService.CreateSellerAsync(userId, dto);
-                return Ok(new { Message = "Seller created successfully" });
+                var result = await _sellerService.CreateSellerAsync(userId, dto , deviceId);
+
+                if (!result.IsSuccess)
+                {
+                    // تقدر تخصص status code حسب الحالة
+                    if (result.Message == "Seller already exists")
+                        return Conflict(result); // 409
+
+                    return BadRequest(result); // 400
+                }
+
+                return Ok(result); // 200
             }
-            catch (InvalidOperationException ex)
+            catch (Exception ex)
             {
-                return BadRequest(new { Error = ex.Message });
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new { Error = "Something went wrong" });
+                return StatusCode(500, new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "Something went wrong",
+                    Errors = new List<string> { ex.Message, ex.InnerException?.Message ?? "" }
+                });
             }
         }
 
-        [AllowAnonymous]
-        [HttpPost("{sellerId}/personal-verification")]
-        public async Task<IActionResult> PersonalVerification(int sellerId, PersonalSellerDto dto)
+        [Authorize(Roles = "SELLER")]
+        [HttpPost("personal-verification")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> PersonalVerification(PersonalSellerDto dto)
         {
-            var result = await _sellerService.UploadPersonalDocsAsync(sellerId, dto);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("User Not Found");
+
+            var result = await _sellerService.UploadPersonalDocsAsync(userId, dto);
+
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
-        [AllowAnonymous]
-        [HttpPost("{sellerId}/business-verification")]
-        public async Task<IActionResult> BusinessVerification(int sellerId, BusinessSellerDto dto)
+        [Authorize(Roles = "SELLER")]
+        [HttpPost("business-verification")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> BusinessVerification(BusinessSellerDto dto)
         {
-            var result = await _sellerService.UploadBusinessDocsAsync(sellerId, dto);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("User Not Found");
+
+            var result = await _sellerService.UploadBusinessDocsAsync(userId, dto);
+
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
-        [HttpGet("basic")]
-        [Authorize(Roles = "SELLER")] // لازم التوكن
+        [HttpGet("Home")]
+        [Authorize(Roles = "SELLER")]
         public async Task<IActionResult> GetMySellerHome()
         {
             // جلب UserId من التوكن
@@ -75,6 +105,23 @@ namespace SAFQA.API.Controllers
                 return NotFound(new { message = "Seller not found" });
 
             return Ok(seller);
+        }
+
+        [HttpGet("business-account")]
+        [Authorize(Roles = "SELLER")]
+        public async Task<IActionResult> GetBusinessAccount()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("User Not Found");
+
+            var result = await _sellerService.GetBusinessAccountAsync(userId);
+
+            if (result == null)
+                return NotFound("Seller not found");
+
+            return Ok(result);
         }
 
         [HttpGet("total-sellers")]

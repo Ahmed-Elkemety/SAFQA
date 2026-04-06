@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using SAFQA.BLL.Enums;
 using SAFQA.DAL.Database;
+using SAFQA.DAL.RepoDtos.SellerApp.Bussiness_Account;
 using SAFQA.DAL.RepoDtos.SellerApp.Home;
 using System;
 using System.Collections.Generic;
@@ -28,6 +29,35 @@ namespace SAFQA.DAL.Repository.Seller
                 {
                     StoreName = s.StoreName,
                     StoreLogo = s.StoreLogo
+                })
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<BusinessAccount?> GetBusinessAccountAsync(string userId)
+        {
+            return await _context.Sellers
+                .Where(s => s.UserId == userId && !s.IsDeleted)
+                .Select(s => new BusinessAccount
+                {
+                    StoreName = s.StoreName,
+                    Email = s.User.Email,
+                    PhoneNumber = s.PhoneNumber,
+
+                    City = s.City != null ? s.City.Name : "",
+                    Country = s.City != null && s.City.Country != null
+                                ? s.City.Country.Name
+                                : "",
+
+                    SellerRating = s.Rating,
+                    Followers = s.Followers,
+
+                    AuctionsCount = s.Auctions.Count(),
+
+                    UpgradeType = s.upgradeType.ToString(),
+
+                    StoreLogo = s.StoreLogo != null
+                        ? Convert.ToBase64String(s.StoreLogo)
+                        : null
                 })
                 .FirstOrDefaultAsync();
         }

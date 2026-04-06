@@ -15,6 +15,8 @@ using System.Security.Cryptography;
 using System.Text;
 using SAFQA.BLL.Dtos.AccountDto.Forget_password;
 using Newtonsoft.Json.Linq;
+using static SAFQA.BLL.Dtos.AccountDto.User.LocationDto;
+using SAFQA.DAL.Repository.Location;
 
 
 
@@ -28,18 +30,21 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
         private readonly IConfiguration _configuration;
         private readonly IEmailSender _emailSender;
         private readonly SAFQA_Context _context;
+        private readonly ILocationRepo _locationRepo;
 
         public AuthUser(UserManager<User> userManager
             , SignInManager<User> signInManager
             , IConfiguration configuration
             , IEmailSender emailSender
-            , SAFQA_Context context)
+            , SAFQA_Context context,
+            ILocationRepo locationRepo)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
             _emailSender = emailSender;
             _context = context;
+            _locationRepo = locationRepo;
         }
         #endregion
 
@@ -49,11 +54,25 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
             // التأكد من أن الإيميل مش موجود بالفعل
             var existingUser = await _userManager.FindByEmailAsync(dto.Email);
             if (existingUser != null)
+            {
+                var isSeller = await _context.Sellers
+                    .AnyAsync(s => s.UserId == existingUser.Id);
+
+                if (isSeller)
+                {
+                    return new AuthResult
+                    {
+                        IsSuccess = false,
+                        Errors = new() { "Email already registered as Seller" }
+                    };
+                }
+
                 return new AuthResult
                 {
                     IsSuccess = false,
-                    Errors = new() { "Email already in use" }
+                    Errors = new() { "Email already Used" }
                 };
+            }
 
             // التأكد لو في pending user موجود
             var pendingUser = await _context.PendingUserRegistrations
@@ -77,6 +96,37 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 }
             }
 
+            var passwordValidator = new PasswordValidator<User>();
+
+            var user = new User
+            {
+                UserName = dto.Email,
+                Email = dto.Email
+            };
+
+            var validationResult = await passwordValidator.ValidateAsync(_userManager, user, dto.Password);
+
+            if (!validationResult.Succeeded)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Errors = validationResult.Errors.Select(e => e.Description).ToList()
+                };
+            }
+
+            // ✅ التأكد إن الـ City موجودة
+            var city = await _context.cities
+                .FirstOrDefaultAsync(c => c.Id == dto.cityId);
+
+            if (city == null)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Errors = new() { "Invalid City" }
+                };
+            }
             // توليد OTP
             var otp = Helper.GenerateOtp();
 
@@ -168,11 +218,30 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 };
 
 
+
             await _userManager.AddToRoleAsync(user, "USER");
 
             // تعليم pending user انه تم استخدامه وحذف الـ plain password
             pending.IsUsed = true;
             await _context.SaveChangesAsync();
+
+            var walletExists = await _context.Wallets
+                .AnyAsync(w => w.UserId == user.Id);
+
+            if (!walletExists)
+            {
+                var wallet = new Wallet
+                {
+                    UserId = user.Id,
+                    Balance = 0,
+                    FrozenBalance = 0,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                await _context.Wallets.AddAsync(wallet);
+                await _context.SaveChangesAsync();
+            }
+
 
             return new AuthResult
             {
@@ -183,7 +252,7 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
         #endregion
 
         #region  Search By Email , Check Password To This Email , Generate Token
-        public async Task<AuthResult> LoginAsync(LoginDto dto, string deviceId)
+        public async Task<AuthResult> LoginAsync(LoginDto dto, string deviceId , string role)
         {
             // 1️⃣ نبحث في جدول Users
             var user = await _userManager.FindByEmailAsync(dto.Email);
@@ -227,13 +296,45 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
             // 4️⃣ Generate Tokens
             var token = await GenerateTokensAsync(user, deviceId);
 
-            return new AuthResult
+            if(role == "seller")
             {
-                IsSuccess = true,
-                UserId = user.Id,
-                Token = token.Token,
-                RefreshToken = token.RefreshToken
-            };
+                var isSeller = await _context.Sellers
+                    .AnyAsync(s => s.UserId == user.Id);
+                if (!isSeller)
+                {
+                    return new AuthResult
+                    {
+                        IsSuccess = true,
+                        UserId = user.Id,
+                        Token = token.Token,
+                        RefreshToken = token.RefreshToken,
+                        Message = "Login successful As User"
+                    };
+                }
+                else
+                {
+                    return new AuthResult
+                    {
+                        IsSuccess = true,
+                        UserId = user.Id,
+                        Token = token.Token,
+                        RefreshToken = token.RefreshToken,
+                        Message = "Login successful As Seller"
+
+                    };
+                }
+            }
+            else
+            {
+                return new AuthResult
+                {
+                    IsSuccess = true,
+                    UserId = user.Id,
+                    Token = token.Token,
+                    RefreshToken = token.RefreshToken,
+                    Message = "Login successful As User"
+                };
+            }
         }
         #endregion
 
@@ -272,19 +373,19 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
         {
             // 1️⃣ إعداد الـ Claims الأساسية
             var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.NameIdentifier, user.Id),
-        new Claim(ClaimTypes.Email, user.Email),
-        new Claim(ClaimTypes.Name, user.FullName),
-        new Claim("SecurityStamp", user.SecurityStamp),
-        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-    };
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Name, user.FullName),
+                new Claim("SecurityStamp", user.SecurityStamp),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
 
 
-            // 2️⃣ إضافة الـ Roles كـ Claims
-            //var roles = await _userManager.GetRolesAsync(user);
-            //foreach (var role in roles)
-            //    claims.Add(new Claim(ClaimTypes.Role, role));
+            //2️⃣ إضافة الـ Roles كـ Claims
+           var roles = await _userManager.GetRolesAsync(user);
+            foreach (var role in roles)
+                claims.Add(new Claim(ClaimTypes.Role, role));
 
             // 3️⃣ إنشاء الـ JWT Token
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
@@ -294,7 +395,7 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 issuer: _configuration["JWT:ValidIssuer"],
                 audience: _configuration["JWT:ValidAudience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(30),
+                expires: DateTime.UtcNow.AddHours(5),
                 signingCredentials: creds
             );
 
@@ -607,6 +708,28 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 IsSuccess = true,
                 Message = "Signed out from all devices successfully"
             };
+        }
+
+        public async Task<List<CountryDto>> GetCountriesAsync()
+        {
+            var data = await _locationRepo.GetCountriesAsync();
+
+            return data.Select(c => new CountryDto
+            {
+                Id = c.Id,
+                Name = c.Name
+            }).ToList();
+        }
+
+        public async Task<List<CityDto>> GetCitiesByCountryIdAsync(int countryId)
+        {
+            var data = await _locationRepo.GetCitiesByCountryIdAsync(countryId);
+
+            return data.Select(c => new CityDto
+            {
+                Id = c.Id,
+                Name = c.Name
+            }).ToList();
         }
     }
 }
