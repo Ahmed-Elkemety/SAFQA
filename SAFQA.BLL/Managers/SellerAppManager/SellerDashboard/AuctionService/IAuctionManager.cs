@@ -18,5 +18,8 @@ namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.AuctionService
         Task<int> GetActiveAuctionsCount();
         Task<int> GetExpiredAuctionsCount();
         Task<int> GetUpcomingAuctionsCount();
+        Task<List<AuctionProfitDto>> GetTopProfitableAuctions(int sellerId, int categoryId);
+        Task<IEnumerable<CategoryPercentageDto>> GetCategoryPercentageBySeller(int sellerId);
+        Task<IEnumerable<AuctionBidsDto>> GetSellerAuctionsBids(int sellerId);
     }
 }

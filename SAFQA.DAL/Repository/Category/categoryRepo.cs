@@ -30,5 +30,13 @@ namespace SAFQA.DAL.Repository.Category
                 })
                 .ToListAsync();
         }
+        public IQueryable<Models.Category> GetAll()
+        {
+            return _context.Category;
+        }
+        public Models.Category GetById(int id)
+        {
+            return _context.Category.FirstOrDefault(c => c.Id == id);
+        }
     }
 }

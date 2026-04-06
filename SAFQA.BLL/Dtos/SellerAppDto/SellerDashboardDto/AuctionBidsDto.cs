@@ -8,9 +8,8 @@ namespace SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto
 {
     public class AuctionBidsDto
     {
-        public int AuctionId { get; set; }
-        public string AuctionTitle { get; set; }
-        public List<string> ProductNames { get; set; }
+        public string Title { get; set; }
+        public DateTime StartDate { get; set; }
         public int TotalBids { get; set; }
     }
 }

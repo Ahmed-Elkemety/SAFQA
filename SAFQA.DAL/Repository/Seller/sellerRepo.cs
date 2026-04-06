@@ -72,5 +72,16 @@ namespace SAFQA.DAL.Repository.Seller
 
             return pendingRegistered;
         }
+
+        public IQueryable<Models.Seller> GetAll()
+        {
+            return _context.Sellers;
+        }
+
+        
+        public Models.Seller GetById(int id)
+        {
+            return _context.Sellers.FirstOrDefault(s => s.Id == id);
+        }
     }
 }

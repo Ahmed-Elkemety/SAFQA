@@ -68,5 +68,15 @@ namespace SAFQA.DAL.Repository.SellerDashboard.ItemRepo
                             ))
                             .ToListAsync();
         }
+
+        public IQueryable<Item> GetAll()
+        {
+            return _context.Items;
+        }
+
+        public Item GetById(int Id)
+        {
+            return _context.Items.FirstOrDefault(a => a.Id == Id);
+        }
     }
 }

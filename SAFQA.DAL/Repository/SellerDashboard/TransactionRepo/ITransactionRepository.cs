@@ -16,5 +16,11 @@ namespace SAFQA.DAL.Repository.SellerDashboard.TransactionRepo
         Task<int> GetTotalTransactionsCount();
         Task<int> GetSuccessfulTransactionsCount();
         Task<int> GetFailedTransactionsCount();
+
+        IQueryable<Transactions> GetAll();
+        Transactions GetById(int id);
+        void Add(Transactions card);
+        void Update(Transactions card);
+        void Delete(Transactions card);
     }
 }

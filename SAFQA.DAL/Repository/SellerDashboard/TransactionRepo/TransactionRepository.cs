@@ -78,5 +78,33 @@ namespace SAFQA.DAL.Repository.SellerDashboard.TransactionRepo
                 .Where(t => t.Status == Enums.TransactionStatus.Failed)
                 .CountAsync();
         }
+
+        public IQueryable<Transactions> GetAll()
+        {
+            return _context.Transactions;
+        }
+
+        public Transactions GetById(int id)
+        {
+            return _context.Transactions.FirstOrDefault(c => c.Id == id);
+        }
+
+        public void Add(Transactions transaction)
+        {
+            _context.Transactions.Add(transaction);
+            _context.SaveChanges();
+        }
+
+        public void Update(Transactions transaction)
+        {
+            _context.Transactions.Update(transaction);
+            _context.SaveChanges();
+        }
+
+        public void Delete(Transactions transaction)
+        {
+            _context.Transactions.Remove(transaction);
+            _context.SaveChanges();
+        }
     }
 }

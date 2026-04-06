@@ -85,5 +85,39 @@ namespace SAFQA.API.Controllers
             int count = await _auctionManager.GetUpcomingAuctionsCount();
             return Ok(new { upcomingAuctions = count });
         }
+
+       
+        [HttpGet("top-profitable")]
+        public async Task<IActionResult> GetTopProfitableAuctions([FromQuery] int sellerId, [FromQuery] int categoryId)
+        {
+            var result = await _auctionManager
+                .GetTopProfitableAuctions(sellerId, categoryId);
+
+            return Ok(result);
+        }
+
+        [HttpGet("auctions-bids/{sellerId}")]
+        public async Task<ActionResult> GetSellerAuctionsBids(int sellerId)
+        {
+            var result = await _auctionManager.GetSellerAuctionsBids(sellerId);
+
+            if (result == null || !result.Any())
+            {
+                return NotFound($"No auctions with bids found for seller ID {sellerId}");
+            }
+
+            return Ok(result);
+        }
+        
+        [HttpGet("{sellerId}/category-percentages")]
+        public async Task<IActionResult> GetCategoryPercentages(int sellerId)
+        {
+            var result = await _auctionManager.GetCategoryPercentageBySeller(sellerId);
+
+            if (result == null || !result.Any())
+                return NotFound("No items or auctions found for this seller");
+
+            return Ok(result);
+        }
     }
 }

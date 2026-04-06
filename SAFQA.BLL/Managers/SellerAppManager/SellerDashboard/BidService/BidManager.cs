@@ -27,24 +27,5 @@ namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.BidService
         {
             return _bidRepository.GetSellerBids(sellerId);
         }
-
-        public async Task<List<AuctionBidsDto>> GetTop4AuctionsBySeller(int sellerId)
-        {
-            var rawData = await _bidRepository.GetAuctionsWithBidsRawBySellerAsync(sellerId);
-
-            var topAuctions = rawData
-                .Select(a => new AuctionBidsDto
-                {
-                    AuctionId = a.AuctionId,
-                    AuctionTitle = a.AuctionTitle,
-                    ProductNames = a.ProductNames,
-                    TotalBids = a.TotalBids
-                })
-                .OrderByDescending(a => a.TotalBids) 
-                .Take(4) 
-                .ToList();
-
-            return topAuctions;
-        }
     }
 }

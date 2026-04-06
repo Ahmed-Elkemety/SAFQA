@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
 namespace SAFQA.DAL.Models
 {
     public class Wallet
@@ -16,6 +15,5 @@ namespace SAFQA.DAL.Models
         public User User { get; set; }
         public ICollection<Transactions> Transactions { get; set; }
         public ICollection<SavedCard> SavedCards { get; set; } = new List<SavedCard>();
-
     }
 }

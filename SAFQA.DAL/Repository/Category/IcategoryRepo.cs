@@ -9,6 +9,8 @@ namespace SAFQA.DAL.Repository.Category
 {
     public interface IcategoryRepo
     {
+        IQueryable<Models.Category> GetAll();
+        Models.Category GetById(int Id);
         Task<List<CategoryWithDetails>> GetCategoriesWithDetailsAsync();
     }
 }

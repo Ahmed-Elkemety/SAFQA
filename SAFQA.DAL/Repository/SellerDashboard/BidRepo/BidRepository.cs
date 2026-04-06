@@ -44,7 +44,15 @@ namespace SAFQA.DAL.Repository.SellerDashboard.BidRepo
                         ))
                         .ToListAsync();
         }
+        public IQueryable<Bid> GetAll()
+        {
+            return _context.Bids;
+        }
+
+        public Bid GetById(int Id)
+        {
+            return _context.Bids.FirstOrDefault(s => s.Id == Id);
+        }
+
     }
-
-
 }

@@ -11,6 +11,8 @@ using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.AuctionService;
 using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.BidService;
 using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.ItemService.ItemManager.ItemManager;
 using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.TransactionService;
+using SAFQA.BLL.Managers.SellerAppManager.WalletServeice;
+using SAFQA.BLL.Managers.SellerAppManager.WalletService;
 using SAFQA.BLL.Managers.UserAppManager;
 using SAFQA.DAL.Database;
 using SAFQA.DAL.Models;
@@ -22,6 +24,7 @@ using SAFQA.DAL.Repository.SellerDashboard.AuctionRepo;
 using SAFQA.DAL.Repository.SellerDashboard.BidRepo;
 using SAFQA.DAL.Repository.SellerDashboard.ItemRepo;
 using SAFQA.DAL.Repository.SellerDashboard.TransactionRepo;
+using SAFQA.DAL.Repository.Wallet;
 using System.Security.Claims;
 using System.Text;
 
@@ -95,6 +98,10 @@ namespace SAFQA.API
             builder.Services.AddScoped<IsellerManager, sellerManager>();
             builder.Services.AddScoped<IsellerRepo, sellerRepo>();
             builder.Services.AddScoped<IUserRepo, UserRepo>();
+            builder.Services.AddScoped<ICardRepo, CardRepo>();
+            builder.Services.AddScoped<ICardService, CardService>();
+            builder.Services.AddScoped<IWalletRepo, WalletRepo>();
+            builder.Services.AddScoped<IWalletService, WalletService>();
 
 
             var jwtSettings = builder.Configuration.GetSection("JWT");

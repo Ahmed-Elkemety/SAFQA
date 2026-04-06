@@ -9,6 +9,8 @@ namespace SAFQA.DAL.Repository.SellerDashboard.ItemRepo
 {
     public interface IitemsRepository
     {
+        IQueryable<Item> GetAll();
+        Item GetById(int Id);
         IQueryable<Item> GetSellerProducts(int sellerId);
         IQueryable<Item> GetProductsByCategory(int sellerId, string categoryName);
         IQueryable<Item> GetMostPopularProducts(int sellerId, int top = 5);

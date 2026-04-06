@@ -124,5 +124,15 @@ namespace SAFQA.DAL.Repository.SellerDashboard.AuctionRepo
                             && a.Status == AuctionStatus.Upcoming)
                 .CountAsync();
         }
+
+        public IQueryable<Models.Auction> GetAll()
+        {
+            return _context.Auctions;
+        }
+
+        public Models.Auction GetById(int Id)
+        {
+            return _context.Auctions.FirstOrDefault(s => s.Id == Id);
+        }
     }
 }

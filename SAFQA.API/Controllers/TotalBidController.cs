@@ -31,12 +31,5 @@ namespace SAFQA.API.Controllers
             var bids = await _bidManager.GetBidsByCategory(sellerId, categoryId);
             return Ok(bids);
         }
-
-        [HttpGet("Top4Auctions/{sellerId}")]
-        public async Task<ActionResult<List<AuctionBidsDto>>> GetTop4Auctions(int sellerId)
-        {
-            var result = await _bidManager.GetTop4AuctionsBySeller(sellerId);
-            return Ok(result);
-        }
     }
 }
