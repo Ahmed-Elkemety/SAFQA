@@ -99,6 +99,15 @@ namespace SAFQA.API
             builder.Services.AddScoped<IsellerManager, sellerManager>();
             builder.Services.AddScoped<IsellerRepo, sellerRepo>();
             builder.Services.AddScoped<IUserRepo, UserRepo>();
+            builder.Services.AddScoped<ICardRepo, CardRepo>();
+            builder.Services.AddScoped<ICardService, CardService>();
+            builder.Services.AddScoped<IWalletRepo, WalletRepo>();
+            builder.Services.AddScoped<IWalletService, WalletService>();
+            builder.Services.AddScoped<ILocationRepo, LocationRepo>();
+            builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+            builder.Services.AddScoped<INotificationManager, NotificationManager>();
+
+
 
 
             var jwtSettings = builder.Configuration.GetSection("JWT");
