@@ -218,11 +218,30 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 };
 
 
+
             await _userManager.AddToRoleAsync(user, "USER");
 
             // تعليم pending user انه تم استخدامه وحذف الـ plain password
             pending.IsUsed = true;
             await _context.SaveChangesAsync();
+
+            var walletExists = await _context.Wallets
+                .AnyAsync(w => w.UserId == user.Id);
+
+            if (!walletExists)
+            {
+                var wallet = new Wallet
+                {
+                    UserId = user.Id,
+                    Balance = 0,
+                    FrozenBalance = 0,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                await _context.Wallets.AddAsync(wallet);
+                await _context.SaveChangesAsync();
+            }
+
 
             return new AuthResult
             {
