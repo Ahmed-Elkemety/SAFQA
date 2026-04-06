@@ -13,7 +13,6 @@ namespace SAFQA.DAL.Models
     {
         public int Id { get; set; }
 
-        // FK to Seller (1-to-1)
         public int? SellerId{ get; set; }
         public Seller Seller { get; set; }
         public string WinnerUserId { get; set; }
@@ -27,7 +26,7 @@ namespace SAFQA.DAL.Models
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 
-        public AuctionStatus Status { get; set; } // Upcoming - Active - EndingSoon - Finished - Cancelled
+        public AuctionStatus Status { get; set; }
 
         public int LikesCount { get; set; }
         public int ParticipationCount { get; set; }

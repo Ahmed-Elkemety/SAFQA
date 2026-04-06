@@ -14,10 +14,8 @@ namespace SAFQA.DAL.Configration
 {
     public void Configure(EntityTypeBuilder<PendingUserRegistration> builder)
     {
-        // Primary Key
         builder.HasKey(x => x.Id);
 
-        // الخصائص المطلوبة
         builder.Property(x => x.FullName)
             .IsRequired()
             .HasMaxLength(100);

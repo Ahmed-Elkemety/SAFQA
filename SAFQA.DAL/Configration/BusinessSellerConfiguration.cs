@@ -32,7 +32,7 @@ namespace SAFQA.DAL.Configration
                 .IsRequired();
 
             builder.HasIndex(b => b.SellerId)
-                .IsUnique(); // 1-1 relationship
+                .IsUnique();
         }
     }
 }

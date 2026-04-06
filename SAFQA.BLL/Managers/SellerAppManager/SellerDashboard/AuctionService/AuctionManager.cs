@@ -134,7 +134,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.AuctionService
                 .Select(g => new CategoryPercentageDto
                 {
                     CategoryName = g.Key,
-                    Percentage = Math.Round((double)g.Count() / totalItems * 100, 2) // نسبة مئوية مع تقريب ل2 منازل
+                    Percentage = Math.Round((double)g.Count() / totalItems * 100, 2) 
                 })
                 .OrderByDescending(c => c.Percentage)
                 .ToList();

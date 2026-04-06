@@ -28,10 +28,8 @@ namespace SAFQA.BLL.Managers.UserAppManager
 
         public async Task<List<TrendingAuctionDto>> GetTrendingAuctionsAsync()
         {
-            // Repository ترجع المزادات المشهورة (Trending)
             var auctions = await _auctionRepo.GetTrendingAuctionsAsync(); // List<Auction>
 
-            // تحويل Entity → Internal DTO
             var result = auctions.Select(a => new TrendingAuctionDto
             {
                 Id = a.Id,
@@ -42,10 +40,8 @@ namespace SAFQA.BLL.Managers.UserAppManager
             return result;
         }
 
-        // 2️⃣ Categories with Details
         public async Task<List<CategoryWithDetailsDto>> GetCategoriesWithDetailsAsync()
         {
-            // Repository ترجع Categories مع المزادات أو العناصر بداخلها
             var categories = await _categoryRepo.GetCategoriesWithDetailsAsync(); // List<Category>
 
             var result = categories.Select(c => new CategoryWithDetailsDto

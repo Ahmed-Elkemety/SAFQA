@@ -8,7 +8,6 @@ namespace SAFQA.BLL.Managers.UserAppManager
 {
     public interface IUserService
     {
-        //Home
         Task<List<TrendingAuctionDto>> GetTrendingAuctionsAsync();
         Task<List<CategoryWithDetailsDto>> GetCategoriesWithDetailsAsync();
         Task<int> GetTotalUsersAsync();

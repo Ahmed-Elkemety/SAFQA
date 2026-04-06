@@ -24,12 +24,10 @@ namespace SAFQA.DAL.Configration
                 .WithMany(u => u.sellers)
                 .HasForeignKey(c => c.CityId);
 
-            // Seller 1 - 1 PersonalSeller
             builder.HasOne(s => s.PersonalSeller)
                 .WithOne(p => p.Seller)
                 .HasForeignKey<PersonalSeller>(p => p.SellerId);
 
-            // Seller 1 - 1 BusinessSeller
             builder.HasOne(s => s.BusinessSeller)
                 .WithOne(b => b.Seller)
                 .HasForeignKey<BusinessSeller>(b => b.SellerId);

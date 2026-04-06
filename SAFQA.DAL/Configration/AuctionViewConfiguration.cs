@@ -17,21 +17,18 @@ namespace SAFQA.DAL.Configration
 
             builder.HasKey(av => av.Id);
 
-            // ربط المشاهدة بالمستخدم
             builder.HasOne(av => av.User)
                    .WithMany()
                    .HasForeignKey(av => av.UserId)
                    .OnDelete(DeleteBehavior.Cascade);
 
-            // ربط المشاهدة بالمزاد
             builder.HasOne(av => av.Auction)
                    .WithMany()
                    .HasForeignKey(av => av.AuctionId)
                    .OnDelete(DeleteBehavior.NoAction);
 
-            // إعدادات إضافية
             builder.Property(av => av.ViewedAt)
-                   .HasDefaultValueSql("GETDATE()"); // جعل الوقت تلقائي من السيرفر
+                   .HasDefaultValueSql("GETDATE()");
 
             builder.Property(av => av.DeviceType)
                    .HasMaxLength(100);
