@@ -90,7 +90,7 @@ namespace SAFQA.API.Controllers
         }
 
         [HttpGet("Home")]
-        [Authorize(Roles = "SELLER")]
+        [Authorize(Roles = "USER")]
         public async Task<IActionResult> GetMySellerHome()
         {
             // جلب UserId من التوكن
