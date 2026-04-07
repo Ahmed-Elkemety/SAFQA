@@ -7,6 +7,7 @@ using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.BLL.Managers.AccountManager.Email_Sender;
 using SAFQA.BLL.Managers.AccountManager.OAuth;
 using SAFQA.BLL.Managers.SellerAppManager;
+using SAFQA.BLL.Managers.SellerAppManager.AuctionManager;
 using SAFQA.BLL.Managers.SellerAppManager.Notification;
 using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.AuctionService;
 using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.BidService;
@@ -104,6 +105,7 @@ namespace SAFQA.API
             builder.Services.AddScoped<ILocationRepo, LocationRepo>();
             builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
             builder.Services.AddScoped<INotificationManager, NotificationManager>();
+            builder.Services.AddScoped<IAuctionService, AuctionService>();
 
 
 

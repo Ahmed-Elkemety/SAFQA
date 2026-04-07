@@ -31,5 +31,12 @@ namespace SAFQA.DAL.Repository.Auction
                 })
                 .ToListAsync();
         }
+
+        public IQueryable<Models.Auction> GetSellerAuctions(string userId)
+        {
+            return _context.Auctions
+                .AsNoTracking()
+                .Where(a => a.Seller.UserId == userId);
+        }
     }
 }

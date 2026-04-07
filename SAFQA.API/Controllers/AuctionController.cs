@@ -1,6 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
+using SAFQA.BLL.Enums;
+using SAFQA.BLL.Managers.SellerAppManager.AuctionManager;
 using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.AuctionService;
 
 namespace SAFQA.API.Controllers
@@ -10,10 +14,12 @@ namespace SAFQA.API.Controllers
     public class AuctionController : ControllerBase
     {
         private readonly IAuctionManager _auctionManager;
+        private readonly IAuctionService _auctionService;
 
-        public AuctionController(IAuctionManager auctionManager)
+        public AuctionController(IAuctionManager auctionManager ,IAuctionService auctionService)
         {
             _auctionManager = auctionManager;
+            _auctionService = auctionService;
         }
 
         // GET: api/Auction/active/5
@@ -119,5 +125,28 @@ namespace SAFQA.API.Controllers
 
             return Ok(result);
         }
+
+
+        [HttpGet("Get-History")]
+        [Authorize(Roles = "SELLER")]
+        public async Task<IActionResult> GetHistory(
+            [FromQuery] AuctionStatus? status,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var result = await _auctionService.GetHistory(
+                userId,
+                status,
+                page,
+                pageSize);
+
+            return Ok(result);
+        }
+
     }
 }
