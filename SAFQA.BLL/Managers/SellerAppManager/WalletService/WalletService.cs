@@ -23,10 +23,10 @@ namespace SAFQA.BLL.Managers.SellerAppManager.WalletService
             _cardRepo = cardRepo;
         }
 
-        public bool DepositMoney(string userId,DepositeMoneyDto dto, out string message)
+        public bool DepositMoney(string userId, DepositeMoneyDto dto, out string message)
         {
             message = "";
-            
+
             var wallet = _walletRepo.GetByIdd(userId);
             if (wallet == null)
             {
@@ -34,10 +34,21 @@ namespace SAFQA.BLL.Managers.SellerAppManager.WalletService
                 return false;
             }
 
-            
             decimal balanceBefore = wallet.Balance;
 
-           
+            var card = _cardRepo.GetById(dto.SavedCardId.Value);
+
+            if (dto.SavedCardId != null)
+            {
+                if (card == null || card.WalletId != wallet.Id)
+                {
+
+                    message = "Card not found or does not belong to your wallet";
+                    return false;
+                }
+            }
+
+            
             wallet.Balance += dto.Amount;
             wallet.UpdatedAt = DateTime.UtcNow;
             _walletRepo.Update(wallet);
@@ -46,11 +57,11 @@ namespace SAFQA.BLL.Managers.SellerAppManager.WalletService
 
             if (dto.SavedCardId != null)
             {
-                description = $"Deposit via card Id {dto.SavedCardId}";
+                description = $"Deposit from card ending with {card.Last4Digits}";
             }
             else
             {
-                description = "Deposit Cash";
+                description = "Cash deposit";
             }
 
             
@@ -81,7 +92,10 @@ namespace SAFQA.BLL.Managers.SellerAppManager.WalletService
                 return false;
             }
 
+
+
             var wallet = _walletRepo.GetByIdd(userId);
+
             if (wallet == null)
             {
                 message = "Wallet not found";
@@ -94,12 +108,14 @@ namespace SAFQA.BLL.Managers.SellerAppManager.WalletService
                 return false;
             }
 
+            var card = _cardRepo.GetById(dto.CardId);
+
             var balanceBefore = wallet.Balance;
             wallet.Balance -= dto.Amount;
             wallet.UpdatedAt = DateTime.Now;
             _walletRepo.Update(wallet);
 
-            var card = _cardRepo.GetById(dto.CardId);
+
             string description = $"Withdraw to {card.CardBrand} ending with {card.Last4Digits}";
 
             var transaction = new Transactions
