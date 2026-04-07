@@ -10,11 +10,9 @@ namespace SAFQA.DAL.Models
     {
         public int Id { get; set; }
 
-        // الربط مع المستخدم
         public string UserId { get; set; }
         public User User { get; set; }
 
-        // الربط مع المزاد
         public int AuctionId { get; set; }
         public Auction Auction { get; set; }
 

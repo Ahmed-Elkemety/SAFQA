@@ -19,7 +19,6 @@ namespace SAFQA.BLL.Help
             var hash = sha.ComputeHash(bytes);
             return Convert.ToBase64String(hash);
         }
-        // توليد OTP 6 أرقام افتراضي
         public static string GenerateOtp(int digits = 6)
         {
             var random = new Random();
@@ -28,16 +27,22 @@ namespace SAFQA.BLL.Help
             return random.Next(min, max).ToString();
         }
 
-        // عمل Hash للـ OTP مع Secret
         public static string HashOtp(string code, string secret)
         {
             return (code + secret).Hash();
         }
 
-        // توليد Session Token مؤقت
         public static string GenerateSessionToken()
         {
             return Guid.NewGuid().ToString();
+        }
+        public class PagedResult<T>
+        {
+            public List<T> Data { get; set; }
+            public int CurrentPage { get; set; }
+            public int TotalPages { get; set; }
+            public int TotalCount { get; set; }
+            public bool HasNextPage { get; set; }
         }
     }
 }

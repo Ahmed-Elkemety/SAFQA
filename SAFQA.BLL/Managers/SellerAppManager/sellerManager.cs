@@ -199,7 +199,6 @@ namespace SAFQA.BLL.Managers.SellerAppManager
                     };
                 }
 
-                // منع التكرار
                 var existing = await _context.personalSellers
                     .FirstOrDefaultAsync(p => p.SellerId == seller.Id);
 
@@ -212,7 +211,6 @@ namespace SAFQA.BLL.Managers.SellerAppManager
                     };
                 }
 
-                // Validation
                 if (dto.NationalIdFront == null || dto.NationalIdBack == null || dto.SelfieWithId == null)
                 {
                     return new AuthResult

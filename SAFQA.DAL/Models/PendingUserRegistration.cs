@@ -12,7 +12,7 @@ namespace SAFQA.DAL.Models
         public int Id { get; set; }
         public string FullName { get; set; }
         public string Email { get; set; }
-        public string PasswordHash { get; set; } // هش الباسورد
+        public string PasswordHash { get; set; } 
         public string PhoneNumber { get; set; }
         public GenderType Gender { get; set; }
         public DateOnly? BirthDate { get; set; }

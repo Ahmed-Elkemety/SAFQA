@@ -10,5 +10,7 @@ namespace SAFQA.DAL.Repository.Auction
     public interface IAuctionRepo
     {
         Task<List<TrendingAuction>> GetTrendingAuctionsAsync();
+        IQueryable<Models.Auction> GetSellerAuctions(string userId);
+
     }
 }

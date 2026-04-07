@@ -14,7 +14,7 @@ namespace SAFQA.BLL.Dtos.AccountDto.Seller
         public string PhoneNumber { get; set; }
         public int CityId { get; set; }
         public SellerBusinessType BusinessType { get; set; }
-        public IFormFile? Logo { get; set; } // بدل byte[]
+        public IFormFile? Logo { get; set; }
 
         public string Description { get; set; }
     }

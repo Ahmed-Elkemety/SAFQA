@@ -7,6 +7,7 @@ using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.BLL.Managers.AccountManager.Email_Sender;
 using SAFQA.BLL.Managers.AccountManager.OAuth;
 using SAFQA.BLL.Managers.SellerAppManager;
+using SAFQA.BLL.Managers.SellerAppManager.AuctionManager;
 using SAFQA.BLL.Managers.SellerAppManager.Notification;
 using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.AuctionService;
 using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.BidService;
@@ -37,16 +38,14 @@ namespace SAFQA.API
 {
     public class Program
     {
-        public static async Task Main(string[] args) // Fix for CS4033: Mark Main method as async and change return type to Task
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
 
 
-            // Add services to the container.
 
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
             {
@@ -106,6 +105,7 @@ namespace SAFQA.API
             builder.Services.AddScoped<ILocationRepo, LocationRepo>();
             builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
             builder.Services.AddScoped<INotificationManager, NotificationManager>();
+            builder.Services.AddScoped<IAuctionService, AuctionService>();
 
 
 
@@ -175,9 +175,9 @@ namespace SAFQA.API
                     sqlOptions =>
                     {
                         sqlOptions.EnableRetryOnFailure(
-                            maxRetryCount: 5,         // √ﬁ’Ï ⁄œœ „Õ«Ê·«  ≈⁄«œ… «·« ’«·
-                            maxRetryDelay: TimeSpan.FromSeconds(10), // Êﬁ  «·«‰ Ÿ«— »Ì‰ «·„Õ«Ê·« 
-                            errorNumbersToAdd: null   // ·Ê ⁄«Ì“  Õœœ √—ﬁ«„ errors „⁄Ì‰…
+                            maxRetryCount: 5,      
+                            maxRetryDelay: TimeSpan.FromSeconds(10), 
+                            errorNumbersToAdd: null  
                         );
                     }
                 )
@@ -205,7 +205,7 @@ namespace SAFQA.API
 
             builder.Services.AddHostedService<ExpiredOtpCleanupService>();
 
-            var app = builder.Build(); // Fix for CS0841: Declare and initialize 'app' before using it
+            var app = builder.Build(); 
 
           
 

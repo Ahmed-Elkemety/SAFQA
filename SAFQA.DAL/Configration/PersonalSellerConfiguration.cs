@@ -27,7 +27,7 @@ namespace SAFQA.DAL.Configration
                 .IsRequired();
 
             builder.HasIndex(p => p.SellerId)
-                .IsUnique(); // 1-1 relationship
+                .IsUnique();
         }
     }
 }

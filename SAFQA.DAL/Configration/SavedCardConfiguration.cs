@@ -41,13 +41,11 @@ namespace SAFQA.DAL.Configration
             builder.Property(c => c.CreatedAt)
                    .HasDefaultValueSql("GETUTCDATE()");
 
-            // العلاقة مع Wallet
             builder.HasOne(c => c.Wallet)
                    .WithMany(w => w.SavedCards)
                    .HasForeignKey(c => c.WalletId)
                    .OnDelete(DeleteBehavior.Cascade);
 
-            // منع تكرار نفس الكارت لنفس الـ Wallet
             builder.HasIndex(c => new { c.WalletId, c.PaymentToken })
                    .IsUnique();
         }

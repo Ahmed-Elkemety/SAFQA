@@ -17,17 +17,15 @@ namespace SAFQA.DAL.Configration
 
             builder.HasKey(al => al.Id);
 
-            // ربط الإعجاب بالمستخدم
             builder.HasOne(al => al.User)
-                   .WithMany() // يمكن للمستخدم أن يملك إعجابات كثيرة
+                   .WithMany() 
                    .HasForeignKey(al => al.UserId)
-                   .OnDelete(DeleteBehavior.Cascade); // إذا مُسح المستخدم، تُميَح إعجاباته
+                   .OnDelete(DeleteBehavior.Cascade); 
 
-            // ربط الإعجاب بالمزاد
             builder.HasOne(al => al.Auction)
-                   .WithMany() // المزاد يملك إعجابات كثيرة
+                   .WithMany() 
                    .HasForeignKey(al => al.AuctionId)
-                   .OnDelete(DeleteBehavior.NoAction); // لا نمسح المزاد إذا مُسح الإعجاب
+                   .OnDelete(DeleteBehavior.NoAction); 
         }
     }
 }

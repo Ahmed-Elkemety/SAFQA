@@ -39,7 +39,6 @@ public class CardService : ICardService
                 return false;
             }
 
-            // جلب المحفظة الخاصة بالمستخدم من التوكن
             var wallet = _walletRepo.GetByIdd(userId);
             if (wallet == null)
             {
@@ -58,7 +57,6 @@ public class CardService : ICardService
             int month = int.Parse(parts[0]);
             int year = int.Parse(parts[1]);
 
-            // التأكد من عدم وجود الكارت مسبقًا
             var isExist = _cardRepo.GetAll()
                 .Any(c =>
                     c.WalletId == wallet.Id &&

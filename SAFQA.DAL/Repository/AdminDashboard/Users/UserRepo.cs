@@ -29,7 +29,7 @@ namespace SAFQA.DAL.Repository.AdminDashboard.Users
             DateTime activeThreshold = DateTime.UtcNow.AddMonths(-3); 
             return await _context.Users
                 .Where(u => !u.IsDeleted
-                            && u.Status == UserStatus.Active // لو عندك enum للحالة
+                            && u.Status == UserStatus.Active 
                             && u.LastLogin >= activeThreshold)
                 .CountAsync();
         }

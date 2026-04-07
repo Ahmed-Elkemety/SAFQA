@@ -24,7 +24,6 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
 {
     public class AuthUser : IAuthUser
     {
-        #region  Dependency Injection , UserManagement & SignInManager in Identity , IConfiguration To Access To App Settings 
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly IConfiguration _configuration;
@@ -46,12 +45,9 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
             _context = context;
             _locationRepo = locationRepo;
         }
-        #endregion
 
-        #region  check By Email , Create User Object , Assign Password To This Email , Add Role To User By Identity
         public async Task<AuthResult> RegisterAsync(RegisterDto dto , string deviceId)
         {
-            // التأكد من أن الإيميل مش موجود بالفعل
             var existingUser = await _userManager.FindByEmailAsync(dto.Email);
             if (existingUser != null)
             {
@@ -74,13 +70,11 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 };
             }
 
-            // التأكد لو في pending user موجود
             var pendingUser = await _context.PendingUserRegistrations
                 .FirstOrDefaultAsync(x => x.Email == dto.Email && !x.IsUsed);
 
             if (pendingUser != null)
             {
-                // إذا صلاحية OTP انتهت نقدر نعيد إرسال OTP
                 if (pendingUser.OtpExpiration < DateTime.UtcNow)
                 {
                     _context.PendingUserRegistrations.Remove(pendingUser);
@@ -115,7 +109,6 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 };
             }
 
-            // ✅ التأكد إن الـ City موجودة
             var city = await _context.cities
                 .FirstOrDefaultAsync(c => c.Id == dto.cityId);
 
@@ -127,17 +120,14 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                     Errors = new() { "Invalid City" }
                 };
             }
-            // توليد OTP
             var otp = Helper.GenerateOtp();
 
-            // أخذ secret ومدة انتهاء صلاحية OTP من config
             string otpSecret = _configuration["Security:OtpSecret"];
             int otpExpiryMinutes = 5; // default
             var otpExpiryConfig = _configuration["Security:OtpExpiryMinutes"];
             if (!string.IsNullOrEmpty(otpExpiryConfig))
                 otpExpiryMinutes = int.Parse(otpExpiryConfig);
 
-            // إنشاء PendingUserRegistration مع تخزين plain password مؤقتًا
             var pending = new PendingUserRegistration
             {
                 FullName = dto.FullName,
@@ -155,7 +145,6 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
             _context.PendingUserRegistrations.Add(pending);
             await _context.SaveChangesAsync();
 
-            // إرسال OTP
             await _emailSender.SendOtpEmailAsync(dto.Email, otp);
 
             return new AuthResult
@@ -164,12 +153,9 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 Message = "OTP sent to your email"
             };
         }
-        #endregion
 
-        #region Confirm Email and Create User
         public async Task<AuthResult> ConfirmEmailAsync(ConfirmEmailDto dto)
         {
-            // استرجاع pending user
             var pending = await _context.PendingUserRegistrations
                 .Where(x => x.Email == dto.Email && !x.IsUsed && x.OtpExpiration > DateTime.UtcNow)
                 .FirstOrDefaultAsync();
@@ -181,7 +167,6 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                     Errors = new() { "Invalid or expired OTP" }
                 };
 
-            // التحقق من OTP
             var otpHash = Helper.HashOtp(dto.Otp, _configuration["Security:OtpSecret"]);
             if (otpHash != pending.OtpHash)
                 return new AuthResult
@@ -190,7 +175,6 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                     Errors = new() { "Invalid OTP" }
                 };
 
-            // إنشاء المستخدم النهائي باستخدام plain password
             var user = new User
             {
                 FullName = pending.FullName,
@@ -221,7 +205,6 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
 
             await _userManager.AddToRoleAsync(user, "USER");
 
-            // تعليم pending user انه تم استخدامه وحذف الـ plain password
             pending.IsUsed = true;
             await _context.SaveChangesAsync();
 
@@ -249,23 +232,18 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 Message = "Email confirmed and account created successfully"
             };
         }
-        #endregion
 
-        #region  Search By Email , Check Password To This Email , Generate Token
         public async Task<AuthResult> LoginAsync(LoginDto dto, string deviceId , string role)
         {
-            // 1️⃣ نبحث في جدول Users
             var user = await _userManager.FindByEmailAsync(dto.Email);
 
             if (user == null)
             {
-                // 2️⃣ لو مش موجود، نشوف جدول PendingUserRegistrations
                 var pendingUser = await _context.PendingUserRegistrations
                     .FirstOrDefaultAsync(p => p.Email == dto.Email);
 
                 if (pendingUser != null)
                 {
-                    // Email مسجل لكن لم يتم التحقق من OTP
                     return new AuthResult
                     {
                         IsSuccess = false,
@@ -273,7 +251,6 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                     };
                 }
 
-                // Email مش موجود نهائيًا
                 return new AuthResult
                 {
                     IsSuccess = false,
@@ -281,7 +258,6 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 };
             }
 
-            // 3️⃣ لو المستخدم موجود في Users، نتحقق من كلمة السر
             var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, false);
             if (!result.Succeeded)
             {
@@ -293,7 +269,6 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
             }
 
 
-            // 4️⃣ Generate Tokens
             var token = await GenerateTokensAsync(user, deviceId);
 
             if(role == "seller")
@@ -336,9 +311,7 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 };
             }
         }
-        #endregion
 
-        #region Search User. Token That == Argument Token , Check For This UsrToken ,Generate Token By Refresh Token & Add ExpiryDate
         public async Task<AuthResult> RefreshTokenAsync(string refreshToken, string deviceId)
         {
             var tokenhash = refreshToken.Hash();
@@ -366,12 +339,9 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 RefreshToken = tokens.RefreshToken
             };
         }
-        #endregion
 
-        #region Generate Tokens
         private async Task<(string Token, string RefreshToken)> GenerateTokensAsync(User user, string deviceId)
         {
-            // 1️⃣ إعداد الـ Claims الأساسية
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
@@ -382,12 +352,10 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
             };
 
 
-            //2️⃣ إضافة الـ Roles كـ Claims
            var roles = await _userManager.GetRolesAsync(user);
             foreach (var role in roles)
                 claims.Add(new Claim(ClaimTypes.Role, role));
 
-            // 3️⃣ إنشاء الـ JWT Token
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
@@ -399,11 +367,9 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 signingCredentials: creds
             );
 
-            // 4️⃣ إنشاء Refresh Token آمن
             var refreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
-            var refreshTokenHash = refreshToken.Hash(); // تأكد إنك عندك extension method Hash()
+            var refreshTokenHash = refreshToken.Hash();
 
-            // 5️⃣ تخزين Refresh Token في الـ Database
             _context.refreshTokens.Add(new RefreshToken
             {
                 TokenHash = refreshTokenHash,
@@ -415,14 +381,11 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
 
             await _context.SaveChangesAsync();
 
-            // 6️⃣ إعادة الـ Token و الـ Refresh Token
             return (new JwtSecurityTokenHandler().WriteToken(token), refreshToken);
         }
-        #endregion
 
         public async Task<AuthResult> ResendRegistrationOtpAsync(string email)
         {
-            // نجيب ال pending user
             var pendingUser = await _context.PendingUserRegistrations
                 .FirstOrDefaultAsync(u => u.Email == email);
 
@@ -433,10 +396,8 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                     Message = "Pending user not found"
                 };
 
-            // cooldown بالدقيقة (60 ثانية)
             var cooldown = int.Parse(_configuration["Security:OtpCooldownSeconds"]);
 
-            // تحقق من وقت آخر ارسال OTP
             if (pendingUser.LastOtpSentAt.HasValue &&
                 pendingUser.LastOtpSentAt.Value.AddSeconds(cooldown) > DateTime.UtcNow)
             {
@@ -448,21 +409,18 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 };
             }
 
-            // generate new OTP
             var code = Helper.GenerateOtp();
             var hash = Helper.HashOtp(code, _configuration["Security:OtpSecret"]);
 
-            // update pending user OTP
             pendingUser.OtpHash = hash;
             pendingUser.OtpExpiration = DateTime.UtcNow.AddMinutes(
                 int.Parse(_configuration["Security:OtpExpiryMinutes"]));
             pendingUser.IsUsed = false;
-            pendingUser.LastOtpSentAt = DateTime.UtcNow; // تحديث وقت آخر إرسال
+            pendingUser.LastOtpSentAt = DateTime.UtcNow; 
 
             _context.PendingUserRegistrations.Update(pendingUser);
             await _context.SaveChangesAsync();
 
-            // ارسال الايميل
             await _emailSender.SendEmailAsync(
                 pendingUser.Email,
                 "Your Registration OTP",
@@ -480,14 +438,11 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
             if (user == null)
                 return new AuthResult { IsSuccess = false, Message = "User not found" };
 
-            // Cleanup أي OTPs قديمة
             await CleanupOtpsAsync(user.Id);
 
-            // Generate OTP + hash
             var code = Helper.GenerateOtp();
             var hashed = Helper.HashOtp(code, _configuration["Security:OtpSecret"]);
 
-            // Save new OTP
             _context.PasswordResetOtps.Add(new PasswordResetOtp
             {
                 UserId = user.Id,
@@ -497,7 +452,6 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
             });
             await _context.SaveChangesAsync();
 
-            // Send OTP Email
             var body = $"<h2>Your OTP code is: {code}</h2><p>It expires in 10 minutes.</p>";
             await _emailSender.SendEmailAsync(user.Email, "Password Reset Code", body);
 
@@ -515,7 +469,6 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                     Message = "User not found"
                 };
 
-            // حذف OTPs القديمة
             await CleanupOtpsAsync(user.Id);
 
             var record = await _context.PasswordResetOtps
@@ -533,7 +486,6 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                     Message = "Invalid or expired OTP"
                 };
 
-            // تحقق من عدد المحاولات
             var maxAttempts = int.Parse(_configuration["Security:MaxOtpAttempts"]);
 
             if (record.Attempts >= maxAttempts)
@@ -578,7 +530,6 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
             if (user == null)
                 return new AuthResult { IsSuccess = false, Message = "User not found" };
 
-            // TODO: تحقق من sessionToken لو عايب أمان أكتر
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             var result = await _userManager.ResetPasswordAsync(user, token, dto.NewPassword);
@@ -617,7 +568,6 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 .OrderByDescending(x => x.CreatedAt)
                 .FirstOrDefaultAsync();
 
-            // cooldown
             var cooldown = int.Parse(_configuration["Security:OtpCooldownSeconds"]);
 
             if (lastOtp != null &&
@@ -630,7 +580,6 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 };
             }
 
-            // resend limit per hour
             var resendLimit = int.Parse(_configuration["Security:MaxResendPerHour"]);
 
             var resendCount = await _context.PasswordResetOtps
@@ -647,7 +596,6 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 };
             }
 
-            // delete old
             var oldOtps = _context.PasswordResetOtps
                 .Where(x => x.UserId == user.Id);
 
@@ -691,10 +639,8 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                     Message = "User not found"
                 };
 
-            // 🔐 تغيير SecurityStamp
             await _userManager.UpdateSecurityStampAsync(user);
 
-            // 🧹 حذف كل Refresh Tokens
             var tokens = await _context.refreshTokens
                 .Where(x => x.UserId == userId)
                 .ToListAsync();
