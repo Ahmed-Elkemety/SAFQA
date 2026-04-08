@@ -132,6 +132,18 @@ namespace SAFQA.BLL.Managers.SellerAppManager
                 logoBytes = await ConvertFileToBytes(dto.Logo);
             }
 
+            var city = await _context.cities
+                .FirstOrDefaultAsync(c => c.Id == dto.CityId);
+
+            if (city == null)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Errors = new() { "Invalid City" }
+                };
+            }
+
             var seller = new Seller
             {
                 UserId = userId,
@@ -404,6 +416,75 @@ namespace SAFQA.BLL.Managers.SellerAppManager
         public async Task<int> GetPendingSellersCount()
         {
             return await _sellerRepo.CountPendingSellers();
+        }
+
+        public async Task<AuthResult> EditProfile(string userId, EditSellerProfileDto dto)
+        {
+            var result = new AuthResult();
+
+            var seller =  _sellerRepo.GetById(userId);
+
+            if (seller == null)
+            {
+                result.IsSuccess = false;
+                result.Message = "Seller not found";
+                return result;
+            }
+
+            if (string.IsNullOrWhiteSpace(dto.StoreName))
+            {
+                result.IsSuccess = false;
+                result.Message = "Validation Error";
+                result.Errors.Add("Store name is required");
+                return result;
+            }
+
+            if (dto.CityId <= 0)
+            {
+                result.IsSuccess = false;
+                result.Message = "Validation Error";
+                result.Errors.Add("Invalid city");
+                return result;
+            }
+
+            var city = await _context.cities
+               .FirstOrDefaultAsync(c => c.Id == dto.CityId);
+
+            if (city == null)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Errors = new() { "Invalid City" }
+                };
+            }
+
+            seller.StoreName = dto.StoreName;
+            seller.PhoneNumber = dto.PhoneNumber;
+            seller.CityId = dto.CityId;
+            seller.Description = dto.Description;
+
+            if (!string.IsNullOrEmpty(dto.StoreLogo))
+            {
+                try
+                {
+                    seller.StoreLogo = Convert.FromBase64String(dto.StoreLogo);
+                }
+                catch
+                {
+                    result.IsSuccess = false;
+                    result.Message = "Invalid image format";
+                    return result;
+                }
+            }
+
+            _sellerRepo.Update(seller);
+            await _sellerRepo.SaveChangesAsync();
+            return new AuthResult
+            {
+                IsSuccess = true,
+                Message = "Profile updated successfully"
+            };
         }
     }
 }

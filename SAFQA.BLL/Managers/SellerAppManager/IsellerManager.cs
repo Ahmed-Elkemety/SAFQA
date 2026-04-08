@@ -17,6 +17,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager
         Task<AuthResult> UploadBusinessDocsAsync(string userId, BusinessSellerDto dto);
         Task<SellerBasicDto?> GetMySellerHomeAsync(string userId);
         Task<BusinessAccountDto?> GetBusinessAccountAsync(string userId);
+        Task<AuthResult> EditProfile(string userId, EditSellerProfileDto dto);
 
 
         Task<int> GetTotalSellersCount();

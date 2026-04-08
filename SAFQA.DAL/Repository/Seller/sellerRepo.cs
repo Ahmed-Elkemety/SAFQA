@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using SAFQA.BLL.Enums;
 using SAFQA.DAL.Database;
+using SAFQA.DAL.Models;
 using SAFQA.DAL.RepoDtos.SellerApp.Bussiness_Account;
 using SAFQA.DAL.RepoDtos.SellerApp.Home;
 using System;
@@ -110,9 +111,19 @@ namespace SAFQA.DAL.Repository.Seller
         }
 
         
-        public Models.Seller GetById(int id)
+        public Models.Seller GetById(string id)
         {
-            return _context.Sellers.FirstOrDefault(s => s.Id == id);
+            return _context.Sellers.FirstOrDefault(s => s.UserId == id && !s.IsDeleted);
+        }
+
+        public void Update(Models.Seller seller)
+        {
+            _context.Sellers.Update(seller);
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
         }
     }
 }
