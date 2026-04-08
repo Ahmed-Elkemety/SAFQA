@@ -11,10 +11,9 @@ namespace SAFQA.BLL.Dtos.SellerAppDto.AuctionDto
     {
         public int AuctionId { get; set; }
         public string Title { get; set; }
-        public decimal CurrentPrice { get; set; }
-        public decimal FinalPrice { get; set; }
+        public decimal DisplayPrice { get; set; }
+        public DateTime DisplayDate { get; set; }
         public int TotalBids { get; set; }
-        public DateTime EndDate { get; set; }
 
         public AuctionStatus Status { get; set; }
 
