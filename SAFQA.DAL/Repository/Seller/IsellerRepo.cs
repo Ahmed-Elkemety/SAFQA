@@ -11,7 +11,9 @@ namespace SAFQA.DAL.Repository.Seller
     public interface IsellerRepo
     {
         IQueryable<Models.Seller> GetAll();
-        Models.Seller GetById(int Id);
+        Models.Seller GetById(string Id);
+        void Update(Models.Seller seller);
+        Task SaveChangesAsync();
         Task<SellerBasic?> GetSellerBasicAsync(string userId);
         Task<BusinessAccount?> GetBusinessAccountAsync(string userId);
 

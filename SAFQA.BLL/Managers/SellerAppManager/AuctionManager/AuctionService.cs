@@ -32,11 +32,20 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionManager
             {
                 AuctionId = a.Id,
                 Title = a.Title,
-                CurrentPrice = a.CurrentPrice,
-                FinalPrice = a.FinalPrice,
-                TotalBids = a.TotalBids,
-                EndDate = a.EndDate,
 
+                DisplayPrice =
+                a.Status == AuctionStatus.Upcoming || a.Status == AuctionStatus.Cancelled ? a.StartingPrice :
+                a.Status == AuctionStatus.Active || a.Status == AuctionStatus.EndingSoon ? a.CurrentPrice :
+                a.Status == AuctionStatus.Finished ? a.FinalPrice :
+                0,
+
+                DisplayDate =
+                a.Status == AuctionStatus.Upcoming || a.Status == AuctionStatus.Cancelled ? a.StartDate :
+                a.Status == AuctionStatus.Active || a.Status == AuctionStatus.EndingSoon ? a.EndDate :
+                a.Status == AuctionStatus.Finished ? a.EndDate :
+                a.StartDate,
+
+                TotalBids = a.TotalBids,
                 Status = a.Status,
 
                 Image = a.Image != null
@@ -53,7 +62,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionManager
             var totalCount = await mappedQuery.CountAsync();
 
             var data = await mappedQuery
-                .OrderByDescending(x => x.EndDate)
+                .OrderByDescending(x => x.DisplayDate)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();

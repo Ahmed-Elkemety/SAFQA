@@ -20,7 +20,10 @@ using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.DAL.Database;
 using SAFQA.DAL.Enums;
 using SAFQA.DAL.Models;
+using SAFQA.DAL.Repository.Notification;
 using SAFQA.DAL.Repository.Seller;
+using SAFQA.DAL.Repository.Transaction;
+using SAFQA.DAL.Repository.Wallet;
 
 namespace SAFQA.BLL.Managers.SellerAppManager
 {
@@ -30,13 +33,19 @@ namespace SAFQA.BLL.Managers.SellerAppManager
         private readonly UserManager<User> _userManager;
         private readonly IConfiguration _configuration;
         private readonly IsellerRepo _sellerRepo;
+        private readonly IWalletRepo _walletRepo;
+        private readonly ITransactionRepository _transactionRepository;
+        private readonly INotificationRepository _notificationRepository;
 
-        public sellerManager(SAFQA_Context context , IConfiguration configuration,  UserManager<User> userManager, IsellerRepo sellerRepo)
+        public sellerManager(SAFQA_Context context , IConfiguration configuration,  UserManager<User> userManager, IsellerRepo sellerRepo , IWalletRepo walletRepo , ITransactionRepository transactionRepository , INotificationRepository notificationRepository)
         {
             _configuration = configuration;
             _context = context;
             _userManager = userManager;
             _sellerRepo = sellerRepo;
+            _walletRepo = walletRepo;
+            _transactionRepository = transactionRepository;
+            _notificationRepository = notificationRepository;
         }
 
         private async Task<(string Token, string RefreshToken)> GenerateTokensAsync(User user, string deviceId)
@@ -130,6 +139,18 @@ namespace SAFQA.BLL.Managers.SellerAppManager
                 }
 
                 logoBytes = await ConvertFileToBytes(dto.Logo);
+            }
+
+            var city = await _context.cities
+                .FirstOrDefaultAsync(c => c.Id == dto.CityId);
+
+            if (city == null)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Errors = new() { "Invalid City" }
+                };
             }
 
             var seller = new Seller
@@ -382,6 +403,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager
                 PhoneNumber = data.PhoneNumber,
                 City = data.City,
                 Country = data.Country,
+                Description = data.Description,
                 SellerRating = data.SellerRating,
                 Followers = data.Followers,
                 AuctionsCount = data.AuctionsCount,
@@ -403,6 +425,166 @@ namespace SAFQA.BLL.Managers.SellerAppManager
         public async Task<int> GetPendingSellersCount()
         {
             return await _sellerRepo.CountPendingSellers();
+        }
+
+        public async Task<AuthResult> EditProfile(string userId, EditSellerProfileDto dto)
+        {
+            var result = new AuthResult();
+
+            var seller =  _sellerRepo.GetById(userId);
+
+            if (seller == null)
+            {
+                result.IsSuccess = false;
+                result.Message = "Seller not found";
+                return result;
+            }
+
+            if (string.IsNullOrWhiteSpace(dto.StoreName))
+            {
+                result.IsSuccess = false;
+                result.Message = "Validation Error";
+                result.Errors.Add("Store name is required");
+                return result;
+            }
+
+            if (dto.CityId <= 0)
+            {
+                result.IsSuccess = false;
+                result.Message = "Validation Error";
+                result.Errors.Add("Invalid city");
+                return result;
+            }
+
+            var city = await _context.cities
+               .FirstOrDefaultAsync(c => c.Id == dto.CityId);
+
+            if (city == null)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Errors = new() { "Invalid City" }
+                };
+            }
+
+            seller.StoreName = dto.StoreName;
+            seller.PhoneNumber = dto.PhoneNumber;
+            seller.CityId = dto.CityId;
+            seller.Description = dto.Description;
+
+            if (!string.IsNullOrEmpty(dto.StoreLogo))
+            {
+                try
+                {
+                    seller.StoreLogo = Convert.FromBase64String(dto.StoreLogo);
+                }
+                catch
+                {
+                    result.IsSuccess = false;
+                    result.Message = "Invalid image format";
+                    return result;
+                }
+            }
+
+            _sellerRepo.Update(seller);
+            await _sellerRepo.SaveChangesAsync();
+            return new AuthResult
+            {
+                IsSuccess = true,
+                Message = "Profile updated successfully"
+            };
+        }
+
+        public async Task<AuthResult> UpgradeSellerAsync(string userId, UpgradeType newUpgrade)
+        {
+            var result = new AuthResult();
+
+            var seller = _sellerRepo.GetById(userId);
+            if (seller == null)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "Seller not found"
+                };
+            }
+
+            if (newUpgrade <= seller.upgradeType)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "Invalid upgrade"
+                };
+            }
+
+            var wallet = _walletRepo.GetByIdd(userId);
+            if (wallet == null)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "Wallet not found"
+                };
+            }
+
+            var price = Helper.GetPrice(newUpgrade);
+
+            if (wallet.Balance < price)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "Insufficient balance"
+                };
+            }
+
+            var balanceBefore = wallet.Balance;
+            wallet.Balance -= price;
+            wallet.UpdatedAt = DateTime.Now;
+            _walletRepo.Update(wallet);
+
+            // 🔹 Transaction
+            var transaction = new Transactions
+            {
+                WalletId = wallet.Id,
+                Amount = price,
+                BalanceBefore = balanceBefore,
+                BalanceAfter = wallet.Balance,
+                Type = TransactionType.Purchase,
+                Status = TransactionStatus.Completed,
+                Description = $"Upgrade to {newUpgrade}",
+                CreatedAt = DateTime.Now
+            };
+
+            await _transactionRepository.AddAsync(transaction);
+
+            // 🔹 Update Seller
+            seller.upgradeType = newUpgrade;
+            _sellerRepo.Update(seller);
+
+            // 🔹 Notification
+            var notification = new DAL.Models.Notification
+            {
+                Title = "Upgrade Successful",
+                Message = $"Your store upgraded to {newUpgrade}",
+                notificationType = NotificationTypes.Admin,
+                ReferenceId = seller.Id,
+                UserId = userId,
+                IsRead = false,
+                CreatedAt = DateTime.Now
+            };
+
+            await _notificationRepository.AddAsync(notification);
+
+            await _notificationRepository.SaveChangesAsync();
+
+            return new AuthResult
+            {
+                IsSuccess = true,
+                Message = "Upgrade successful"
+            };
         }
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SAFQA.BLL.Dtos.AccountDto.Seller;
+using SAFQA.BLL.Dtos.SellerAppDto.BussinessAccountDto;
 using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.BLL.Managers.SellerAppManager;
 
@@ -39,14 +40,13 @@ namespace SAFQA.API.Controllers
 
                 if (!result.IsSuccess)
                 {
-                    // تقدر تخصص status code حسب الحالة
                     if (result.Message == "Seller already exists")
-                        return Conflict(result); // 409
+                        return Conflict(result);
 
-                    return BadRequest(result); // 400
+                    return BadRequest(result);
                 }
 
-                return Ok(result); // 200
+                return Ok(result); 
             }
             catch (Exception ex)
             {
@@ -120,6 +120,44 @@ namespace SAFQA.API.Controllers
 
             if (result == null)
                 return NotFound("Seller not found");
+
+            return Ok(result);
+        }
+
+        [Authorize(Roles = "SELLER")]
+        [HttpPut("edit-profile")]
+        public async Task<IActionResult> EditProfile(EditSellerProfileDto dto)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "Unauthorized"
+                });
+
+            var result = await _sellerService.EditProfile(userId, dto);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        [Authorize(Roles = "SELLER")]
+        [HttpPost("upgrade")]
+        public async Task<IActionResult> Upgrade([FromBody] UpgradeRequestDto dto)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var result = await _sellerService.UpgradeSellerAsync(userId, dto.UpgradeType);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
 
             return Ok(result);
         }

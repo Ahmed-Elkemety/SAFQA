@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using SAFQA.DAL.Enums;
 
 namespace SAFQA.BLL.Help
 {
@@ -43,6 +44,17 @@ namespace SAFQA.BLL.Help
             public int TotalPages { get; set; }
             public int TotalCount { get; set; }
             public bool HasNextPage { get; set; }
+        }
+
+        public static decimal GetPrice(UpgradeType type)
+        {
+            return type switch
+            {
+                UpgradeType.Basic => 99,
+                UpgradeType.Premium => 499,
+                UpgradeType.Elite => 999,
+                _ => 0
+            };
         }
     }
 }

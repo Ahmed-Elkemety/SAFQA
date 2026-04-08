@@ -12,5 +12,8 @@ namespace SAFQA.DAL.Repository.Notification
         Task MarkAsReadAsync(List<Models.Notification> notifications);
         Task DeleteNotificationsAsync(List<int> ids, string userId);
         Task SaveChangesAsync();
+
+        Task AddAsync(Models.Notification notification);
+
     }
 }
