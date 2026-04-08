@@ -106,6 +106,7 @@ namespace SAFQA.API
             builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
             builder.Services.AddScoped<INotificationManager, NotificationManager>();
             builder.Services.AddScoped<IAuctionService, AuctionService>();
+            builder.Services.AddScoped<DAL.Repository.Transaction.ITransactionRepository, DAL.Repository.Transaction.TransactionRepository>();
 
 
 

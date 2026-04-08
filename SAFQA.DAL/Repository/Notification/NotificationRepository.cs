@@ -45,5 +45,9 @@ namespace SAFQA.DAL.Repository.Notification
         {
             await _context.SaveChangesAsync();
         }
+        public async Task AddAsync(Models.Notification notification)
+        {
+            await _context.Notifications.AddAsync(notification);
+        }
     }
 }

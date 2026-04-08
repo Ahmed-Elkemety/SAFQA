@@ -7,6 +7,7 @@ using SAFQA.BLL.Dtos.AccountDto.Seller;
 using SAFQA.BLL.Dtos.SellerAppDto.BussinessAccountDto;
 using SAFQA.BLL.Dtos.SellerAppDto.HomeDto;
 using SAFQA.BLL.Managers.AccountManager.Auth;
+using SAFQA.DAL.Enums;
 
 namespace SAFQA.BLL.Managers.SellerAppManager
 {
@@ -18,7 +19,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager
         Task<SellerBasicDto?> GetMySellerHomeAsync(string userId);
         Task<BusinessAccountDto?> GetBusinessAccountAsync(string userId);
         Task<AuthResult> EditProfile(string userId, EditSellerProfileDto dto);
-
+        Task<AuthResult> UpgradeSellerAsync(string userId, UpgradeType newUpgrade);
 
         Task<int> GetTotalSellersCount();
         Task<int> GetVerifiedSellersCount();

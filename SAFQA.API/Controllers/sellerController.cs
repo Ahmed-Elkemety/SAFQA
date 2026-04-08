@@ -145,6 +145,23 @@ namespace SAFQA.API.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = "SELLER")]
+        [HttpPost("upgrade")]
+        public async Task<IActionResult> Upgrade([FromBody] UpgradeRequestDto dto)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var result = await _sellerService.UpgradeSellerAsync(userId, dto.UpgradeType);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
         [HttpGet("total-sellers")]
         public async Task<IActionResult> GetTotalSellers()
         {
