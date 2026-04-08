@@ -67,5 +67,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionManager
                 HasNextPage = page * pageSize < totalCount
             };
         }
+
+
     }
 }

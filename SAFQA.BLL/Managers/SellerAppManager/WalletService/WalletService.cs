@@ -109,7 +109,12 @@ namespace SAFQA.BLL.Managers.SellerAppManager.WalletService
             }
 
             var card = _cardRepo.GetById(dto.CardId);
-
+            
+            if (card == null || card.WalletId != wallet.Id)
+            {
+                message = "Card not found or does not belong to this user";
+                return false;
+            }
             var balanceBefore = wallet.Balance;
             wallet.Balance -= dto.Amount;
             wallet.UpdatedAt = DateTime.Now;

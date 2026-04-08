@@ -147,6 +147,5 @@ namespace SAFQA.API.Controllers
 
             return Ok(result);
         }
-
     }
 }

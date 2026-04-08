@@ -38,5 +38,33 @@ namespace SAFQA.DAL.Repository.Auction
                 .AsNoTracking()
                 .Where(a => a.Seller.UserId == userId);
         }
+
+        public IQueryable<Models.Auction> GetAll()
+        {
+            return _context.Auctions;
+        }
+
+        public Models.Auction GetById(int id)
+        {
+            return _context.Auctions.FirstOrDefault(c => c.Id == id);
+        }
+
+        public void Add(Models.Auction auction)
+        {
+            _context.Auctions.Add(auction);
+            _context.SaveChanges();
+        }
+
+        public void Update(Models.Auction auction)
+        {
+            _context.Auctions.Update(auction);
+            _context.SaveChanges();
+        }
+
+        public void Delete(Models.Auction auction)
+        {
+            _context.Auctions.Remove(auction);
+            _context.SaveChanges();
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SAFQA.DAL.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,5 +12,11 @@ namespace SAFQA.DAL.Repository.AdminDashboard.Users
         Task<int> GetTotalUsers();
         Task<int> GetActiveUsersCount();
         Task<int> GetBlockedUsersCount();
+
+        IQueryable<User> GetAll();
+        User GetById(string id);
+        void Add(User user);
+        void Update(User user);
+        void Delete(User user);
     }
 }

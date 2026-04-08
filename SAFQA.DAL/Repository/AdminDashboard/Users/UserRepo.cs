@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SAFQA.BLL.Enums;
 using SAFQA.DAL.Database;
+using SAFQA.DAL.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,6 +40,34 @@ namespace SAFQA.DAL.Repository.AdminDashboard.Users
             return await _context.Users
                 .Where(u => u.Status == UserStatus.Blocked || u.IsDeleted)
                 .CountAsync();
+        }
+
+        public IQueryable<User> GetAll()
+        {
+            return _context.Users;
+        }
+
+        public User GetById(string id)
+        {
+            return _context.Users.FirstOrDefault(c => c.Id == id);
+        }
+
+        public void Add(User user)
+        {
+            _context.Users.Add(user);
+            _context.SaveChanges();
+        }
+
+        public void Update(User user)
+        {
+            _context.Users.Update(user);
+            _context.SaveChanges();
+        }
+
+        public void Delete(User user)
+        {
+            _context.Users.Remove(user);
+            _context.SaveChanges();
         }
     }
 }

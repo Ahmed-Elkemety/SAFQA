@@ -9,8 +9,8 @@ namespace SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto
     public class TopCustomerDto
     {
         public string Name { get; set; }
+        public string CompanyName { get; set; } 
         public string Email { get; set; }
-        public string CompanyName { get; set; }
         public int ParticipatedAuctions { get; set; }
         public decimal TotalPaid { get; set; }
     }
