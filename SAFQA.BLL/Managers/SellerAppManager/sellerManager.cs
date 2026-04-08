@@ -382,6 +382,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager
                 PhoneNumber = data.PhoneNumber,
                 City = data.City,
                 Country = data.Country,
+                Description = data.Description,
                 SellerRating = data.SellerRating,
                 Followers = data.Followers,
                 AuctionsCount = data.AuctionsCount,

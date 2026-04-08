@@ -47,6 +47,7 @@ namespace SAFQA.DAL.Repository.Seller
                     Country = s.City != null && s.City.Country != null
                                 ? s.City.Country.Name
                                 : "",
+                    Description = s.Description,
 
                     SellerRating = s.Rating,
                     Followers = s.Followers,

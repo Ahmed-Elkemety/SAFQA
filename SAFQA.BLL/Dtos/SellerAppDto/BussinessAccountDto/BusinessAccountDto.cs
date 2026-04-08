@@ -14,7 +14,8 @@ namespace SAFQA.BLL.Dtos.SellerAppDto.BussinessAccountDto
 
         public string City { get; set; }
         public string Country { get; set; }
-
+        
+        public string Description { get; set; }
         public float SellerRating { get; set; }
         public int Followers { get; set; }
 

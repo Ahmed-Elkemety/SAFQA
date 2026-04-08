@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ namespace SAFQA.DAL.RepoDtos.SellerApp.Bussiness_Account
         public string City { get; set; }
         public string Country { get; set; }
 
+        public string Description { get; set; }
         public float SellerRating { get; set; }
         public int Followers { get; set; }
 
