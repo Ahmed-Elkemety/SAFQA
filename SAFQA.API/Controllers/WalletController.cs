@@ -18,7 +18,7 @@ namespace SAFQA.API.Controllers
             _walletService = walletService;
         }
 
-        [Authorize]
+        [Authorize(Roles = "USER")]
         [HttpPost("deposit")]
         public IActionResult Deposit([FromBody] DepositeMoneyDto dto)
         {
@@ -48,7 +48,7 @@ namespace SAFQA.API.Controllers
             });
         }
 
-        [Authorize]
+        [Authorize(Roles = "USER")]
         [HttpPost("withdraw")]
         public IActionResult Withdraw([FromBody] WithdrawDto dto)
         {
@@ -72,7 +72,7 @@ namespace SAFQA.API.Controllers
             }
         }
 
-        [Authorize]
+        [Authorize(Roles = "USER")]
         [HttpGet("balance")]
         public IActionResult GetBalance()
         {
@@ -88,7 +88,7 @@ namespace SAFQA.API.Controllers
             return Ok(balanceDto);
         }
 
-        [Authorize]
+        [Authorize(Roles = "USER")]
         [HttpGet("TransactionHistory")]
         public IActionResult GetTransactionHistory()
         {

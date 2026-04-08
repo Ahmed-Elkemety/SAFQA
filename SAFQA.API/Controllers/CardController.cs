@@ -17,7 +17,7 @@ namespace SAFQA.API.Controllers
             _cardService = cardService;
         }
 
-        [Authorize]
+        [Authorize(Roles = "USER")]
         [HttpPost("AddCard")]
         public IActionResult AddCard([FromBody] AddCardDto dto)
         {
