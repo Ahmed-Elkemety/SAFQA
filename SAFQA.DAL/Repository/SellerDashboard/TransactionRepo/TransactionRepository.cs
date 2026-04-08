@@ -50,7 +50,7 @@ namespace SAFQA.DAL.Repository.SellerDashboard.TransactionRepo
         {
             var totalDeposits = await _context.Transactions
              .Where(t => t.Type == TransactionType.Deposit                 
-                         && t.Status == Enums.TransactionStatus.Completed       
+                         && t.Status == Enums.TransactionStatus.Completed     
                          && t.Wallet != null
                          && t.Wallet.User != null
                          && t.Wallet.User.Seller != null

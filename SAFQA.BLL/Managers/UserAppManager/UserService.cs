@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
 using SAFQA.BLL.Dtos.UserAppDto.HomeDto;
 using SAFQA.BLL.Enums;
 using SAFQA.DAL.Repository;
@@ -10,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 
 namespace SAFQA.BLL.Managers.UserAppManager
 {
@@ -70,5 +72,7 @@ namespace SAFQA.BLL.Managers.UserAppManager
         {
             return await _userRepo.GetBlockedUsersCount();
         }
+
+        
     }
 }

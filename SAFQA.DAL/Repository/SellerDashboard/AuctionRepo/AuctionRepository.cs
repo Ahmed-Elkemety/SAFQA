@@ -117,11 +117,15 @@ namespace SAFQA.DAL.Repository.SellerDashboard.AuctionRepo
                                ))
                 .CountAsync();
         }
+
         public async Task<int> GetUpcomingAuctionsCount()
         {
+            DateTime now = DateTime.UtcNow;
+
             return await _context.Auctions
                 .Where(a => !a.IsDeleted
-                            && a.Status == AuctionStatus.Upcoming)
+                            && a.Status == AuctionStatus.Upcoming &&
+                            a.StartDate > now)
                 .CountAsync();
         }
 

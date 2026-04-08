@@ -56,7 +56,5 @@ namespace SAFQA.API.Controllers
             int blockedCount = await _homeService.GetBlockedUsersCountAsync();
             return Ok(new { Count = blockedCount });
         }
-
-        
     }
 }

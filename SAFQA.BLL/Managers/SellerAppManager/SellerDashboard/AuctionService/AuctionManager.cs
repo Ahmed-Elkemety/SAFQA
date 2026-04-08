@@ -1,24 +1,28 @@
-﻿using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
+﻿using Microsoft.EntityFrameworkCore;
+using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
 using SAFQA.BLL.Enums;
 using SAFQA.DAL.Models;
+using SAFQA.DAL.Repository.AdminDashboard.Users;
+using SAFQA.DAL.Repository.Auction;
+using SAFQA.DAL.Repository.Category;
 using SAFQA.DAL.Repository.SellerDashboard.AuctionRepo;
+using SAFQA.DAL.Repository.SellerDashboard.ItemRepo;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using SAFQA.DAL.Repository.SellerDashboard.ItemRepo;
-using SAFQA.DAL.Repository.Category;
 
 namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.AuctionService
 {
     public class AuctionManager : IAuctionManager
     {
         private readonly IAuctionRepository _auctionRepository;
-        public AuctionManager(IAuctionRepository auctionRepository, IitemsRepository itemsRepository, IcategoryRepo categoryRepository)
+        private readonly IUserRepo _userRepo;
+        public AuctionManager(IAuctionRepository auctionRepository, IitemsRepository itemsRepository, IcategoryRepo categoryRepository, IUserRepo userRepo)
         {
             _auctionRepository = auctionRepository;
+            _userRepo = userRepo;
         }
         public Task<int> GetTotalSellerAuctions(int sellerId)
         {
@@ -30,23 +34,30 @@ namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.AuctionService
             return _auctionRepository.GetActiveSellerAuctions(sellerId);
         }
 
-        public async Task<List<SellerWinnerDto>> GetSellerWinnersAsync(int sellerId)
+        public async Task<IEnumerable<TopWinnerDto>> GetWinnersBySeller(int sellerId)
         {
-            var rawData = await _auctionRepository.GetSellerWinnersRawAsync(sellerId);
-
-            var dtoList = rawData
-                .GroupBy(x => new { x.User.Id, x.User.FullName, x.User.Email, x.Seller.StoreName })
-                .Select(g => new SellerWinnerDto
+            var result = await _auctionRepository.GetAll()
+                .Where(a => a.SellerId == sellerId &&
+                            a.WinnerUserId != null &&
+                            !a.IsDeleted &&
+                            a.Status == AuctionStatus.Finished)
+                .Join(_userRepo.GetAll(),
+                      a => a.WinnerUserId,
+                      u => u.Id,
+                      (a, u) => new { Auction = a, User = u })
+                .GroupBy(x => new { x.User.Id, x.User.FullName, x.User.Email })
+                .Select(g => new TopWinnerDto
                 {
-                    UserFullName = g.Key.FullName,
-                    UserEmail = g.Key.Email,
-                    SellerStoreName = g.Key.StoreName,
-                    WonAuctionsCount = g.Count(),
-                    TotalNetProfit = g.Sum(x => x.AuctionDetails.FinalPrice - x.AuctionDetails.StartingPrice)
+                    BuyerName = g.Key.FullName,
+                    Email = g.Key.Email,
+                    SellerCompanyName = g.Select(x => x.Auction.Seller.StoreName).FirstOrDefault(),
+                    AuctionsWonCount = g.Count(),
+                    TotalPaidAmount = g.Sum(x => x.Auction.FinalPrice + x.Auction.SecurityDeposit)
                 })
-                .ToList();
+                .OrderByDescending(x => x.TotalPaidAmount)
+                .ToListAsync();
 
-            return dtoList;
+            return result.AsEnumerable(); 
         }
 
         public async Task<List<TopCustomerDto>> GetTopCustomers()
@@ -84,7 +95,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.AuctionService
 
         public async Task<List<AuctionProfitDto>> GetTopProfitableAuctions(int sellerId, int categoryId)
         {
-            var validStatuses = new[] { AuctionStatus.Finished, AuctionStatus.Active, AuctionStatus.EndingSoon };
+            var validStatuses = new[] { AuctionStatus.Finished };
 
             var query = _auctionRepository.GetAll();
 
@@ -100,6 +111,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.AuctionService
                     Title = a.Title,
                     StartingPrice = a.StartingPrice,
                     FinalPrice = a.FinalPrice,
+                    Profit = a.FinalPrice - a.StartingPrice,
                     WinnerName = a.AuctionUsers
                         .Where(au => au.UserId == a.WinnerUserId)
                         .Select(au => au.User.FullName)
@@ -162,6 +174,50 @@ namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.AuctionService
                 .ToListAsync();
 
             return result;
+        }
+
+        public IEnumerable<MonthlyEarningDto> GetMonthlyEarningsByCategory(int sellerId, int categoryId)
+        {
+            var auctions = _auctionRepository.GetAll()
+                .Where(a => a.SellerId == sellerId
+                && a.items.Any(i => i.CategoryId == categoryId)
+                && !a.IsDeleted)
+                                .ToList();
+
+            var grouped = auctions
+                .GroupBy(a => new { a.EndDate.Year, a.EndDate.Month })
+                .Select(g => new MonthlyEarningDto
+                {
+                    Year = g.Key.Year,
+                    Month = g.Key.Month,
+                    TotalEarnings = g.Sum(a => a.FinalPrice), // أو استخدم Transactions لو عايز دقة أكبر
+                    AuctionCount = g.Count()
+                })
+                .OrderBy(x => x.Year)
+                .ThenBy(x => x.Month)
+                .ToList();
+
+            return grouped;
+        }
+
+        public IEnumerable<PopularProductsDto> GetMostPopularProductsBySeller(int sellerId, int topCount = 5)
+        {
+            var sellerAuctions = _auctionRepository.GetAll()
+                .Where(a => a.SellerId == sellerId);
+
+            // 2️⃣ نحسب عدد المشاهدات لكل منتج بناءً على Auction.ViewCount
+            var productViews = sellerAuctions
+                .SelectMany(a => a.items, (auction, item) => new PopularProductsDto
+                {
+                    Title = item.title,
+                    Description = item.Description,
+                    ViewCount = auction.ViewsCount // ✅ هنا بنستخدم عدد المشاهدات من المزاد
+                })
+                .OrderByDescending(p => p.ViewCount) // نرتب من الأكثر مشاهدة
+                .Take(topCount) // نجيب فقط أعلى المنتجات
+                .ToList();
+
+            return productViews;
         }
     }
 }

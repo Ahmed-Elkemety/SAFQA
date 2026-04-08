@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using SAFQA.DAL.Database;
+using SAFQA.DAL.Models;
+using SAFQA.DAL.RepoDtos.UserApp.Home.CategoryWithDetails;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using SAFQA.DAL.Database;
-using SAFQA.DAL.RepoDtos.UserApp.Home.CategoryWithDetails;
 
 namespace SAFQA.DAL.Repository.Category
 {
@@ -37,6 +38,24 @@ namespace SAFQA.DAL.Repository.Category
         public Models.Category GetById(int id)
         {
             return _context.Category.FirstOrDefault(c => c.Id == id);
+        }
+
+        public void Add(Models.Category category)
+        {
+            _context.Category.Add(category);
+            _context.SaveChanges();
+        }
+
+        public void Update(Models.Category category)
+        {
+            _context.Category.Update(category);
+            _context.SaveChanges();
+        }
+
+        public void Delete(Models.Category category)
+        {
+            _context.Category.Remove(category);
+            _context.SaveChanges();
         }
     }
 }

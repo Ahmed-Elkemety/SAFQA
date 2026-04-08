@@ -12,7 +12,6 @@ namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.AuctionService
     {
         Task<int> GetTotalSellerAuctions(int sellerId);
         Task<int> GetActiveSellerAuctions(int sellerId);
-        Task<List<SellerWinnerDto>> GetSellerWinnersAsync(int sellerId);
         Task<List<TopCustomerDto>> GetTopCustomers();
         Task<int> GetTotalAuctions();
         Task<int> GetActiveAuctionsCount();
@@ -21,5 +20,9 @@ namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.AuctionService
         Task<List<AuctionProfitDto>> GetTopProfitableAuctions(int sellerId, int categoryId);
         Task<IEnumerable<CategoryPercentageDto>> GetCategoryPercentageBySeller(int sellerId);
         Task<IEnumerable<AuctionBidsDto>> GetSellerAuctionsBids(int sellerId);
+        IEnumerable<MonthlyEarningDto> GetMonthlyEarningsByCategory(int sellerId, int categoryId);
+        IEnumerable<PopularProductsDto> GetMostPopularProductsBySeller(int sellerId, int topCount = 10);
+
+        Task<IEnumerable<TopWinnerDto>> GetWinnersBySeller(int sellerId);
     }
 }

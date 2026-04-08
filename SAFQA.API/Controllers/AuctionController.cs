@@ -38,21 +38,6 @@ namespace SAFQA.API.Controllers
             return Ok(total);
         }
 
-        [HttpGet("{sellerId}")]
-        public async Task<ActionResult<List<SellerWinnerDto>>> GetSellerWinners(int sellerId)
-        {
-            if (sellerId <= 0)
-                return BadRequest("SellerId must be greater than zero.");
-
-            var winners = await _auctionManager.GetSellerWinnersAsync(sellerId);
-
-            if (winners == null || winners.Count == 0)
-                return NotFound("No winners found for this seller.");
-
-            return Ok(winners);
-        }
-
-
         [HttpGet("Top Buyers")]
         public async Task<ActionResult<List<TopCustomerDto>>> GetTopCustomers()
         {
@@ -92,12 +77,14 @@ namespace SAFQA.API.Controllers
             return Ok(new { upcomingAuctions = count });
         }
 
-       
-        [HttpGet("top-profitable")]
-        public async Task<IActionResult> GetTopProfitableAuctions([FromQuery] int sellerId, [FromQuery] int categoryId)
+
+        [HttpGet("winners/{sellerId}")]
+        public async Task<IActionResult> GetWinnersBySeller(int sellerId)
         {
-            var result = await _auctionManager
-                .GetTopProfitableAuctions(sellerId, categoryId);
+            var result = await _auctionManager.GetWinnersBySeller(sellerId); // ← await هنا
+
+            if (result == null || !result.Any())
+                return NotFound("No winners found for this seller");
 
             return Ok(result);
         }
@@ -146,6 +133,44 @@ namespace SAFQA.API.Controllers
                 pageSize);
 
             return Ok(result);
+        }
+
+        [HttpGet("seller/{sellerId}/category/{categoryId}/monthly-earnings")]
+        public ActionResult<IEnumerable<MonthlyEarningDto>> GetMonthlyEarningsByCategory(
+            int sellerId,
+            int categoryId)
+        {
+            var earnings = _auctionManager.GetMonthlyEarningsByCategory(sellerId, categoryId);
+
+            if (earnings == null || !earnings.Any())
+                return NotFound("There are no earnings for this category or for the specified seller");
+
+            return Ok(earnings);
+        }
+
+        [HttpGet("MostPopularProducts/{sellerId}")]
+        public IActionResult GetMostPopularProducts(int sellerId, int topCount = 5)
+        {
+            var popularProducts = _auctionManager.GetMostPopularProductsBySeller(sellerId, topCount);
+
+            if (popularProducts == null || !popularProducts.Any())
+                return NotFound(new { Message = "No products found for this seller." });
+
+            return Ok(popularProducts);
+        }
+
+        [HttpGet("top-profitable/{sellerId}/{categoryId}")]
+        public async Task<IActionResult> GetTopProfitableAuctions(int sellerId, int categoryId)
+        {
+            if (sellerId <= 0 || categoryId <= 0)
+                return BadRequest("SellerId and CategoryId must be greater than zero.");
+
+            var auctions = await _auctionManager.GetTopProfitableAuctions(sellerId, categoryId);
+
+            if (auctions == null || !auctions.Any())
+                return NotFound("No profitable auctions found for this seller in this category.");
+
+            return Ok(auctions);
         }
     }
 }
