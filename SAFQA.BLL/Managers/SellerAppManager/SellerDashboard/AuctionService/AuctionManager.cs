@@ -2,11 +2,11 @@
 using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
 using SAFQA.BLL.Enums;
 using SAFQA.DAL.Models;
-using SAFQA.DAL.Repository.AdminDashboard.Users;
 using SAFQA.DAL.Repository.Auction;
 using SAFQA.DAL.Repository.Category;
+using SAFQA.DAL.Repository.Items;
 using SAFQA.DAL.Repository.SellerDashboard.AuctionRepo;
-using SAFQA.DAL.Repository.SellerDashboard.ItemRepo;
+using SAFQA.DAL.Repository.Users;
 using System;
 using System.Collections.Generic;
 using System.Linq;

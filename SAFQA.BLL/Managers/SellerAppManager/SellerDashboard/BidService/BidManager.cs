@@ -1,6 +1,6 @@
 ﻿using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
 using SAFQA.DAL.Models;
-using SAFQA.DAL.Repository.SellerDashboard.BidRepo;
+using SAFQA.DAL.Repository.Bids;
 using System;
 using System.Collections.Generic;
 using System.Linq;

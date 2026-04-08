@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SAFQA.DAL.Repository.SellerDashboard.BidRepo
+namespace SAFQA.DAL.Repository.Bids
 {
     public interface IBidRepository
     {

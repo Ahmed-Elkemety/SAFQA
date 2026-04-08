@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SAFQA.DAL.Repository.AdminDashboard.Users
+namespace SAFQA.DAL.Repository.Users
 {
     public interface IUserRepo
     {
