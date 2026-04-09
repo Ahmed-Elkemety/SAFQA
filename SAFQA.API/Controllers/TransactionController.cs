@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
-using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.TransactionService;
+using SAFQA.BLL.Managers.SellerAppManager.TransactionService;
 
 namespace SAFQA.API.Controllers
 {

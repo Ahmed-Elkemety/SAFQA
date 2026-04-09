@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
 using SAFQA.BLL.Enums;
 using SAFQA.BLL.Managers.SellerAppManager.AuctionManager;
-using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.AuctionService;
+using SAFQA.BLL.Managers.SellerAppManager.AuctionService;
 
 namespace SAFQA.API.Controllers
 {

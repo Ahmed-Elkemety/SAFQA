@@ -1,12 +1,15 @@
-﻿using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
+﻿using SAFQA.BLL.Dtos.SellerAppDto.AuctionDto;
+using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
+using SAFQA.BLL.Enums;
 using SAFQA.DAL.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static SAFQA.BLL.Help.Helper;
 
-namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.AuctionService
+namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
 {
     public interface IAuctionManager
     {
@@ -24,5 +27,10 @@ namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.AuctionService
         IEnumerable<PopularProductsDto> GetMostPopularProductsBySeller(int sellerId, int topCount = 10);
 
         Task<IEnumerable<TopWinnerDto>> GetWinnersBySeller(int sellerId);
+            Task<PagedResult<SellerActionHistoryDto>> GetHistory(
+                string userId,
+                AuctionStatus? status,
+                int page,
+                int pageSize);
     }
 }

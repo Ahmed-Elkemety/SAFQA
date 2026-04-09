@@ -13,7 +13,6 @@ namespace SAFQA.BLL.Dtos.AccountDto.Seller
         public IFormFile TaxId { get; set; }
         public IFormFile OwnerNationalIdFront { get; set; }
         public IFormFile OwnerNationalIdBack { get; set; }
-
         public int? instaPayNumber { get; set; }
         public string BankName { get; set; }
         public string AccountName { get; set; }

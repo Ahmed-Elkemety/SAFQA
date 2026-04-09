@@ -1,7 +1,7 @@
 ﻿using SAFQA.BLL.Dtos.SellerAppDto.WalletDto;
 using SAFQA.DAL.Enums;
 using SAFQA.DAL.Models;
-using SAFQA.DAL.Repository.SellerDashboard.TransactionRepo;
+using SAFQA.DAL.Repository.Transaction;
 using SAFQA.DAL.Repository.Wallet;
 using System;
 using System.Collections.Generic;

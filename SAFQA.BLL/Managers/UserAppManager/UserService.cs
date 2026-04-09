@@ -18,10 +18,10 @@ namespace SAFQA.BLL.Managers.UserAppManager
     public class UserService : IUserService
     {
         private readonly IcategoryRepo _categoryRepo;
-        private readonly IAuctionRepo _auctionRepo;
+        private readonly IAuctionRepository _auctionRepo;
         private readonly IUserRepo _userRepo;
 
-        public UserService(IcategoryRepo categoryRepo , IAuctionRepo auctionRepo, IUserRepo userRepo)
+        public UserService(IcategoryRepo categoryRepo , IAuctionRepository auctionRepo, IUserRepo userRepo)
         {
             _categoryRepo = categoryRepo;
             _auctionRepo = auctionRepo;

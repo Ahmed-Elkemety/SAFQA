@@ -9,7 +9,7 @@ using SAFQA.BLL.Dtos.SellerAppDto.HomeDto;
 using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.DAL.Enums;
 
-namespace SAFQA.BLL.Managers.SellerAppManager
+namespace SAFQA.BLL.Managers.SellerAppManager.SellerManager
 {
     public interface IsellerManager
     {

@@ -17,6 +17,7 @@ using SAFQA.BLL.Dtos.SellerAppDto.HomeDto;
 using SAFQA.BLL.Enums;
 using SAFQA.BLL.Help;
 using SAFQA.BLL.Managers.AccountManager.Auth;
+using SAFQA.BLL.Managers.SellerAppManager.SellerManager;
 using SAFQA.DAL.Database;
 using SAFQA.DAL.Enums;
 using SAFQA.DAL.Models;

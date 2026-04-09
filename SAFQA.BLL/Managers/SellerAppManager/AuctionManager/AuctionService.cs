@@ -13,9 +13,9 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionManager
 {
     public class AuctionService : IAuctionService
     {
-        private readonly IAuctionRepo _repo;
+        private readonly IAuctionRepository _repo;
 
-        public AuctionService(IAuctionRepo repo)
+        public AuctionService(IAuctionRepository repo)
         {
             _repo = repo;
         }

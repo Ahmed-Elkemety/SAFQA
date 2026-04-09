@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using SAFQA.BLL.Dtos.AccountDto.Seller;
 using SAFQA.BLL.Dtos.SellerAppDto.BussinessAccountDto;
 using SAFQA.BLL.Managers.AccountManager.Auth;
-using SAFQA.BLL.Managers.SellerAppManager;
+using SAFQA.BLL.Managers.SellerAppManager.SellerManager;
 
 namespace SAFQA.API.Controllers
 {

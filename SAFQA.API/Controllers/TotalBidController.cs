@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
-using SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.BidService;
+using SAFQA.BLL.Managers.SellerAppManager.BidService;
 
 namespace SAFQA.API.Controllers
 {

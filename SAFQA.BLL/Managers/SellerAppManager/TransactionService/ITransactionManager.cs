@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.TransactionService
+namespace SAFQA.BLL.Managers.SellerAppManager.TransactionService
 {
     public interface ITransactionManager
     {

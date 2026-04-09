@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.BidService
+namespace SAFQA.BLL.Managers.SellerAppManager.BidService
 {
     public class BidManager : IBidManager
     {

@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SAFQA.BLL.Managers.SellerAppManager.SellerDashboard.ItemService.ItemManager.ItemManager
+namespace SAFQA.BLL.Managers.SellerAppManager.ItemService
 {
     public class ItemManager : IItemManager
     {
