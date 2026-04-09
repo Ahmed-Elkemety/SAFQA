@@ -49,9 +49,8 @@ namespace SAFQA.BLL.Managers.SellerAppManager
             _notificationRepository = notificationRepository;
         }
 
-        private async Task<(string Token, string RefreshToken)> GenerateTokensAsync(User user, string deviceId)
+        private async Task<string> GenerateTokensAsync(User user)
         {
-            // 1️⃣ إعداد الـ Claims الأساسية
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
@@ -62,12 +61,10 @@ namespace SAFQA.BLL.Managers.SellerAppManager
             };
 
 
-            //2️⃣ إضافة الـ Roles كـ Claims
             var roles = await _userManager.GetRolesAsync(user);
             foreach (var role in roles)
                 claims.Add(new Claim(ClaimTypes.Role, role));
 
-            // 3️⃣ إنشاء الـ JWT Token
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
@@ -75,28 +72,13 @@ namespace SAFQA.BLL.Managers.SellerAppManager
                 issuer: _configuration["JWT:ValidIssuer"],
                 audience: _configuration["JWT:ValidAudience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(30),
+                expires: DateTime.UtcNow.AddHours(5),
                 signingCredentials: creds
             );
 
-            // 4️⃣ إنشاء Refresh Token آمن
-            var refreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
-            var refreshTokenHash = refreshToken.Hash(); // تأكد إنك عندك extension method Hash()
-
-            // 5️⃣ تخزين Refresh Token في الـ Database
-            _context.refreshTokens.Add(new RefreshToken
-            {
-                TokenHash = refreshTokenHash,
-                UserId = user.Id,
-                DeviceId = deviceId,
-                ExpiryDate = DateTime.UtcNow.AddDays(7),
-                IsRevoked = false
-            });
-
             await _context.SaveChangesAsync();
 
-            // 6️⃣ إعادة الـ Token و الـ Refresh Token
-            return (new JwtSecurityTokenHandler().WriteToken(token), refreshToken);
+            return (new JwtSecurityTokenHandler().WriteToken(token));
         }
 
         public async Task<AuthResult> CreateSellerAsync(string userId, CreateSellerDto dto , string deviceId)
@@ -184,15 +166,13 @@ namespace SAFQA.BLL.Managers.SellerAppManager
             }
 
             // توليد Token جديد
-            var token = await GenerateTokensAsync(user , deviceId);
+            var token = await GenerateTokensAsync(user);
 
             return new AuthResult
             {
                 IsSuccess = true,
                 Message = "Seller created successfully",
-                UserId = user.Id,
-                Token = token.Token,
-                RefreshToken = token.RefreshToken
+                Token = token
             };
         }
 

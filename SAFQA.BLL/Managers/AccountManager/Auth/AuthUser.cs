@@ -17,6 +17,8 @@ using SAFQA.BLL.Dtos.AccountDto.Forget_password;
 using Newtonsoft.Json.Linq;
 using static SAFQA.BLL.Dtos.AccountDto.User.LocationDto;
 using SAFQA.DAL.Repository.Location;
+using System.Runtime.InteropServices.Marshalling;
+using Microsoft.IdentityModel.Tokens.Experimental;
 
 
 
@@ -269,7 +271,7 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
             }
 
 
-            var token = await GenerateTokensAsync(user, deviceId);
+            var token = await GenerateTokensAsync(user);
 
             if(role == "seller")
             {
@@ -280,9 +282,7 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                     return new AuthResult
                     {
                         IsSuccess = true,
-                        UserId = user.Id,
-                        Token = token.Token,
-                        RefreshToken = token.RefreshToken,
+                        Token = token,
                         Message = "Login successful As User"
                     };
                 }
@@ -291,9 +291,7 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                     return new AuthResult
                     {
                         IsSuccess = true,
-                        UserId = user.Id,
-                        Token = token.Token,
-                        RefreshToken = token.RefreshToken,
+                        Token = token,
                         Message = "Login successful As Seller"
 
                     };
@@ -304,43 +302,35 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 return new AuthResult
                 {
                     IsSuccess = true,
-                    UserId = user.Id,
-                    Token = token.Token,
-                    RefreshToken = token.RefreshToken,
+                    Token = token,
                     Message = "Login successful As User"
                 };
             }
         }
 
-        public async Task<AuthResult> RefreshTokenAsync(string refreshToken, string deviceId)
+        public async Task<AuthResult> RefreshTokenAsync(string userId)
         {
-            var tokenhash = refreshToken.Hash();
-            var storedToken = await _context.refreshTokens
-                .Include(r => r.User)
-                .FirstOrDefaultAsync(r =>
-                    r.TokenHash == tokenhash &&
-                    r.DeviceId == deviceId &&
-                    !r.IsRevoked);
+            
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "User Not Found"
+                };
+            }
 
-            if (storedToken == null || storedToken.ExpiryDate < DateTime.UtcNow)
-                return new AuthResult { IsSuccess = false, Message = "Invalid or expired refresh token" };
-
-            storedToken.IsRevoked = true;
-
-            var tokens = await GenerateTokensAsync(storedToken.User,deviceId);
-
-            await _context.SaveChangesAsync();
+            var token = await GenerateTokensAsync(user);
 
             return new AuthResult
             {
                 IsSuccess = true,
-                UserId = storedToken.User.Id,
-                Token = tokens.Token,
-                RefreshToken = tokens.RefreshToken
+                Token = token
             };
         }
 
-        private async Task<(string Token, string RefreshToken)> GenerateTokensAsync(User user, string deviceId)
+        private async Task<string> GenerateTokensAsync(User user)
         {
             var claims = new List<Claim>
             {
@@ -366,22 +356,38 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 expires: DateTime.UtcNow.AddHours(5),
                 signingCredentials: creds
             );
-
-            var refreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
-            var refreshTokenHash = refreshToken.Hash();
-
-            _context.refreshTokens.Add(new RefreshToken
+            return (new JwtSecurityTokenHandler().WriteToken(token));
+        }
+        public ClaimsPrincipal? GetPrincipalFromExpiredToken(string token)
+        {
+            var tokenValidationParameters = new TokenValidationParameters
             {
-                TokenHash = refreshTokenHash,
-                UserId = user.Id,
-                DeviceId = deviceId,
-                ExpiryDate = DateTime.UtcNow.AddDays(7),
-                IsRevoked = false
-            });
+                ValidateAudience = true,
+                ValidateIssuer = true,
+                ValidateIssuerSigningKey = true,
+                ValidateLifetime = false, // 👈 دي المهمة
 
-            await _context.SaveChangesAsync();
+                ValidIssuer = _configuration["JWT:ValidIssuer"],
+                ValidAudience = _configuration["JWT:ValidAudience"],
+                IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]))
+            };
 
-            return (new JwtSecurityTokenHandler().WriteToken(token), refreshToken);
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            var principal = tokenHandler.ValidateToken(
+                token,
+                tokenValidationParameters,
+                out SecurityToken securityToken);
+
+            if (securityToken is not JwtSecurityToken jwtSecurityToken ||
+                !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
+                    StringComparison.InvariantCultureIgnoreCase))
+            {
+                throw new SecurityTokenException("Invalid token");
+            }
+
+            return principal;
         }
 
         public async Task<AuthResult> ResendRegistrationOtpAsync(string email)
@@ -722,12 +728,6 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 };
 
             await _userManager.UpdateSecurityStampAsync(user);
-
-            var tokens = await _context.refreshTokens
-                .Where(x => x.UserId == userId)
-                .ToListAsync();
-
-            _context.refreshTokens.RemoveRange(tokens);
 
             await _context.SaveChangesAsync();
 

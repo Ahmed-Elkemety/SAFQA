@@ -39,8 +39,6 @@ namespace SAFQA.DAL.Models
         public ICollection<Delivery> Deliveries { get; set; }
         public ICollection<Review> Reviews { get; set; }
 
-        public ICollection<RefreshToken> RefreshTokens { get; set; }
-
         public string? FacebookId { get; set; }
 
     }

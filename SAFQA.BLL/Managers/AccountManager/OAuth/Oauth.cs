@@ -70,15 +70,13 @@ namespace SAFQA.BLL.Managers.AccountManager.OAuth
                     };
             }
 
-            var tokens = await GenerateTokensAsync(user, deviceId);
+            var tokens = await GenerateTokensAsync(user);
 
             return new AuthResult
             {
                 IsSuccess = true,
                 Message = "Google login successful",
-                UserId = user.Id,
-                Token = tokens.Token,
-                RefreshToken = tokens.RefreshToken
+                Token = tokens,
             };
         }
         #endregion
@@ -94,14 +92,12 @@ namespace SAFQA.BLL.Managers.AccountManager.OAuth
             var user = await _context.Users.FirstOrDefaultAsync(u => u.FacebookId == fbUser.Id)
                        ?? await CreateUserAsync(fbUser);
 
-            var tokens = await GenerateTokensAsync(user, deviceId);
+            var tokens = await GenerateTokensAsync(user);
 
             return new AuthResult
             {
                 IsSuccess = true,
-                UserId = user.Id,
-                Token = tokens.Token,
-                RefreshToken = tokens.RefreshToken
+                Token = tokens,
             };
         }
 
@@ -139,45 +135,37 @@ namespace SAFQA.BLL.Managers.AccountManager.OAuth
         #endregion
 
         #region GenerateTokens
-        private async Task<(string Token, string RefreshToken)> GenerateTokensAsync(User user, string deviceId)
+        private async Task<string> GenerateTokensAsync(User user)
         {
             var claims = new List<Claim>
             {
-            new Claim(ClaimTypes.NameIdentifier, user.Id),
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Name, user.FullName),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Name, user.FullName),
+                new Claim("SecurityStamp", user.SecurityStamp),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
+
 
             var roles = await _userManager.GetRolesAsync(user);
             foreach (var role in roles)
                 claims.Add(new Claim(ClaimTypes.Role, role));
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
             var token = new JwtSecurityToken(
                 issuer: _configuration["JWT:ValidIssuer"],
                 audience: _configuration["JWT:ValidAudience"],
-                expires: DateTime.UtcNow.AddMinutes(30),
                 claims: claims,
-                signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
+                expires: DateTime.UtcNow.AddHours(5),
+                signingCredentials: creds
             );
 
-            var refreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
-            var refreshTokenHash = refreshToken.Hash();
-
-
-            _context.refreshTokens.Add(new RefreshToken
-            {
-                TokenHash = refreshTokenHash,
-                UserId = user.Id,
-                DeviceId = deviceId,
-                ExpiryDate = DateTime.UtcNow.AddDays(7),
-                IsRevoked = false
-            });
             await _context.SaveChangesAsync();
 
-            return (new JwtSecurityTokenHandler().WriteToken(token), refreshToken);
-        } 
+            return (new JwtSecurityTokenHandler().WriteToken(token));
+        }
         #endregion
     }
 }

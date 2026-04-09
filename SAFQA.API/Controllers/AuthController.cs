@@ -89,17 +89,24 @@ namespace SAFQA.API.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = "USER")]
         [HttpPost("refresh-token")]
-        public async Task<IActionResult> RefreshToken([FromBody] string refreshToken)
+        public async Task<IActionResult> RefreshToken([FromBody] string Token)
         {
-            var deviceId = Request.Headers["DeviceId"].FirstOrDefault();
+            var principal = _authUser.GetPrincipalFromExpiredToken(Token);
 
+            var userId = principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            var result = await _authUser.RefreshTokenAsync(refreshToken,deviceId);
-            if (!result.IsSuccess)
-                return Unauthorized(result);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
 
-            return Ok(result);
+            var token = await _authUser.RefreshTokenAsync(userId);
+
+            if(token == null)
+            {
+                return Unauthorized();
+            }
+            return Ok(token);
         }
 
         [HttpPost("resendRegistrationOtp")]
