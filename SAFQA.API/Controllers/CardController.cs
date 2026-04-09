@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SAFQA.BLL.Dtos.SellerAppDto.PaymentDto;
 using SAFQA.BLL.Managers.SellerAppManager.WalletServeice;
+using System.Security.Claims;
 
 namespace SAFQA.API.Controllers
 {
@@ -34,6 +35,19 @@ namespace SAFQA.API.Controllers
             {
                 message = message
             });
+        }
+
+        [HttpGet("cards")]
+        public IActionResult GetUserCards()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+                return Unauthorized();
+
+            var cards = _cardService.GetCardsByUser(userId);
+
+            return Ok(cards);
         }
     }
 }

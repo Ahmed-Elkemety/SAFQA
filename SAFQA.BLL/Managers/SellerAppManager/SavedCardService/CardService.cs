@@ -1,4 +1,5 @@
 ﻿using SAFQA.BLL.Dtos.SellerAppDto.PaymentDto;
+using SAFQA.BLL.Dtos.SellerAppDto.WalletDto;
 using SAFQA.BLL.Managers.SellerAppManager.WalletServeice;
 using SAFQA.DAL.Models;
 using SAFQA.DAL.Repository.Wallet;
@@ -96,5 +97,26 @@ public class CardService : ICardService
             message = ex.Message;
             return false;
         }
+    }
+
+    public IEnumerable<SavedCaredDto> GetCardsByUser(string userId)
+    {
+        var wallet = _walletRepo.GetAll()
+            .FirstOrDefault(w => w.UserId == userId);
+
+        if (wallet == null)
+            return new List<SavedCaredDto>();
+
+
+        var cards = _cardRepo.GetAll()
+        .Where(c => c.WalletId == wallet.Id)
+        .Select(c => new SavedCaredDto
+        {
+            CardId = c.Id,
+            MaskedCardNumber = "•••• •••• •••• " + c.Last4Digits
+        })
+        .ToList();
+
+        return cards;
     }
 }
