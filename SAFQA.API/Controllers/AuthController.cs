@@ -160,6 +160,24 @@ namespace SAFQA.API.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = "USER")]
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword(ChangePasswordDto dto)
+        {
+            var userId = User.FindFirst("uid")?.Value
+                         ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+                return Unauthorized();
+
+            var result = await _authUser.ChangePasswordAsync(userId, dto);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
         [HttpPost("signout-all")]
         public async Task<IActionResult> SignOutAll()
         {

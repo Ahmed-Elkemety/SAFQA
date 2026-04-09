@@ -628,6 +628,88 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
             };
         }
 
+        public async Task<AuthResult> ChangePasswordAsync(string userId, ChangePasswordDto dto)
+        {
+            if(dto.CurrentPassword == dto.NewPassword)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "Current Password Can not be Match With New Password"
+                };
+            }
+
+            if (dto.NewPassword != dto.ConfirmPassword)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "Passwords do not match"
+                };
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "User not found"
+                };
+            }
+            var isCorrect = await _userManager.CheckPasswordAsync(user, dto.CurrentPassword);
+
+            if (!isCorrect)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "Current password is incorrect"
+                };
+            }
+
+                var passwordValidator = new PasswordValidator<User>();
+
+
+                var validationResult = await passwordValidator.ValidateAsync(_userManager, user, dto.NewPassword);
+
+                if (!validationResult.Succeeded)
+                {
+                    return new AuthResult
+                    {
+                        IsSuccess = false,
+                        Errors = validationResult.Errors.Select(e => e.Description).ToList()
+                    };
+                }
+
+
+                var result = await _userManager.ChangePasswordAsync(
+                user,
+                dto.CurrentPassword,
+                dto.NewPassword
+            );
+
+            if (!result.Succeeded)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "Change password failed",
+                    Errors = result.Errors.Select(e => e.Description).ToList()
+                };
+            }
+
+            user.UpdatedAt = DateTime.UtcNow;
+            await _userManager.UpdateAsync(user);
+
+            return new AuthResult
+            {
+                IsSuccess = true,
+                Message = "Password changed successfully"
+            };
+        }
+
         public async Task<AuthResult> SignOutAllDevicesAsync(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);

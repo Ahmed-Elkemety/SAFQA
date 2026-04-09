@@ -263,7 +263,15 @@ namespace SAFQA.BLL.Managers.SellerAppManager
                 };
 
                 _context.personalSellers.Add(personalSeller);
-                await _context.SaveChangesAsync();
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    var inner = ex.InnerException?.Message;
+                    throw new Exception(inner);
+                }
 
                 return new AuthResult
                 {
