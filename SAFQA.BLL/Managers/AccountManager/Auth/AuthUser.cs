@@ -358,37 +358,6 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
             );
             return (new JwtSecurityTokenHandler().WriteToken(token));
         }
-        public ClaimsPrincipal? GetPrincipalFromExpiredToken(string token)
-        {
-            var tokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateAudience = true,
-                ValidateIssuer = true,
-                ValidateIssuerSigningKey = true,
-                ValidateLifetime = false, // 👈 دي المهمة
-
-                ValidIssuer = _configuration["JWT:ValidIssuer"],
-                ValidAudience = _configuration["JWT:ValidAudience"],
-                IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]))
-            };
-
-            var tokenHandler = new JwtSecurityTokenHandler();
-
-            var principal = tokenHandler.ValidateToken(
-                token,
-                tokenValidationParameters,
-                out SecurityToken securityToken);
-
-            if (securityToken is not JwtSecurityToken jwtSecurityToken ||
-                !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
-                    StringComparison.InvariantCultureIgnoreCase))
-            {
-                throw new SecurityTokenException("Invalid token");
-            }
-
-            return principal;
-        }
 
         public async Task<AuthResult> ResendRegistrationOtpAsync(string email)
         {
@@ -709,10 +678,14 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
             user.UpdatedAt = DateTime.UtcNow;
             await _userManager.UpdateAsync(user);
 
+            var token = await GenerateTokensAsync(user);
+
+
             return new AuthResult
             {
                 IsSuccess = true,
-                Message = "Password changed successfully"
+                Message = "Password changed successfully",
+                Token = token
             };
         }
 
