@@ -13,7 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 
-namespace SAFQA.BLL.Managers.UserAppManager
+namespace SAFQA.BLL.Managers.UserAppManager.UserManager
 {
     public class UserService : IUserService
     {

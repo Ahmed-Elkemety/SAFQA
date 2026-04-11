@@ -3,9 +3,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
+using SAFQA.BLL.Dtos.UserAppDto.AuctionDto;
 using SAFQA.BLL.Enums;
-using SAFQA.BLL.Managers.SellerAppManager.AuctionManager;
 using SAFQA.BLL.Managers.SellerAppManager.AuctionService;
+using SAFQA.BLL.Managers.UserAppManager.AuctionManager;
 
 namespace SAFQA.API.Controllers
 {
@@ -14,12 +15,12 @@ namespace SAFQA.API.Controllers
     public class AuctionController : ControllerBase
     {
         private readonly IAuctionManager _auctionManager;
-        private readonly IAuctionService _auctionService;
+        private readonly IAuctionManagerU _auctionManagerU;
 
-        public AuctionController(IAuctionManager auctionManager ,IAuctionService auctionService)
+        public AuctionController(IAuctionManager auctionManager,IAuctionManagerU auctionManagerU)
         {
             _auctionManager = auctionManager;
-            _auctionService = auctionService;
+            _auctionManagerU = auctionManagerU;
         }
 
         // GET: api/Auction/active/5
@@ -126,7 +127,7 @@ namespace SAFQA.API.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            var result = await _auctionService.GetHistory(
+            var result = await _auctionManager.GetHistory(
                 userId,
                 status,
                 page,
@@ -171,6 +172,21 @@ namespace SAFQA.API.Controllers
                 return NotFound("No profitable auctions found for this seller in this category.");
 
             return Ok(auctions);
+        }
+
+        [Authorize(Roles = "USER")]
+        [HttpPost("report")]
+        public async Task<IActionResult> ReportAuction(CreateReportDto dto)
+        {
+            var userId = User.FindFirst("uid")?.Value
+                         ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var result = await _auctionManagerU.ReportAuctionAsync(userId, dto);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
         }
     }
 }

@@ -27,7 +27,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
         IEnumerable<PopularProductsDto> GetMostPopularProductsBySeller(int sellerId, int topCount = 10);
 
         Task<IEnumerable<TopWinnerDto>> GetWinnersBySeller(int sellerId);
-            Task<PagedResult<SellerActionHistoryDto>> GetHistory(
+        Task<PagedResult<SellerActionHistoryDto>> GetHistory(
                 string userId,
                 AuctionStatus? status,
                 int page,

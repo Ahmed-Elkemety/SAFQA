@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using SAFQA.BLL.Managers.UserAppManager;
+using SAFQA.BLL.Managers.UserAppManager.UserManager;
 
 namespace SAFQA.API.Controllers
 {
