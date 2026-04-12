@@ -16,7 +16,7 @@ namespace SAFQA.DAL.Repository.Seller
         Task SaveChangesAsync();
         Task<SellerBasic?> GetSellerBasicAsync(string userId);
         Task<BusinessAccount?> GetBusinessAccountAsync(string userId);
-
+        Models.Seller GetSellerDetails(string userId);
         Task<int> GetTotalSellersCount();
         Task<int> GetVerifiedSellersCount();
         Task<int> CountPendingSellers();

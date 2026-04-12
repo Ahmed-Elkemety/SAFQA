@@ -177,10 +177,89 @@ namespace SAFQA.API.Controllers
         }
 
         [HttpGet("pending-sellers")]
-        public async Task<IActionResult> GetPendingSellers()
+        public async Task<IActionResult> GetPendingSellerscount()
         {
             var count = await _sellerService.GetPendingSellersCount();
             return Ok(new { pendingSellers = count });
+        }
+
+
+
+        [HttpGet("pending")]
+        public IActionResult GetPendingSellers([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            if (page <= 0) page = 1;
+            if (pageSize <= 0) pageSize = 10;
+
+            var result = _sellerService.GetPendingSellers(page, pageSize);
+
+            return Ok(result);
+        }
+
+        [HttpPost("approve/{userId}")]
+        public async Task<IActionResult> ApproveSeller(string userId)
+        {
+            var result = await _sellerService.ApproveSeller(userId);
+
+            if (!result)
+                return NotFound("Seller not found");
+
+            return Ok(new { message = "Seller approved successfully" });
+        }
+
+        [HttpPost("reject/{userId}")]
+        public async Task<IActionResult> RejectSeller(string userId)
+        {
+            var result = await _sellerService.RejectSeller(userId);
+
+            if (!result)
+                return NotFound("Seller not found");
+
+            return Ok(new { message = "Seller rejected successfully" });
+        }
+
+        [HttpGet]
+        public IActionResult GetAllSellers([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            if (page <= 0) page = 1;
+            if (pageSize <= 0) pageSize = 10;
+
+            var result = _sellerService.GetAllSellers(page, pageSize);
+
+            return Ok(result);
+        }
+
+        [HttpPut("suspend/{userId}")]
+        public async Task<IActionResult> SuspendSeller(string userId)
+        {
+            var result = await _sellerService.SuspendSeller(userId);
+
+            if (!result)
+                return NotFound(new { message = "Seller or User not found" });
+
+            return Ok(new { message = "Seller suspended successfully" });
+        }
+
+        [HttpPut("restore/{userId}")]
+        public async Task<IActionResult> RestoreSeller(string userId)
+        {
+            var result = await _sellerService.RestoreSeller(userId);
+
+            if (!result)
+                return NotFound(new { message = "Seller or User not found" });
+
+            return Ok(new { message = "Seller restored successfully" });
+        }
+
+        [HttpGet("seller/{userId}")]
+        public IActionResult GetSellerDetails(string userId)
+        {
+            var result = _sellerService.GetSellerDetails(userId);
+
+            if (result == null)
+                return NotFound(new { message = "Seller not found" });
+
+            return Ok(result);
         }
     }
 }

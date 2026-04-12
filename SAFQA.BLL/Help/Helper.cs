@@ -37,6 +37,7 @@ namespace SAFQA.BLL.Help
         {
             return Guid.NewGuid().ToString();
         }
+
         public class PagedResult<T>
         {
             public List<T> Data { get; set; }

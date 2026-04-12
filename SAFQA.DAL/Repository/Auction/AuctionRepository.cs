@@ -130,16 +130,6 @@ namespace SAFQA.DAL.Repository.Auction
                 .CountAsync();
         }
 
-        public IQueryable<Models.Auction> GetAll()
-        {
-            return _context.Auctions;
-        }
-
-        public Models.Auction GetById(int Id)
-        {
-            return _context.Auctions.FirstOrDefault(s => s.Id == Id);
-        }
-
         public async Task<List<TrendingAuction>> GetTrendingAuctionsAsync()
         {
             return await _context.Auctions
@@ -160,6 +150,18 @@ namespace SAFQA.DAL.Repository.Auction
                 .AsNoTracking()
                 .Where(a => a.Seller.UserId == userId);
         }
+
+        public IQueryable<Models.Auction> GetAll()
+        {
+            return _context.Auctions;
+        }
+
+
+        public Models.Auction GetById(int Id)
+        {
+            return _context.Auctions.FirstOrDefault(s => s.Id == Id);
+        }
+
 
         public void Add(Models.Auction auction)
         {

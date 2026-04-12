@@ -127,6 +127,7 @@ public class CardService : ICardService
         .Select(c => new SavedCaredDto
         {
             CardId = c.Id,
+            cardlabel = c.CardBrand,
             MaskedCardNumber = "•••• •••• •••• " + c.Last4Digits
         })
         .ToList();

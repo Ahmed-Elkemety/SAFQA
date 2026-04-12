@@ -61,20 +61,46 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
             return result.AsEnumerable(); 
         }
 
-        public async Task<List<TopCustomerDto>> GetTopCustomers()
+        public async Task<List<TopCustomerDto>> GetTopCustomers(string sellerUserId)
         {
-            var data = await _auctionRepository.GetTopCustomersAsync();
+            var users = _userRepo.GetAll().AsNoTracking();
 
-            var result = data.Select(x => new TopCustomerDto
-            {
-                Name = x.Name,
-                Email = x.Email,
-                CompanyName = x.CompanyName,
-                ParticipatedAuctions = x.ParticipatedAuctions,
-                TotalPaid = x.TotalPaid
-            }).ToList();
+            var query = users
+                .Where(u => !u.IsDeleted)
+                .Select(u => new
+                {
+                    User = u,
+                    Auctions = u.AuctionUsers
+                        .Where(au =>
+                            au.Auction.Seller.UserId == sellerUserId &&
+                            (au.Auction.Status == AuctionStatus.Active ||
+                             au.Auction.Status == AuctionStatus.Finished))
+                })
+                .Select(x => new TopCustomerDto
+                {
+                    Name = x.User.FullName,
+                    Email = x.User.Email,
 
-            return result;
+                    CompanyName = x.User.Seller != null
+                        ? x.User.Seller.StoreName
+                        : "Customer",
+
+                    ParticipatedAuctions = x.Auctions
+                        .Select(a => a.AuctionId)
+                        .Distinct()
+                        .Count(),
+
+                    TotalPaid =
+                        x.Auctions.Sum(a => a.Auction.SecurityDeposit)
+                        +
+                        x.Auctions
+                            .Where(a => a.Auction.WinnerUserId == x.User.Id)
+                            .Sum(a => a.Auction.FinalPrice)
+                })
+                .Where(x => x.ParticipatedAuctions > 0)
+                .OrderByDescending(x => x.ParticipatedAuctions);
+
+            return await query.ToListAsync();
         }
 
         public async Task<int> GetTotalAuctions()
@@ -277,5 +303,167 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
                 HasNextPage = page * pageSize < totalCount
             };
         }
+
+        public PagedResult<ActiveAuctionDto> GetActiveAuctions(int page, int pageSize)
+        {
+            var query = _auctionRepository.GetAll(); 
+
+            var filteredQuery = query
+                .Where(a =>
+                    a.Status == AuctionStatus.Active &&
+                    !a.IsDeleted &&
+                    a.EndDate > DateTime.UtcNow
+                );
+
+            var totalCount = filteredQuery.Count();
+
+            var data = filteredQuery
+                .OrderByDescending(a => a.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(a => new ActiveAuctionDto
+                {
+                    Id = a.Id,
+                    Title = a.Title,
+                    Description = a.Description,
+                    CurrentPrice = a.CurrentPrice,
+                    EndDate = a.EndDate,
+                    ImageBase64 = a.Image != null
+                        ? Convert.ToBase64String(a.Image)
+                        : null
+                })
+                .ToList();
+
+            return new PagedResult<ActiveAuctionDto>
+            {
+                Data = data,
+                TotalCount = totalCount,
+                CurrentPage = page,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
+                HasNextPage = page * pageSize < totalCount
+            };
+        }
+
+        public void ForceExpireAuction(int auctionId)
+        {
+            var auction = _auctionRepository.GetById(auctionId);
+
+            if (auction == null)
+                throw new Exception("Auction not found");
+
+            if (auction.Status != AuctionStatus.Active)
+                throw new Exception("Auction is not active");
+
+            if (auction.IsDeleted)
+                throw new Exception("Auction already deleted");
+
+            auction.Status = AuctionStatus.Finished;
+            auction.EndDate = DateTime.UtcNow;
+            auction.UpdatedAt = DateTime.UtcNow;
+
+            _auctionRepository.Update(auction);
+        }
+
+        public PagedResult<ExpiredAuctionsDto> GetExpiredAuctions(int page = 1, int pageSize = 10)
+        {
+            if (page <= 0) page = 1;
+            if (pageSize <= 0) pageSize = 10;
+
+            var query = _auctionRepository.GetAll()
+                .Where(a => !a.IsDeleted
+                            && a.EndDate < DateTime.Now
+                            && a.Status == AuctionStatus.Finished)
+                .Select(a => new ExpiredAuctionsDto
+                {
+                    Id = a.Id,
+                    Title = a.Title,
+                    Description = a.Description,
+                    Image = a.Image,
+                    EndDate = a.EndDate,
+                    Price = a.FinalPrice > 0 ? a.FinalPrice : a.CurrentPrice
+                });
+
+            var totalCount = query.Count();
+
+            var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+            var data = query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return new PagedResult<ExpiredAuctionsDto>
+            {
+                Data = data,
+                CurrentPage = page,
+                TotalPages = totalPages,
+                TotalCount = totalCount,
+                HasNextPage = page < totalPages
+            };
+        }
+
+        public void DeleteAuctionPermanently(int id)
+        {
+            var auction = _auctionRepository.GetById(id);
+
+            if (auction == null)
+                throw new Exception("Auction not found");
+
+            auction.IsDeleted = true;
+            auction.DeletedAt = DateTime.Now.ToString();
+            auction.UpdatedAt = DateTime.Now;
+
+            _auctionRepository.Update(auction);
+        }
+
+        public PagedResult<RejectedDeletedAuctionDto> GetRejectedDeletedAuctions(int page = 1, int pageSize = 10)
+        {
+            if (page <= 0) page = 1;
+            if (pageSize <= 0) pageSize = 10;
+
+            var query = _auctionRepository.GetAll()
+                .Where(a =>
+                    a.IsDeleted == true
+                    || a.Status == AuctionStatus.Cancelled
+                );
+
+            var totalCount = query.Count();
+
+            var data = query
+                .OrderByDescending(a => a.EndDate) 
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(a => new RejectedDeletedAuctionDto
+                {
+                    Id = a.Id,
+                    Title = a.Title,
+                    Description = a.Description,
+                    Image = a.Image,
+                    CurrentPrice = a.CurrentPrice,
+                    EndDate = a.EndDate
+                })
+                .ToList();
+
+            var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+            return new PagedResult<RejectedDeletedAuctionDto>
+            {
+                Data = data,
+                CurrentPage = page,
+                TotalPages = totalPages,
+                TotalCount = totalCount,
+                HasNextPage = page < totalPages
+            };
+        }
+        public void DeleteAuctionPermanentlyy(int id)
+        {
+            var auction = _auctionRepository.GetById(id);
+
+            if (auction == null)
+                throw new Exception("Auction not found");
+
+            _auctionRepository.Delete(auction);
+        }
+
     }
 }

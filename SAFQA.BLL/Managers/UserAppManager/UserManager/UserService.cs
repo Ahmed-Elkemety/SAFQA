@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static SAFQA.BLL.Help.Helper;
 
 
 namespace SAFQA.BLL.Managers.UserAppManager.UserManager
@@ -58,6 +59,70 @@ namespace SAFQA.BLL.Managers.UserAppManager.UserManager
             return result;
         }
 
+        public PagedResult<UserListDto> GetUsers(int page, int pageSize)
+        {
+            var query = _userRepo.GetAll()
+                .Where(u => !u.IsDeleted);
+
+            var totalCount = query.Count();
+
+            var users = query
+                .OrderByDescending(u => u.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList()
+                .Select(u =>
+                {
+                    string action;
+
+                    if (u.Status == UserStatus.Active)
+                        action = "Suspend";
+                    else
+                        action = "Restore";
+
+                    return new UserListDto
+                    {
+                        Id = u.Id,
+                        FullName = u.FullName,
+                        Email = u.Email,
+                        Status = u.Status.ToString(),
+                        Action = action
+                    };
+                })
+                .ToList();
+
+            return new PagedResult<UserListDto>
+            {
+                Data = users,
+                CurrentPage = page,
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
+                HasNextPage = page * pageSize < totalCount
+            };
+        }
+
+        public bool ChangeStatus(string userId)
+        {
+            var user = _userRepo.GetById(userId);
+
+            if (user == null)
+                return false;
+
+            user.Status = user.Status switch
+            {
+                UserStatus.Active => UserStatus.Blocked,
+                UserStatus.Blocked => UserStatus.Active,
+                UserStatus.Inactive => UserStatus.Active,
+                _ => user.Status
+            };
+
+            user.UpdatedAt = DateTime.UtcNow;
+
+            _userRepo.Update(user);
+
+            return true;
+        }
+
         public async Task<int> GetTotalUsersAsync()
         {
             return await _userRepo.GetTotalUsers();
@@ -72,7 +137,5 @@ namespace SAFQA.BLL.Managers.UserAppManager.UserManager
         {
             return await _userRepo.GetBlockedUsersCount();
         }
-
-        
     }
 }

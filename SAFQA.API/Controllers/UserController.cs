@@ -31,6 +31,8 @@ namespace SAFQA.API.Controllers
             });
         }
 
+
+        [Authorize(Roles = "ADMIN")]
         [HttpGet("total-users")]
         public async Task<IActionResult> GetTotalUsers()
         {
@@ -42,7 +44,7 @@ namespace SAFQA.API.Controllers
             });
         }
 
-
+        [Authorize(Roles = "ADMIN")]
         [HttpGet("active-count")]
         public async Task<IActionResult> GetActiveUsersCount()
         {
@@ -50,11 +52,37 @@ namespace SAFQA.API.Controllers
             return Ok(new { ActiveUsersCount = count });
         }
 
+
+        [Authorize(Roles = "ADMIN")]
         [HttpGet("blocked-count")]
         public async Task<IActionResult> GetBlockedUsersCount()
         {
             int blockedCount = await _homeService.GetBlockedUsersCountAsync();
             return Ok(new { Count = blockedCount });
+        }
+
+        [Authorize(Roles = "ADMIN")]
+        [HttpGet]
+        public IActionResult GetUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            var result = _homeService.GetUsers(page, pageSize);
+            return Ok(result);
+        }
+
+
+        [Authorize(Roles = "ADMIN")]
+        [HttpPost("{userId}/change-status")]
+        public IActionResult ChangeStatus(string userId)
+        {
+            var result = _homeService.ChangeStatus(userId);
+
+            if (!result)
+                return NotFound("User not found");
+
+            return Ok(new
+            {
+                message = "User status updated successfully"
+            });
         }
     }
 }

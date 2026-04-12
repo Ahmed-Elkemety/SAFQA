@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -14,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using SAFQA.BLL.Dtos.AccountDto.Seller;
 using SAFQA.BLL.Dtos.SellerAppDto.BussinessAccountDto;
 using SAFQA.BLL.Dtos.SellerAppDto.HomeDto;
+using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
 using SAFQA.BLL.Enums;
 using SAFQA.BLL.Help;
 using SAFQA.BLL.Managers.AccountManager.Auth;
@@ -24,7 +17,17 @@ using SAFQA.DAL.Models;
 using SAFQA.DAL.Repository.Notification;
 using SAFQA.DAL.Repository.Seller;
 using SAFQA.DAL.Repository.Transaction;
+using SAFQA.DAL.Repository.Users;
 using SAFQA.DAL.Repository.Wallet;
+using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
+using static SAFQA.BLL.Help.Helper;
 
 namespace SAFQA.BLL.Managers.SellerAppManager
 {
@@ -33,12 +36,13 @@ namespace SAFQA.BLL.Managers.SellerAppManager
         private readonly SAFQA_Context _context;
         private readonly UserManager<User> _userManager;
         private readonly IConfiguration _configuration;
+        private readonly IUserRepo _userRepo;
         private readonly IsellerRepo _sellerRepo;
         private readonly IWalletRepo _walletRepo;
         private readonly ITransactionRepository _transactionRepository;
         private readonly INotificationRepository _notificationRepository;
 
-        public sellerManager(SAFQA_Context context , IConfiguration configuration,  UserManager<User> userManager, IsellerRepo sellerRepo , IWalletRepo walletRepo , ITransactionRepository transactionRepository , INotificationRepository notificationRepository)
+        public sellerManager(SAFQA_Context context , IUserRepo userRepo, IConfiguration configuration,  UserManager<User> userManager, IsellerRepo sellerRepo , IWalletRepo walletRepo , ITransactionRepository transactionRepository , INotificationRepository notificationRepository)
         {
             _configuration = configuration;
             _context = context;
@@ -47,6 +51,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager
             _walletRepo = walletRepo;
             _transactionRepository = transactionRepository;
             _notificationRepository = notificationRepository;
+            _userRepo = userRepo;
         }
 
         private async Task<string> GenerateTokensAsync(User user)
@@ -574,6 +579,187 @@ namespace SAFQA.BLL.Managers.SellerAppManager
                 IsSuccess = true,
                 Message = "Upgrade successful"
             };
+        }
+
+        public PagedResult<PendingSellerDto> GetPendingSellers(int page, int pageSize)
+        {
+            var query = _sellerRepo.GetAll()
+                .Where(s => s.VerificationStatus == SellerVerificationStatus.Pending && !s.IsDeleted);
+
+
+            var totalCount = query.Count();
+
+            var data = query
+                .OrderByDescending(s => s.SellerAt) // أو CreatedAt لو عندك
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(s => new PendingSellerDto
+                {
+                    UserId = s.UserId,
+                    BusinessName = s.StoreName,
+                    OwnerName = s.User.FullName,
+                    Email = s.User.Email
+                })
+                .ToList();
+
+            var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+
+            return new PagedResult<PendingSellerDto>
+            {
+                Data = data,
+                CurrentPage = page,
+                TotalPages = totalPages,
+                TotalCount = totalCount,
+                HasNextPage = page < totalPages
+            };
+        }
+
+
+        public async Task<bool> ApproveSeller(string userId)
+        {
+            var seller = _sellerRepo.GetById(userId);
+
+            if (seller == null)
+                return false;
+
+            seller.VerificationStatus = SellerVerificationStatus.Verified;
+            seller.StoreStatus = StoreStatus.Active;
+            seller.SellerAt = DateTime.UtcNow;
+
+            _sellerRepo.Update(seller);
+            await _sellerRepo.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<bool> RejectSeller(string userId)
+        {
+            var seller = _sellerRepo.GetById(userId);
+
+            if (seller == null)
+                return false;
+
+            seller.VerificationStatus = SellerVerificationStatus.Rejected;
+
+            _sellerRepo.Update(seller);
+            await _sellerRepo.SaveChangesAsync();
+
+            return true;
+        }
+
+        public PagedResult<SellerListDto> GetAllSellers(int page, int pageSize)
+        {
+            var query = _sellerRepo.GetAll()
+                .Where(s => !s.IsDeleted)
+                .Where(s => _context.UserRoles
+                    .Any(ur => ur.UserId == s.UserId &&
+                        _context.Roles
+                            .Any(r => r.Id == ur.RoleId && r.Name == "SELLER")));
+
+            var totalCount = query.Count();
+
+            var data = query
+                .OrderByDescending(s => s.SellerAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(s => new SellerListDto
+                {
+                    Business = s.StoreName,
+                    Owner = s.User.FullName,
+                    Email = s.User.Email,
+                    Status = s.StoreStatus.ToString()
+                })
+                .ToList();
+
+            return new PagedResult<SellerListDto>
+            {
+                Data = data,
+                CurrentPage = page,
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling((double)totalCount / pageSize),
+                HasNextPage = page * pageSize < totalCount
+            };
+        }
+
+
+        public async Task<bool> SuspendSeller(string userId)
+        {
+            var seller = _sellerRepo.GetById(userId);
+            var user = _userRepo.GetById(userId);
+
+            if (seller == null || user == null)
+                return false;
+
+            user.Status = UserStatus.Blocked;
+
+            seller.StoreStatus = StoreStatus.Suspended;
+
+            _userRepo.Update(user);
+            _sellerRepo.Update(seller);
+
+            await _sellerRepo.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<bool> RestoreSeller(string userId)
+        {
+            var seller = _sellerRepo.GetById(userId);
+            var user = _userRepo.GetById(userId);
+
+            if (seller == null || user == null)
+                return false;
+
+            user.Status = UserStatus.Active;
+
+            seller.StoreStatus = StoreStatus.Active;
+
+            _userRepo.Update(user);
+            _sellerRepo.Update(seller);
+
+            await _sellerRepo.SaveChangesAsync();
+
+            return true;
+        }
+
+        public SellerDetailsDto GetSellerDetails(string userId)
+        {
+            var seller = _sellerRepo.GetSellerDetails(userId);
+
+            if (seller == null)
+                return null;
+
+            var dto = new SellerDetailsDto
+            {
+                Id = seller.Id,
+                StoreName = seller.StoreName,
+                Description = seller.Description,
+                PhoneNumber = seller.PhoneNumber,
+                CityName = seller.City?.Name,
+                StoreLogo = seller.StoreLogo,
+
+                VerificationStatus = seller.VerificationStatus.ToString(),
+                StoreStatus = seller.StoreStatus.ToString()
+            };
+
+            // Personal Seller
+            if (seller.PersonalSeller != null)
+            {
+                dto.OwnerIdDocument = seller.PersonalSeller.NationalIdFront;
+                dto.TaxId = null;
+                dto.CRDocument = null;
+            }
+
+            // Business Seller
+            if (seller.BusinessSeller != null)
+            {
+                dto.CRDocument = seller.BusinessSeller.CommercialRegister;
+                dto.TaxId = seller.BusinessSeller.TaxId.ToString();
+                dto.OwnerIdDocument = seller.BusinessSeller.OwnerNationalIdFront;
+            }
+
+            return dto;
         }
     }
 }

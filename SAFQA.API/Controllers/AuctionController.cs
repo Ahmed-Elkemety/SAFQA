@@ -24,7 +24,7 @@ namespace SAFQA.API.Controllers
         }
 
         // GET: api/Auction/active/5
-        [HttpGet("active/{sellerId}")]
+        [HttpGet("Total_active/{sellerId}")]
         public async Task<IActionResult> GetActiveAuctions(int sellerId)
         {
             var activeAuctions = await _auctionManager.GetActiveSellerAuctions(sellerId);
@@ -39,15 +39,13 @@ namespace SAFQA.API.Controllers
             return Ok(total);
         }
 
-        [HttpGet("Top Buyers")]
-        public async Task<ActionResult<List<TopCustomerDto>>> GetTopCustomers()
+
+        [HttpGet("{sellerUserId}/Top customers")]
+        public async Task<IActionResult> GetSellerCustomers(string sellerUserId)
         {
-            var topCustomers = await _auctionManager.GetTopCustomers();
+            var result = await _auctionManager.GetTopCustomers(sellerUserId);
 
-            if (topCustomers == null || topCustomers.Count == 0)
-                return NotFound("No customers found.");
-
-            return Ok(topCustomers);
+            return Ok(result);
         }
 
         [HttpGet("total-auctions")]
@@ -102,7 +100,7 @@ namespace SAFQA.API.Controllers
 
             return Ok(result);
         }
-        
+
         [HttpGet("{sellerId}/category-percentages")]
         public async Task<IActionResult> GetCategoryPercentages(int sellerId)
         {
