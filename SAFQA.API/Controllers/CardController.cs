@@ -49,5 +49,19 @@ namespace SAFQA.API.Controllers
 
             return Ok(cards);
         }
+
+        [HttpDelete("Delete-Card/{id}")]
+        [Authorize(Roles = "USER")]
+        public async Task<IActionResult> DeleteCard(int id)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var result = await _cardService.DeleteCardAsync(id, userId);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
     }
 }

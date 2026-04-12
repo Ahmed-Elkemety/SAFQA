@@ -92,7 +92,6 @@ namespace SAFQA.API.Controllers
         [HttpGet("TransactionHistory")]
         public IActionResult GetTransactionHistory()
         {
-            // ClaimTypes.NameIdentifier ---> Get UserId
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrEmpty(userId))

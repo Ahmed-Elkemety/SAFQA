@@ -25,18 +25,12 @@ namespace SAFQA.DAL.Configration
                    .IsRequired()
                    .HasMaxLength(20);
 
-            builder.Property(c => c.PaymentToken)
-                   .IsRequired()
-                   .HasMaxLength(200);
-
             builder.Property(c => c.ExpiryMonth)
                    .IsRequired();
 
             builder.Property(c => c.ExpiryYear)
                    .IsRequired();
 
-            builder.Property(c => c.IsDefault)
-                   .HasDefaultValue(false);
 
             builder.Property(c => c.CreatedAt)
                    .HasDefaultValueSql("GETUTCDATE()");
@@ -46,8 +40,6 @@ namespace SAFQA.DAL.Configration
                    .HasForeignKey(c => c.WalletId)
                    .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasIndex(c => new { c.WalletId, c.PaymentToken })
-                   .IsUnique();
         }
     }
 }

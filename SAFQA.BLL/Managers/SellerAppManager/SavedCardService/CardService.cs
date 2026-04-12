@@ -1,6 +1,10 @@
-﻿using SAFQA.BLL.Dtos.SellerAppDto.PaymentDto;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using SAFQA.BLL.Dtos.SellerAppDto.PaymentDto;
 using SAFQA.BLL.Dtos.SellerAppDto.WalletDto;
+using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.BLL.Managers.SellerAppManager.WalletServeice;
+using SAFQA.DAL.Database;
 using SAFQA.DAL.Models;
 using SAFQA.DAL.Repository.Wallet;
 
@@ -8,11 +12,13 @@ public class CardService : ICardService
 {
     private readonly ICardRepo _cardRepo;
     private readonly IWalletRepo _walletRepo;
+    private readonly SAFQA_Context _context;
 
-    public CardService(ICardRepo cardRepo, IWalletRepo walletRepo)
+    public CardService(ICardRepo cardRepo, IWalletRepo walletRepo , SAFQA_Context context)
     {
         _cardRepo = cardRepo;
         _walletRepo = walletRepo;
+        _context = context;
     }
     public bool AddCard(string userId, AddCardDto dto, out string message)
     {
@@ -72,10 +78,18 @@ public class CardService : ICardService
                 return false;
             }
 
-            string brand = dto.CardNumber.StartsWith("4") ? "Visa" :
-                           dto.CardNumber.StartsWith("5") ? "MasterCard" : "Unknown";
+            string brand;
 
-            string token = Guid.NewGuid().ToString();
+            if (dto.CardLabel != null) 
+            {
+                brand = dto.CardLabel;
+            }
+            else
+            {
+               brand = dto.CardNumber.StartsWith("4") ? "Visa" :
+                       dto.CardNumber.StartsWith("5") ? "MasterCard" : "Unknown";
+
+            }
 
             var card = new SavedCard
             {
@@ -83,9 +97,9 @@ public class CardService : ICardService
                 CardBrand = brand,
                 ExpiryMonth = month,
                 ExpiryYear = year,
-                PaymentToken = token,
                 WalletId = wallet.Id,
-                IsDefault = false
+                CardholderName = dto.CardholderName,
+
             };
 
             _cardRepo.Add(card);
@@ -118,5 +132,40 @@ public class CardService : ICardService
         .ToList();
 
         return cards;
+    }
+
+    public async Task<AuthResult> DeleteCardAsync(int cardId, string userId)
+    {
+        var card = await _context.savedCards
+            .Include(c => c.Wallet)
+            .FirstOrDefaultAsync(c => c.Id == cardId);
+
+        if (card == null)
+        {
+            return new AuthResult
+            {
+                IsSuccess = false,
+                Message = "Card not found"
+            };
+        }
+
+        var userIdcard = card.Wallet.UserId;
+
+        if (userIdcard != userId)
+        {
+            return new AuthResult
+            {
+                IsSuccess = false,
+                Message = "Unauthorized"
+            };
+        }
+
+        _cardRepo.Delete(card);
+
+        return new AuthResult
+        {
+            IsSuccess = true,
+            Message = "Card deleted successfully"
+        };
     }
 }

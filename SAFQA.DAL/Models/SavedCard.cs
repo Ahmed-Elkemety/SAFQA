@@ -18,9 +18,7 @@ namespace SAFQA.DAL.Models
 
         public int ExpiryYear { get; set; }
 
-        public string PaymentToken { get; set; }
-
-        public bool IsDefault { get; set; } = false;
+        public string CardholderName { get; set; }
 
         public int WalletId { get; set; }
         public Wallet Wallet { get; set; }
