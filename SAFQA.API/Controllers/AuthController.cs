@@ -91,11 +91,10 @@ namespace SAFQA.API.Controllers
 
         [Authorize(Roles = "USER")]
         [HttpPost("refresh-token")]
-        public async Task<IActionResult> RefreshToken([FromBody] string Token)
+        public async Task<IActionResult> RefreshToken()
         {
-            var principal = _authUser.GetPrincipalFromExpiredToken(Token);
-
-            var userId = principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userId = User.FindFirst("uid")?.Value
+                         ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();

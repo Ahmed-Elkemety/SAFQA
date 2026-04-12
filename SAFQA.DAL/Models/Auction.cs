@@ -51,5 +51,6 @@ namespace SAFQA.DAL.Models
         public ICollection<ProxyBidding> ProxyBiddings { get; set; }
         public ICollection<Disputes> disputes { get; set; } // 1 to M
         public ICollection<Item> items { get; set; } // 1 to M
+        public ICollection<AuctionReport> Reports { get; set; }
     }
 }

@@ -62,6 +62,7 @@ namespace SAFQA.DAL.Database
         public DbSet<BusinessSeller> businessSellers { get; set; }
         public DbSet<AuctionLike> auctionLikes { get; set; }
         public DbSet<AuctionView> auctionViews { get; set; }
+        public DbSet<AuctionReport> auctionReports { get; set; }
 
     }
 }

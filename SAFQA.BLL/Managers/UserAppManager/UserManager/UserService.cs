@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 using static SAFQA.BLL.Help.Helper;
 
 
-namespace SAFQA.BLL.Managers.UserAppManager
+namespace SAFQA.BLL.Managers.UserAppManager.UserManager
 {
     public class UserService : IUserService
     {

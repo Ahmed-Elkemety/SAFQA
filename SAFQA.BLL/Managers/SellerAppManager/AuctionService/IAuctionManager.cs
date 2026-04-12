@@ -32,7 +32,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
         PagedResult<RejectedDeletedAuctionDto> GetRejectedDeletedAuctions(int page = 1, int pageSize = 10);
         void DeleteAuctionPermanentlyy(int id);
         Task<IEnumerable<TopWinnerDto>> GetWinnersBySeller(int sellerId);
-            Task<PagedResult<SellerActionHistoryDto>> GetHistory(
+        Task<PagedResult<SellerActionHistoryDto>> GetHistory(
                 string userId,
                 AuctionStatus? status,
                 int page,

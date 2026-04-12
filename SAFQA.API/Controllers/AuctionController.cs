@@ -3,9 +3,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
+using SAFQA.BLL.Dtos.UserAppDto.AuctionDto;
 using SAFQA.BLL.Enums;
-using SAFQA.BLL.Managers.SellerAppManager.AuctionManager;
 using SAFQA.BLL.Managers.SellerAppManager.AuctionService;
+using SAFQA.BLL.Managers.UserAppManager.AuctionManager;
 
 namespace SAFQA.API.Controllers
 {
@@ -14,12 +15,12 @@ namespace SAFQA.API.Controllers
     public class AuctionController : ControllerBase
     {
         private readonly IAuctionManager _auctionManager;
-        private readonly IAuctionService _auctionService;
+        private readonly IAuctionManagerU _auctionManagerU;
 
-        public AuctionController(IAuctionManager auctionManager, IAuctionService auctionService)
+        public AuctionController(IAuctionManager auctionManager,IAuctionManagerU auctionManagerU)
         {
             _auctionManager = auctionManager;
-            _auctionService = auctionService;
+            _auctionManagerU = auctionManagerU;
         }
 
         // GET: api/Auction/active/5
@@ -124,7 +125,7 @@ namespace SAFQA.API.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            var result = await _auctionService.GetHistory(
+            var result = await _auctionManager.GetHistory(
                 userId,
                 status,
                 page,
@@ -171,79 +172,19 @@ namespace SAFQA.API.Controllers
             return Ok(auctions);
         }
 
-        // [Authorize(Roles = "ADMIN")]
-        [HttpGet("active")]
-        public IActionResult GetActiveAuctions([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        [Authorize(Roles = "USER")]
+        [HttpPost("report")]
+        public async Task<IActionResult> ReportAuction(CreateReportDto dto)
         {
-            if (page <= 0) page = 1;
-            if (pageSize <= 0) pageSize = 10;
+            var userId = User.FindFirst("uid")?.Value
+                         ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            var result = _auctionManager.GetActiveAuctions(page, pageSize);
+            var result = await _auctionManagerU.ReportAuctionAsync(userId, dto);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
 
             return Ok(result);
-        }
-
-        // [Authorize(Roles = "ADMIN")]
-        [HttpPost("force-expire/{id}")]
-        public IActionResult ForceExpireAuction(int id)
-        {
-            try
-            {
-                _auctionManager.ForceExpireAuction(id);
-                return Ok(new { message = "Auction expired successfully" });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
-
-
-        [HttpGet("expired")]
-        public IActionResult GetExpiredAuctions([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
-        {
-            var result = _auctionManager.GetExpiredAuctions(page, pageSize);
-            return Ok(result);
-        }
-
-        [HttpDelete("{id}")]
-        public IActionResult DeleteAuctionPermanently(int id)
-        {
-            try
-            {
-                _auctionManager.DeleteAuctionPermanently(id);
-                return Ok(new { message = "Auction deleted successfully" });
-            }
-            catch (Exception ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-        }
-
-        // [Authorize(Roles = "ADMIN")]
-        [HttpGet("rejected-deleted")]
-        public IActionResult GetRejectedDeletedAuctions(
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 10)
-        {
-            var result = _auctionManager.GetRejectedDeletedAuctions(page, pageSize);
-
-            return Ok(result);
-        }
-
-        // [Authorize(Roles = "ADMIN")]
-        [HttpDelete("permanent/{id}")]
-        public IActionResult DeleteAuctionPermanentlyy(int id)
-        {
-            try
-            {
-                _auctionManager.DeleteAuctionPermanently(id);
-                return Ok(new { message = "Auction deleted permanently" });
-            }
-            catch (Exception ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
         }
     }
 }
