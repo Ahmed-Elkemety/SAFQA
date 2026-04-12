@@ -1,13 +1,16 @@
-﻿using System;
+﻿using SAFQA.BLL.Dtos.AccountDto.Seller;
+using SAFQA.BLL.Dtos.SellerAppDto.BussinessAccountDto;
+using SAFQA.BLL.Dtos.SellerAppDto.HomeDto;
+using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
+using SAFQA.BLL.Managers.AccountManager.Auth;
+using SAFQA.DAL.Enums;
+using SAFQA.DAL.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SAFQA.BLL.Dtos.AccountDto.Seller;
-using SAFQA.BLL.Dtos.SellerAppDto.BussinessAccountDto;
-using SAFQA.BLL.Dtos.SellerAppDto.HomeDto;
-using SAFQA.BLL.Managers.AccountManager.Auth;
-using SAFQA.DAL.Enums;
+using static SAFQA.BLL.Help.Helper;
 
 namespace SAFQA.BLL.Managers.SellerAppManager.SellerManager
 {
@@ -20,9 +23,15 @@ namespace SAFQA.BLL.Managers.SellerAppManager.SellerManager
         Task<BusinessAccountDto?> GetBusinessAccountAsync(string userId);
         Task<AuthResult> EditProfile(string userId, EditSellerProfileDto dto);
         Task<AuthResult> UpgradeSellerAsync(string userId, UpgradeType newUpgrade);
-
         Task<int> GetTotalSellersCount();
         Task<int> GetVerifiedSellersCount();
         Task<int> GetPendingSellersCount();
+        PagedResult<PendingSellerDto> GetPendingSellers(int page, int pageSize);
+        Task<bool> ApproveSeller(string userId);
+        Task<bool> RejectSeller(string userId);
+        PagedResult<SellerListDto> GetAllSellers(int page, int pageSize);
+        Task<bool> SuspendSeller(string userId);
+        Task<bool> RestoreSeller(string userId);
+        SellerDetailsDto GetSellerDetails(string userId);
     }
 }

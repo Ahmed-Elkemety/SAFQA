@@ -10,5 +10,6 @@ namespace SAFQA.BLL.Dtos.SellerAppDto.WalletDto
     {
         public int CardId { get; set; }
         public string MaskedCardNumber { get; set; }
+        public string cardlabel { get; set; }
     }
 }

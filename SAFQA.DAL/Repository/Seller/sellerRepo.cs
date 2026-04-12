@@ -105,6 +105,16 @@ namespace SAFQA.DAL.Repository.Seller
             return pendingRegistered;
         }
 
+        public Models.Seller GetSellerDetails(string userId) // No Editing
+        {
+            return _context.Sellers
+                .Include(s => s.City)
+                .Include(s => s.PersonalSeller)
+                .Include(s => s.BusinessSeller)
+                .FirstOrDefault(s => s.UserId == userId && !s.IsDeleted);
+        }
+
+
         public IQueryable<Models.Seller> GetAll()
         {
             return _context.Sellers;

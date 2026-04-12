@@ -16,14 +16,14 @@ namespace SAFQA.API.Controllers
         private readonly IAuctionManager _auctionManager;
         private readonly IAuctionService _auctionService;
 
-        public AuctionController(IAuctionManager auctionManager ,IAuctionService auctionService)
+        public AuctionController(IAuctionManager auctionManager, IAuctionService auctionService)
         {
             _auctionManager = auctionManager;
             _auctionService = auctionService;
         }
 
         // GET: api/Auction/active/5
-        [HttpGet("active/{sellerId}")]
+        [HttpGet("Total_active/{sellerId}")]
         public async Task<IActionResult> GetActiveAuctions(int sellerId)
         {
             var activeAuctions = await _auctionManager.GetActiveSellerAuctions(sellerId);
@@ -38,15 +38,13 @@ namespace SAFQA.API.Controllers
             return Ok(total);
         }
 
-        [HttpGet("Top Buyers")]
-        public async Task<ActionResult<List<TopCustomerDto>>> GetTopCustomers()
+
+        [HttpGet("{sellerUserId}/Top customers")]
+        public async Task<IActionResult> GetSellerCustomers(string sellerUserId)
         {
-            var topCustomers = await _auctionManager.GetTopCustomers();
+            var result = await _auctionManager.GetTopCustomers(sellerUserId);
 
-            if (topCustomers == null || topCustomers.Count == 0)
-                return NotFound("No customers found.");
-
-            return Ok(topCustomers);
+            return Ok(result);
         }
 
         [HttpGet("total-auctions")]
@@ -101,7 +99,7 @@ namespace SAFQA.API.Controllers
 
             return Ok(result);
         }
-        
+
         [HttpGet("{sellerId}/category-percentages")]
         public async Task<IActionResult> GetCategoryPercentages(int sellerId)
         {
@@ -171,6 +169,81 @@ namespace SAFQA.API.Controllers
                 return NotFound("No profitable auctions found for this seller in this category.");
 
             return Ok(auctions);
+        }
+
+        // [Authorize(Roles = "ADMIN")]
+        [HttpGet("active")]
+        public IActionResult GetActiveAuctions([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            if (page <= 0) page = 1;
+            if (pageSize <= 0) pageSize = 10;
+
+            var result = _auctionManager.GetActiveAuctions(page, pageSize);
+
+            return Ok(result);
+        }
+
+        // [Authorize(Roles = "ADMIN")]
+        [HttpPost("force-expire/{id}")]
+        public IActionResult ForceExpireAuction(int id)
+        {
+            try
+            {
+                _auctionManager.ForceExpireAuction(id);
+                return Ok(new { message = "Auction expired successfully" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+
+        [HttpGet("expired")]
+        public IActionResult GetExpiredAuctions([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            var result = _auctionManager.GetExpiredAuctions(page, pageSize);
+            return Ok(result);
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult DeleteAuctionPermanently(int id)
+        {
+            try
+            {
+                _auctionManager.DeleteAuctionPermanently(id);
+                return Ok(new { message = "Auction deleted successfully" });
+            }
+            catch (Exception ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
+
+        // [Authorize(Roles = "ADMIN")]
+        [HttpGet("rejected-deleted")]
+        public IActionResult GetRejectedDeletedAuctions(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var result = _auctionManager.GetRejectedDeletedAuctions(page, pageSize);
+
+            return Ok(result);
+        }
+
+        // [Authorize(Roles = "ADMIN")]
+        [HttpDelete("permanent/{id}")]
+        public IActionResult DeleteAuctionPermanentlyy(int id)
+        {
+            try
+            {
+                _auctionManager.DeleteAuctionPermanently(id);
+                return Ok(new { message = "Auction deleted permanently" });
+            }
+            catch (Exception ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
         }
     }
 }
