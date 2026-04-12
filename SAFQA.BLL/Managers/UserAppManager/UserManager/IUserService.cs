@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-namespace SAFQA.BLL.Managers.UserAppManager.UserManager
 using static SAFQA.BLL.Help.Helper;
 namespace SAFQA.BLL.Managers.UserAppManager
 {

@@ -15,6 +15,7 @@ using SAFQA.BLL.Managers.SellerAppManager.SellerManager;
 using SAFQA.BLL.Managers.SellerAppManager.TransactionService;
 using SAFQA.BLL.Managers.SellerAppManager.WalletServeice;
 using SAFQA.BLL.Managers.SellerAppManager.WalletService;
+using SAFQA.BLL.Managers.UserAppManager;
 using SAFQA.BLL.Managers.UserAppManager.AuctionManager;
 using SAFQA.BLL.Managers.UserAppManager.UserManager;
 using SAFQA.DAL.Database;

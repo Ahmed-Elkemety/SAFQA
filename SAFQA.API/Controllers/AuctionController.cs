@@ -80,7 +80,7 @@ namespace SAFQA.API.Controllers
         [HttpGet("winners/{sellerId}")]
         public async Task<IActionResult> GetWinnersBySeller(int sellerId)
         {
-            var result = await _auctionManager.GetWinnersBySeller(sellerId); // ← await هنا
+            var result = await _auctionManager.GetWinnersBySeller(sellerId); 
 
             if (result == null || !result.Any())
                 return NotFound("No winners found for this seller");
