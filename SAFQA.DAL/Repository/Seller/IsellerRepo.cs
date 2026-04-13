@@ -20,5 +20,6 @@ namespace SAFQA.DAL.Repository.Seller
         Task<int> GetTotalSellersCount();
         Task<int> GetVerifiedSellersCount();
         Task<int> CountPendingSellers();
+        Task<Models.Seller> GetByUserIdAsync(string userId);
     }
 }

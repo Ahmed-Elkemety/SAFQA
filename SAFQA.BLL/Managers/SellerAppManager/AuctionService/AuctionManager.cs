@@ -1,11 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Asn1.UA;
 using SAFQA.BLL.Dtos.SellerAppDto.AuctionDto;
 using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
 using SAFQA.BLL.Enums;
+using SAFQA.BLL.Help;
+using SAFQA.BLL.Managers.AccountManager.Auth;
+using SAFQA.DAL.Enums;
 using SAFQA.DAL.Models;
 using SAFQA.DAL.Repository.Auction;
 using SAFQA.DAL.Repository.Category;
 using SAFQA.DAL.Repository.Items;
+using SAFQA.DAL.Repository.Notification;
+using SAFQA.DAL.Repository.Seller;
 using SAFQA.DAL.Repository.Users;
 using System;
 using System.Collections.Generic;
@@ -20,10 +26,15 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
     {
         private readonly IAuctionRepository _auctionRepository;
         private readonly IUserRepo _userRepo;
-        public AuctionManager(IAuctionRepository auctionRepository, IitemsRepository itemsRepository, IcategoryRepo categoryRepository, IUserRepo userRepo)
+        private readonly IsellerRepo _sellerRepository;
+        private readonly INotificationRepository _notification;
+
+        public AuctionManager(IAuctionRepository auctionRepository, IitemsRepository itemsRepository, IcategoryRepo categoryRepository, IUserRepo userRepo , IsellerRepo sellerRepository , INotificationRepository notification)
         {
             _auctionRepository = auctionRepository;
             _userRepo = userRepo;
+            _sellerRepository = sellerRepository;
+            _notification = notification;
         }
         public Task<int> GetTotalSellerAuctions(int sellerId)
         {
@@ -232,16 +243,16 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
             var sellerAuctions = _auctionRepository.GetAll()
                 .Where(a => a.SellerId == sellerId);
 
-            // 2️⃣ نحسب عدد المشاهدات لكل منتج بناءً على Auction.ViewCount
+
             var productViews = sellerAuctions
                 .SelectMany(a => a.items, (auction, item) => new PopularProductsDto
                 {
                     Title = item.title,
                     Description = item.Description,
-                    ViewCount = auction.ViewsCount // ✅ هنا بنستخدم عدد المشاهدات من المزاد
+                    ViewCount = auction.ViewsCount 
                 })
-                .OrderByDescending(p => p.ViewCount) // نرتب من الأكثر مشاهدة
-                .Take(topCount) // نجيب فقط أعلى المنتجات
+                .OrderByDescending(p => p.ViewCount) 
+                .Take(topCount)
                 .ToList();
 
             return productViews;
@@ -463,6 +474,115 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
                 throw new Exception("Auction not found");
 
             _auctionRepository.Delete(auction);
+        }
+
+        public async Task<AuthResult> CreateAuctionAsync(CreateAuctionDto dto , string UserId)
+        {
+            if (UserId == null)
+                return new AuthResult { IsSuccess = false, Message = "Unauthorized" };
+
+            // 2️⃣ Get Seller
+            var seller = await _sellerRepository.GetByUserIdAsync(UserId);
+
+            if (seller == null)
+                return new AuthResult { IsSuccess = false, Message = "Seller not found" };
+
+            // 3️⃣ Create Auction
+            var auction = new Auction
+            {
+                Title = dto.Title,
+                Description = dto.Description,
+                StartingPrice = dto.StartingPrice,
+                CurrentPrice = dto.StartingPrice,
+                BidIncrement = dto.BidIncrement,
+                SellerId = seller.Id,
+                StartDate = DateTime.UtcNow,
+                Status = AuctionStatus.Upcoming,
+                IsDeleted = false,
+                EndDate = DateTime.UtcNow.AddDays(dto.DurationInDays),
+                CreatedAt = DateTime.UtcNow,
+                items = new List<Item>()
+            };
+
+            // 4️⃣ Head Image Validation
+            var headVal = FileValidator.Validate(dto.HeadImage);
+            if (!headVal.ok)
+                return new AuthResult { IsSuccess = false, Message = headVal.error };
+
+            using (var ms = new MemoryStream())
+            {
+                await dto.HeadImage.CopyToAsync(ms);
+                auction.Image = ms.ToArray();
+            }
+
+            // 5️⃣ Items
+            foreach (var itemDto in dto.Items)
+            {
+                var item = new Item
+                {
+                    title = itemDto.Title,
+                    Count = itemDto.Count,
+                    Description = itemDto.Description,
+                    WarrantyInfo = itemDto.WarrantyInfo,
+                    Condition = itemDto.Condition,
+                    CategoryId = itemDto.CategoryId,
+                    images = new List<Images>(),
+                    itemAttributesValues = new List<ItemAttributesValue>()
+                };
+
+                // Images validation
+                foreach (var img in itemDto.Images)
+                {
+                    var imgVal = FileValidator.Validate(img);
+                    if (!imgVal.ok)
+                        return new AuthResult { IsSuccess = false, Message = imgVal.error };
+
+                    using var ms = new MemoryStream();
+                    await img.CopyToAsync(ms);
+
+                    item.images.Add(new Images
+                    {
+                        Image = ms.ToArray(),
+                        item = item
+                    });
+                }
+
+                // Attributes
+                foreach (var attr in itemDto.Attributes)
+                {
+                    item.itemAttributesValues.Add(new ItemAttributesValue
+                    {
+                        CategoryAttributeId = attr.CategoryAttributeId,
+                        value = attr.Value,
+                        Item = item
+                    });
+                }
+
+                auction.items.Add(item);
+            }
+
+            // 6️⃣ Save
+            await _auctionRepository.AddAsync(auction);
+
+            var notification = new DAL.Models.Notification
+            {
+                Title = "Auction Created",
+                Message = $"Your auction '{auction.Title}' has been created",
+                UserId = UserId,
+                notificationType = NotificationTypes.AuctionsStatus,
+                ReferenceId = auction.Id,
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _notification.AddAsync(notification);
+            await _notification.SaveChangesAsync();
+
+            return new AuthResult
+            {
+                IsSuccess = true,
+                Message = "Auction created successfully"
+            };
         }
 
     }

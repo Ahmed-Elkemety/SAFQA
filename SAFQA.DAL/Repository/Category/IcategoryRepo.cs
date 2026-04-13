@@ -17,5 +17,8 @@ namespace SAFQA.DAL.Repository.Category
         void Add(Models.Category category);
         void Update(Models.Category category);
         void Delete(Models.Category category);
+        Task<List<Models.Category>> GetAllAsync();
+        Task<List<CategoryAttributes>> GetAttributesByCategoryIdAsync(int categoryId);
+
     }
 }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SAFQA.DAL.Database;
 
@@ -11,9 +12,11 @@ using SAFQA.DAL.Database;
 namespace SAFQA.DAL.Migrations
 {
     [DbContext(typeof(SAFQA_Context))]
-    partial class SAFQA_ContextModelSnapshot : ModelSnapshot
+    [Migration("20260412212051_Update for Auction Tabel")]
+    partial class UpdateforAuctionTabel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -191,7 +194,7 @@ namespace SAFQA.DAL.Migrations
                     b.Property<decimal>("FinalPrice")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("decimal(18,2)")
-                        .HasDefaultValue(100.50m);
+                        .HasDefaultValue(0m);
 
                     b.Property<bool>("HotScore")
                         .ValueGeneratedOnAdd()
@@ -225,7 +228,7 @@ namespace SAFQA.DAL.Migrations
                     b.Property<decimal>("SecurityDeposit")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("decimal(18,2)")
-                        .HasDefaultValue(100.50m);
+                        .HasDefaultValue(0m);
 
                     b.Property<int?>("SellerId")
                         .HasColumnType("int");
@@ -261,7 +264,7 @@ namespace SAFQA.DAL.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue(" ");
+                        .HasDefaultValue("0");
 
                     b.HasKey("Id");
 
@@ -805,7 +808,7 @@ namespace SAFQA.DAL.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
-                    b.Property<int?>("ReferenceId")
+                    b.Property<int>("ReferenceId")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
