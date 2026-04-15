@@ -603,28 +603,27 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
             if (auction == null)
                 return new AuthResult { IsSuccess = false, Message = "Auction not found" };
 
-
             if (auction.Status == AuctionStatus.Active)
-                return new AuthResult { IsSuccess = false ,Errors = { "Cannot delete active auction" } };
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Errors = new List<string> { "Cannot edit active auction" }
+                };
 
-            var sellerUserId = await _context.Auctions
-             .Where(a => a.Id == auctionId)
-             .Select(a => a.Seller.UserId)
-             .FirstOrDefaultAsync();
-
-            if (sellerUserId != userId)
+            // ✅ Authorization (safe)
+            if (auction.Seller == null || auction.Seller.UserId != userId)
                 return new AuthResult { IsSuccess = false, Message = "Unauthorized" };
 
             var errors = ValidateAuction(dto);
             if (errors.Any())
-                return new AuthResult { Errors = errors };
+                return new AuthResult { IsSuccess = false, Errors = errors };
 
-            // 1️⃣ Update auction basic data
+            // ✅ Update Auction
             auction.Title = dto.Title;
             auction.Description = dto.Description;
             auction.UpdatedAt = DateTime.UtcNow.AddHours(2);
 
-            // Head Image
+            // ✅ Head Image
             if (dto.Image != null)
             {
                 var val = FileValidator.Validate(dto.Image);
@@ -636,24 +635,51 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
                 auction.Image = ms.ToArray();
             }
 
-            // 2️⃣ Sync Items
-            var incomingIds = dto.Items.Where(x => x.id != null).Select(x => x.id).ToList();
+            // =========================================
+            // 🟢 1. existing IDs (صح 100%)
+            // =========================================
+            var existingIds = dto.Items?
+                .Where(x => x.id.HasValue)
+                .Select(x => x.id.Value)
+                .ToList() ?? new List<int>();
 
+            // =========================================
+            // 🔴 2. Delete removed items (safe)
+            // =========================================
             var toRemove = auction.items
-                .Where(i => !incomingIds.Contains(i.Id))
+                .Where(i => !existingIds.Contains(i.Id))
                 .ToList();
 
             foreach (var item in toRemove)
-                _context.Items.Remove(item); 
+            {
+                _context.images.RemoveRange(item.images);
+                _context.itemAttributesValues.RemoveRange(item.itemAttributesValues);
+                _context.Items.Remove(item);
+            }
 
-            foreach (var itemDto in dto.Items)
+            // =========================================
+            // 🟡 3. Add / Update
+            // =========================================
+            foreach (var itemDto in dto.Items ?? new List<EditItemDto>())
             {
                 Item item;
 
-                if (itemDto.id != null)
+                if (itemDto.id.HasValue)
                 {
-                    item = auction.items.First(x => x.Id == itemDto.id);
+                    // ✅ بدل First (عشان متكراشّش)
+                    item = auction.items
+                        .FirstOrDefault(x => x.Id == itemDto.id.Value);
 
+                    if (item == null)
+                    {
+                        return new AuthResult
+                        {
+                            IsSuccess = false,
+                            Message = $"Item with id {itemDto.id} not found in this auction"
+                        };
+                    }
+
+                    // 🟢 Update
                     item.title = itemDto.Title;
                     item.Description = itemDto.Description;
                     item.Count = itemDto.Count;
@@ -661,11 +687,13 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
                     item.Condition = itemDto.Condition;
                     item.CategoryId = itemDto.CategoryId;
 
+                    // Reset attributes
                     _context.itemAttributesValues.RemoveRange(item.itemAttributesValues);
                     item.itemAttributesValues.Clear();
                 }
                 else
                 {
+                    // 🆕 Add
                     item = new Item
                     {
                         title = itemDto.Title,
@@ -681,7 +709,9 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
                     auction.items.Add(item);
                 }
 
-                // Images
+                // =========================================
+                // 🖼️ Images (safe)
+                // =========================================
                 if (itemDto.Images != null)
                 {
                     _context.images.RemoveRange(item.images);
@@ -704,7 +734,9 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
                     }
                 }
 
-                // Attributes
+                // =========================================
+                // 🧩 Attributes
+                // =========================================
                 if (itemDto.Attributes != null)
                 {
                     foreach (var attr in itemDto.Attributes)
@@ -721,10 +753,13 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
 
             await _auctionRepository.SaveChangesAsync();
 
+            // =========================================
+            // 🔔 Notification
+            // =========================================
             var notification = new DAL.Models.Notification
             {
                 Title = "Auction Edited",
-                Message = $"Your auction '{auction.Title}' has been Edited",
+                Message = $"Your auction '{auction.Title}' has been edited",
                 UserId = userId,
                 notificationType = NotificationTypes.AuctionsStatus,
                 ReferenceId = auction.Id,

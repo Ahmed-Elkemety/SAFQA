@@ -245,10 +245,11 @@ namespace SAFQA.API.Controllers
         public async Task<IActionResult> Get(int id)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var auction = await _auctionManager.GetAuction(id, userId);
+            var auction = await _auctionManager.GetAuction(id,userId);
 
             return auction == null ? NotFound("Auction Not Found") : Ok(auction);
         }
+
 
         // [Authorize(Roles = "ADMIN")]
         [HttpGet("active")]
@@ -262,7 +263,7 @@ namespace SAFQA.API.Controllers
             return Ok(result);
         }
 
-        //[Authorize(Roles = "ADMIN")]
+        // [Authorize(Roles = "ADMIN")]
         [HttpPost("force-expire/{id}")]
         public IActionResult ForceExpireAuction(int id)
         {

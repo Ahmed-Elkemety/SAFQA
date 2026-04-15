@@ -191,6 +191,7 @@ namespace SAFQA.DAL.Repository.Auction
         public async Task<Models.Auction?> GetByIdWithDetailsAsync(int auctionId)
         {
             return await _context.Auctions
+                .Include(a => a.Seller)
                 .Include(a => a.items)
                     .ThenInclude(i => i.images)
                 .Include(a => a.items)
