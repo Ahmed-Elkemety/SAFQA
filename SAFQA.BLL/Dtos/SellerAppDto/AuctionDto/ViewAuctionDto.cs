@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.Http;
 
 namespace SAFQA.BLL.Dtos.SellerAppDto.AuctionDto
 {
-    public class CreateAuctionDto
+    public class ViewAuctionDto
     {
         public string Title { get; set; }
         public string Description { get; set; }
-        public IFormFile? Image { get; set; }
+        public byte[]? Image { get; set; }
 
         public decimal StartingPrice { get; set; }
 
@@ -20,6 +20,6 @@ namespace SAFQA.BLL.Dtos.SellerAppDto.AuctionDto
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 
-        public List<CreateItemDto> Items { get; set; }
+        public List<ViewItemDto> Items { get; set; }
     }
 }

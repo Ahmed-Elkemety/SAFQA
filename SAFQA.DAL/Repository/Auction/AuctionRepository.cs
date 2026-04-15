@@ -148,7 +148,7 @@ namespace SAFQA.DAL.Repository.Auction
         {
             return _context.Auctions
                 .AsNoTracking()
-                .Where(a => a.Seller.UserId == userId);
+                .Where(a => a.Seller.UserId == userId && a.IsDeleted != false);
         }
 
         public IQueryable<Models.Auction> GetAll()
@@ -185,6 +185,45 @@ namespace SAFQA.DAL.Repository.Auction
         {
             await _context.Auctions.AddAsync(auction);
             _context.SaveChanges();
+        }
+
+        public async Task<Models.Auction?> GetByIdWithDetailsAsync(int auctionId)
+        {
+            return await _context.Auctions
+                .Include(a => a.items)
+                    .ThenInclude(i => i.images)
+                .Include(a => a.items)
+                    .ThenInclude(i => i.itemAttributesValues)
+                .FirstOrDefaultAsync(a => a.Id == auctionId && !a.IsDeleted);
+        }
+
+        public async Task<Models.Auction?> GetByIdAsync(int id)
+        {
+            return await _context.Auctions
+                .FirstOrDefaultAsync(a => a.Id == id && !a.IsDeleted);
+        }
+
+        public async Task<Models.Auction?> GetWithDetailsAsync(int id)
+        {
+            return await _context.Auctions
+                .Include(a => a.items)
+                    .ThenInclude(i => i.images)
+                .Include(a => a.items)
+                    .ThenInclude(i => i.itemAttributesValues)
+                        .ThenInclude(v => v.categoryAttributes)
+                .FirstOrDefaultAsync(a => a.Id == id && !a.IsDeleted);
+        }
+
+        public async Task<IEnumerable<Models.Auction>> GetAllAsync()
+        {
+            return await _context.Auctions
+                .Where(a => !a.IsDeleted)
+                .ToListAsync();
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
         }
     }
 }

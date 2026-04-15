@@ -191,22 +191,6 @@ namespace SAFQA.API.Controllers
 
             return Ok(result);
         }
-
-        [HttpPost("Create-Auction")]
-        [Authorize(Roles = "SELLER")]
-
-        public async Task<IActionResult> Create([FromForm] CreateAuctionDto dto)
-        {
-            var userId = User.FindFirst("uid")?.Value
-             ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            var result = await _auctionManager.CreateAuctionAsync(dto , userId);
-
-            if (!result.IsSuccess)
-                return BadRequest(result);
-
-            return Ok(result);
-        }
         // ✅ 1. Get All Categories
         [HttpGet ("Get-Categories")]
         [Authorize(Roles = "SELLER")]
@@ -223,6 +207,47 @@ namespace SAFQA.API.Controllers
         {
             var result = await _category.GetCategoryAttributesAsync(categoryId);
             return Ok(result);
+        }
+
+
+        [HttpPost("Create-Auction")]
+        [Authorize(Roles = "SELLER")]
+        public async Task<IActionResult> Create(CreateAuctionDto dto)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var result = await _auctionManager.CreateAuction(dto, userId);
+
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+
+        [Authorize(Roles = "SELLER")]
+        [HttpPut("edit/{id}")]
+        public async Task<IActionResult> Edit(int id, EditAuctionDto dto)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var result = await _auctionManager.EditAuction(id, dto, userId);
+
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+
+        [Authorize(Roles = "SELLER")]
+        [HttpDelete("Delete/{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var result = await _auctionManager.DeleteAuction(id, userId);
+
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+
+        [Authorize(Roles = "SELLER")]
+        [HttpGet("View/{id}")]
+        public async Task<IActionResult> Get(int id)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var auction = await _auctionManager.GetAuction(id,userId);
+
+            return auction == null ? NotFound("Auction Not Found") : Ok(auction);
         }
     }
 }

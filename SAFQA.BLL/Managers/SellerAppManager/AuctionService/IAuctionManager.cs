@@ -38,8 +38,12 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
                 AuctionStatus? status,
                 int page,
                 int pageSize);
-        Task<AuthResult> CreateAuctionAsync(CreateAuctionDto dto , string user);
 
+        Task<AuthResult> CreateAuction(CreateAuctionDto dto, string userId);
+        Task<AuthResult> EditAuction(int id, EditAuctionDto dto, string userId);
+        Task<AuthResult> DeleteAuction(int id, string userId);
+
+        Task<ViewAuctionDto> GetAuction(int id, string userid);
 
     }
 }
