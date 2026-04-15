@@ -210,6 +210,7 @@ namespace SAFQA.API.Controllers
         }
 
 
+<<<<<<< HEAD
         [HttpPost("Create-Auction")]
         [Authorize(Roles = "SELLER")]
         public async Task<IActionResult> Create(CreateAuctionDto dto)
@@ -248,6 +249,81 @@ namespace SAFQA.API.Controllers
             var auction = await _auctionManager.GetAuction(id,userId);
 
             return auction == null ? NotFound("Auction Not Found") : Ok(auction);
+=======
+        // [Authorize(Roles = "ADMIN")]
+        [HttpGet("active")]
+        public IActionResult GetActiveAuctions([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            if (page <= 0) page = 1;
+            if (pageSize <= 0) pageSize = 10;
+
+            var result = _auctionManager.GetActiveAuctions(page, pageSize);
+
+            return Ok(result);
+        }
+
+        // [Authorize(Roles = "ADMIN")]
+        [HttpPost("force-expire/{id}")]
+        public IActionResult ForceExpireAuction(int id)
+        {
+            try
+            {
+                _auctionManager.ForceExpireAuction(id);
+                return Ok(new { message = "Auction expired successfully" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+
+        [HttpGet("expired")]
+        public IActionResult GetExpiredAuctions([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            var result = _auctionManager.GetExpiredAuctions(page, pageSize);
+            return Ok(result);
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult DeleteAuctionPermanently(int id)
+        {
+            try
+            {
+                _auctionManager.DeleteAuctionPermanently(id);
+                return Ok(new { message = "Auction deleted successfully" });
+            }
+            catch (Exception ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
+
+        // [Authorize(Roles = "ADMIN")]
+        [HttpGet("rejected-deleted")]
+        public IActionResult GetRejectedDeletedAuctions(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var result = _auctionManager.GetRejectedDeletedAuctions(page, pageSize);
+
+            return Ok(result);
+        }
+
+        // [Authorize(Roles = "ADMIN")]
+        [HttpDelete("permanent/{id}")]
+        public IActionResult DeleteAuctionPermanentlyy(int id)
+        {
+            try
+            {
+                _auctionManager.DeleteAuctionPermanently(id);
+                return Ok(new { message = "Auction deleted permanently" });
+            }
+            catch (Exception ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+>>>>>>> 8c3afe99e24eee3fb64465fdfdd144166108e2a5
         }
     }
 }

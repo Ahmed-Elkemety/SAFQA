@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SAFQA.DAL.Database;
 
@@ -11,9 +12,11 @@ using SAFQA.DAL.Database;
 namespace SAFQA.DAL.Migrations
 {
     [DbContext(typeof(SAFQA_Context))]
-    partial class SAFQA_ContextModelSnapshot : ModelSnapshot
+    [Migration("20260412211256_new")]
+    partial class @new
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -163,9 +166,6 @@ namespace SAFQA.DAL.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("BidIncrement")
-                        .HasColumnType("int");
-
                     b.Property<int?>("CountDown")
                         .HasColumnType("int");
 
@@ -178,7 +178,9 @@ namespace SAFQA.DAL.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("DeletedAt")
-                        .HasColumnType("nvarchar(max)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(max)")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -189,9 +191,7 @@ namespace SAFQA.DAL.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("FinalPrice")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("decimal(18,2)")
-                        .HasDefaultValue(100.50m);
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("HotScore")
                         .ValueGeneratedOnAdd()
@@ -202,9 +202,7 @@ namespace SAFQA.DAL.Migrations
                         .HasColumnType("varbinary(max)");
 
                     b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsFeatured")
                         .ValueGeneratedOnAdd()
@@ -223,9 +221,7 @@ namespace SAFQA.DAL.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("SecurityDeposit")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("decimal(18,2)")
-                        .HasDefaultValue(100.50m);
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("SellerId")
                         .HasColumnType("int");
@@ -237,9 +233,7 @@ namespace SAFQA.DAL.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Status")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(1);
+                        .HasColumnType("int");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -259,9 +253,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.Property<string>("WinnerUserId")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue(" ");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -742,6 +734,11 @@ namespace SAFQA.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("varbinary(max)");
 
+                    b.Property<bool>("IsMain")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
 
@@ -918,7 +915,7 @@ namespace SAFQA.DAL.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
-                    b.Property<int?>("ReferenceId")
+                    b.Property<int>("ReferenceId")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
@@ -1965,13 +1962,15 @@ namespace SAFQA.DAL.Migrations
 
                     b.Navigation("Reports");
 
-                    b.Navigation("delivery");
+                    b.Navigation("delivery")
+                        .IsRequired();
 
                     b.Navigation("disputes");
 
                     b.Navigation("items");
 
-                    b.Navigation("review");
+                    b.Navigation("review")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.Category", b =>

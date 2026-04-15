@@ -14,7 +14,6 @@ namespace SAFQA.BLL.Managers.UserAppManager
         Task<int> GetTotalUsersAsync();
         Task<int> GetActiveUsersCountAsync();
         Task<int> GetBlockedUsersCountAsync();
-
         PagedResult<UserListDto> GetUsers(int page, int pageSize);
         bool ChangeStatus(string userId);
     }

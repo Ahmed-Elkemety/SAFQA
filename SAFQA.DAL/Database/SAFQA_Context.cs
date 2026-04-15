@@ -63,6 +63,8 @@ namespace SAFQA.DAL.Database
         public DbSet<AuctionLike> auctionLikes { get; set; }
         public DbSet<AuctionView> auctionViews { get; set; }
         public DbSet<AuctionReport> auctionReports { get; set; }
-
+        public DbSet<Conversation> conversations { get; set; }
+        public DbSet<Message> Messages { get; set; }
+        public DbSet<MessageAttachment> MessageAttachments { get; set; }
     }
 }
