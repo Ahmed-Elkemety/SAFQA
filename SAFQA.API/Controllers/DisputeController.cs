@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SAFQA.BLL.Dtos.UserAppDto.DisputeDto;
 using SAFQA.BLL.Managers.UserAppManager.DisputeService;
@@ -16,7 +17,7 @@ namespace SAFQA.API.Controllers
         {
             _disputeService = disputeService;
         }
-
+        [Authorize("USER")]
         [HttpPost("create")]
         public async Task<IActionResult> CreateDispute([FromBody] CreateDisputeDto dto)
         {

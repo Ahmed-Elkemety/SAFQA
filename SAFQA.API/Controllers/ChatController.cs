@@ -20,7 +20,7 @@ namespace SAFQA.API.Controllers
             _chatService = chatService;
         }
 
-        [Authorize(Roles = "USER,SELLER")]
+        [Authorize(Roles = "USER")]
         [HttpPost("conversation/{disputeId}")]
         public IActionResult GetOrCreateConversation(int disputeId)
         {
@@ -37,7 +37,7 @@ namespace SAFQA.API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
-
+        [Authorize(Roles = "USER")]
         [HttpPost("send")]
         public async Task<IActionResult> SendMessage([FromBody] SendMessageDto dto)
         {
