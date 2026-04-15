@@ -151,6 +151,7 @@ namespace SAFQA.DAL.Repository.Auction
                 .Where(a => a.Seller.UserId == userId);
         }
 
+
         public IQueryable<Models.Auction> GetAll()
         {
             return _context.Auctions;

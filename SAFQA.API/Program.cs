@@ -17,14 +17,20 @@ using SAFQA.BLL.Managers.SellerAppManager.WalletServeice;
 using SAFQA.BLL.Managers.SellerAppManager.WalletService;
 using SAFQA.BLL.Managers.UserAppManager;
 using SAFQA.BLL.Managers.UserAppManager.AuctionManager;
+using SAFQA.BLL.Managers.UserAppManager.ChatService;
+using SAFQA.BLL.Managers.UserAppManager.ConversationService;
+using SAFQA.BLL.Managers.UserAppManager.DisputeService;
 using SAFQA.BLL.Managers.UserAppManager.UserManager;
 using SAFQA.DAL.Database;
 using SAFQA.DAL.Models;
 using SAFQA.DAL.Repository.Auction;
 using SAFQA.DAL.Repository.Bids;
 using SAFQA.DAL.Repository.Category;
+using SAFQA.DAL.Repository.Conversation;
+using SAFQA.DAL.Repository.Dispute;
 using SAFQA.DAL.Repository.Items;
 using SAFQA.DAL.Repository.Location;
+using SAFQA.DAL.Repository.Message;
 using SAFQA.DAL.Repository.Notification;
 using SAFQA.DAL.Repository.Seller;
 using SAFQA.DAL.Repository.Transaction;
@@ -47,6 +53,7 @@ namespace SAFQA.API
 
 
             builder.Services.AddControllers();
+            builder.Services.AddSignalR();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
             {
@@ -105,6 +112,12 @@ namespace SAFQA.API
             builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
             builder.Services.AddScoped<INotificationManager, NotificationManager>();
             builder.Services.AddScoped<IAuctionManagerU, AuctionManagerU>();
+            builder.Services.AddScoped<IChatService, ChatService>();
+            builder.Services.AddScoped<IMessageRepo, MessageRepo>();
+            builder.Services.AddScoped<IConversationRepo, ConversationRepo>();
+            builder.Services.AddScoped<IDiputeRepo, DisputeRepo>();
+            builder.Services.AddScoped<IDisputeService, DisputeService>();
+
 
 
 
@@ -224,6 +237,7 @@ namespace SAFQA.API
             app.UseAuthorization();
 
             app.MapControllers();
+            app.MapHub<ChatHub>("/chatHub");
 
             async Task SeedRolesAsync(WebApplication app)
             {
