@@ -210,7 +210,6 @@ namespace SAFQA.API.Controllers
         }
 
 
-<<<<<<< HEAD
         [HttpPost("Create-Auction")]
         [Authorize(Roles = "SELLER")]
         public async Task<IActionResult> Create(CreateAuctionDto dto)
@@ -246,10 +245,11 @@ namespace SAFQA.API.Controllers
         public async Task<IActionResult> Get(int id)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var auction = await _auctionManager.GetAuction(id,userId);
+            var auction = await _auctionManager.GetAuction(id, userId);
 
             return auction == null ? NotFound("Auction Not Found") : Ok(auction);
-=======
+        }
+
         // [Authorize(Roles = "ADMIN")]
         [HttpGet("active")]
         public IActionResult GetActiveAuctions([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
@@ -262,7 +262,7 @@ namespace SAFQA.API.Controllers
             return Ok(result);
         }
 
-        // [Authorize(Roles = "ADMIN")]
+        //[Authorize(Roles = "ADMIN")]
         [HttpPost("force-expire/{id}")]
         public IActionResult ForceExpireAuction(int id)
         {
@@ -323,7 +323,6 @@ namespace SAFQA.API.Controllers
             {
                 return NotFound(new { message = ex.Message });
             }
->>>>>>> 8c3afe99e24eee3fb64465fdfdd144166108e2a5
         }
     }
 }
