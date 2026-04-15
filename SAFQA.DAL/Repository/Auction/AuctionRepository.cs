@@ -78,7 +78,7 @@ namespace SAFQA.DAL.Repository.Auction
                     g.Select(x => x.AuctionId).Distinct().Count(),
                     
                     g.Sum(x =>
-                        x.Auction.SecurityDeposit + 
+                        x.Auction.SecurityDeposit +
                         (x.Auction.WinnerUserId == x.UserId ? x.Auction.FinalPrice : 0) 
                     )
                 ))
@@ -179,6 +179,12 @@ namespace SAFQA.DAL.Repository.Auction
         public void Delete(Models.Auction auction)
         {
             _context.Auctions.Remove(auction);
+            _context.SaveChanges();
+        }
+
+        public async Task AddAsync(Models.Auction auction)
+        {
+            await _context.Auctions.AddAsync(auction);
             _context.SaveChanges();
         }
     }

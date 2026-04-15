@@ -57,5 +57,19 @@ namespace SAFQA.DAL.Repository.Category
             _context.Category.Remove(category);
             _context.SaveChanges();
         }
+
+        public async Task<List<Models.Category>> GetAllAsync()
+        {
+            return await _context.Category
+                .Where(c => c != null)
+                .ToListAsync();
+        }
+
+        public async Task<List<CategoryAttributes>> GetAttributesByCategoryIdAsync(int categoryId)
+        {
+            return await _context.categoryAttributes
+                .Where(a => a.CategoryId == categoryId)
+                .ToListAsync();
+        }
     }
 }

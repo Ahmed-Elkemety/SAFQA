@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using SAFQA.DAL.Enums;
 
 namespace SAFQA.BLL.Help
@@ -56,6 +57,26 @@ namespace SAFQA.BLL.Help
                 UpgradeType.Elite => 999,
                 _ => 0
             };
+        }
+
+        public static class FileValidator
+        {
+            private static readonly string[] Allowed = { "image/jpeg", "image/png", "image/jpg" };
+            private const int MaxSize = 5 * 1024 * 1024;
+
+            public static (bool ok, string error) Validate(IFormFile file)
+            {
+                if (file == null || file.Length == 0)
+                    return (false, "Image required");
+
+                if (!Allowed.Contains(file.ContentType))
+                    return (false, "Invalid type");
+
+                if (file.Length > MaxSize)
+                    return (false, "Max 5MB allowed");
+
+                return (true, null);
+            }
         }
     }
 }

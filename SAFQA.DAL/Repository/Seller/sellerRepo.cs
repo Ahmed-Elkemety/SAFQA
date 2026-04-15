@@ -135,5 +135,10 @@ namespace SAFQA.DAL.Repository.Seller
         {
             await _context.SaveChangesAsync();
         }
+        public async Task<Models.Seller> GetByUserIdAsync(string userId)
+        {
+            return await _context.Sellers
+                .FirstOrDefaultAsync(s => s.UserId == userId);
+        }
     }
 }

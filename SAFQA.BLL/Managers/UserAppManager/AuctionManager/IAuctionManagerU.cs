@@ -11,5 +11,6 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
     public interface IAuctionManagerU
     {
         Task<AuthResult> ReportAuctionAsync(string userId, CreateReportDto dto);
+
     }
 }

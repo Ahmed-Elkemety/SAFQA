@@ -1,6 +1,7 @@
 ﻿using SAFQA.BLL.Dtos.SellerAppDto.AuctionDto;
 using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
 using SAFQA.BLL.Enums;
+using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.DAL.Models;
 using System;
 using System.Collections.Generic;
@@ -37,6 +38,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
                 AuctionStatus? status,
                 int page,
                 int pageSize);
+        Task<AuthResult> CreateAuctionAsync(CreateAuctionDto dto , string user);
 
 
     }

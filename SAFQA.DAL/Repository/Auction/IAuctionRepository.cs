@@ -26,5 +26,6 @@ namespace SAFQA.DAL.Repository.Auction
         void Add(Models.Auction auction);
         void Update(Models.Auction auction);
         void Delete(Models.Auction auction);
+        Task AddAsync(Models.Auction auction);
     }
 }

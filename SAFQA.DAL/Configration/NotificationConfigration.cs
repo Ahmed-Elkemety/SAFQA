@@ -20,7 +20,7 @@ namespace SAFQA.DAL.Configration
 
             builder.Property(n => n.Title).IsRequired().HasMaxLength(200);
             builder.Property(n => n.notificationType).IsRequired();
-            builder.Property(n => n.ReferenceId).IsRequired();
+            builder.Property(n => n.ReferenceId).IsRequired(false);
             builder.Property(n => n.Message).HasMaxLength(2000);
             builder.Property(n => n.IsRead).HasDefaultValue(false);
             builder.Property(n => n.UserId).IsRequired();

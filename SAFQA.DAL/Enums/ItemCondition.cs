@@ -11,6 +11,5 @@ namespace SAFQA.DAL.Enums
         New = 1,
         LikeNew = 2,
         Used = 3,
-        Damaged = 4
     }
 }

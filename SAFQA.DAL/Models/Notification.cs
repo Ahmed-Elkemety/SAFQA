@@ -13,7 +13,7 @@ namespace SAFQA.DAL.Models
         public int Id { get; set; }
         public string Title { get; set; }
         public NotificationTypes notificationType { get; set; }
-        public int ReferenceId { get; set; }
+        public int? ReferenceId { get; set; }
         public string Message { get; set; }
         public bool IsRead { get; set; }
         public DateTime CreatedAt { get; set; }

@@ -8,28 +8,20 @@ namespace SAFQA.DAL.Enums
 {
     public enum Unit
     {
-        None = 0,          // من غير وحدة
 
-        // الأطوال
+        None = 0,          
         Centimeter = 1,
         Meter = 2,
         Inch = 3,
+        Gram = 4,
+        Kilogram = 5,
+        Pound = 6,
+        Liter = 7,
+        Milliliter = 8,
+        SquareMeter = 9,
+        Second = 10,
+        Minute = 11,
+        Hour = 12
 
-        // الوزن
-        Gram = 10,
-        Kilogram = 11,
-        Pound = 12,
-
-        // الحجم
-        Liter = 20,
-        Milliliter = 21,
-
-        // المساحة
-        SquareMeter = 30,
-
-        // الوقت
-        Second = 40,
-        Minute = 41,
-        Hour = 42
     }
 }

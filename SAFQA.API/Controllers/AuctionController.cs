@@ -2,11 +2,14 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SAFQA.BLL.Dtos.SellerAppDto.AuctionDto;
 using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
 using SAFQA.BLL.Dtos.UserAppDto.AuctionDto;
 using SAFQA.BLL.Enums;
 using SAFQA.BLL.Managers.SellerAppManager.AuctionService;
+using SAFQA.BLL.Managers.SellerAppManager.CategoryService;
 using SAFQA.BLL.Managers.UserAppManager.AuctionManager;
+using SAFQA.DAL.Repository.Category;
 
 namespace SAFQA.API.Controllers
 {
@@ -16,11 +19,13 @@ namespace SAFQA.API.Controllers
     {
         private readonly IAuctionManager _auctionManager;
         private readonly IAuctionManagerU _auctionManagerU;
+        private readonly ICategoryService _category;
 
-        public AuctionController(IAuctionManager auctionManager,IAuctionManagerU auctionManagerU)
+        public AuctionController(IAuctionManager auctionManager,IAuctionManagerU auctionManagerU, ICategoryService category)
         {
             _auctionManager = auctionManager;
             _auctionManagerU = auctionManagerU;
+            _category = category;
         }
 
         // GET: api/Auction/active/5
@@ -184,6 +189,39 @@ namespace SAFQA.API.Controllers
             if (!result.IsSuccess)
                 return BadRequest(result);
 
+            return Ok(result);
+        }
+
+        [HttpPost("Create-Auction")]
+        [Authorize(Roles = "SELLER")]
+
+        public async Task<IActionResult> Create([FromForm] CreateAuctionDto dto)
+        {
+            var userId = User.FindFirst("uid")?.Value
+             ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var result = await _auctionManager.CreateAuctionAsync(dto , userId);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+        // ✅ 1. Get All Categories
+        [HttpGet ("Get-Categories")]
+        [Authorize(Roles = "SELLER")]
+        public async Task<IActionResult> GetAll()
+        {
+            var result = await _category.GetAllCategoriesAsync();
+            return Ok(result);
+        }
+
+        // ✅ 2. Get Category Attributes
+        [HttpGet("Get-Attributes/{categoryId}")]
+        [Authorize(Roles = "SELLER")]
+        public async Task<IActionResult> GetAttributes(int categoryId)
+        {
+            var result = await _category.GetCategoryAttributesAsync(categoryId);
             return Ok(result);
         }
 
