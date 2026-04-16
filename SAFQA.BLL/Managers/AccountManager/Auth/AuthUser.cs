@@ -353,7 +353,7 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 issuer: _configuration["JWT:ValidIssuer"],
                 audience: _configuration["JWT:ValidAudience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(5),
+                expires: DateTime.UtcNow.AddHours(6),
                 signingCredentials: creds
             );
             return (new JwtSecurityTokenHandler().WriteToken(token));
