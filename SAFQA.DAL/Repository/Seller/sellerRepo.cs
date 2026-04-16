@@ -126,6 +126,12 @@ namespace SAFQA.DAL.Repository.Seller
             return _context.Sellers.FirstOrDefault(s => s.UserId == id && !s.IsDeleted);
         }
 
+        public async Task<Models.Seller> GetByIdAsync(int id)
+        {
+            return await _context.Sellers
+                .FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
+        }
+
         public void Update(Models.Seller seller)
         {
             _context.Sellers.Update(seller);

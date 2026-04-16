@@ -33,41 +33,5 @@ namespace SAFQA.BLL.Managers.SellerAppManager.ItemService
             return _itemsRepository.GetMostPopularProducts(sellerId, top);
         }
 
-        public async Task<List<CategoryStatsDto>> GetSellerCategoryStats(int sellerId)
-        {
-            var data = await _itemsRepository.GetSellerCategoryProductCounts(sellerId);
-
-            var total = data.Sum(x => x.Count);
-
-            return data.Select(x => new CategoryStatsDto
-            {
-                CategoryName = x.CategoryName,
-                ProductCount = x.Count,
-                Percentage = total == 0 ? 0 : (double)x.Count / total * 100
-            }).OrderByDescending(x => x.Percentage)
-              .ToList();
-        }
-
-        public async Task<List<CategoryPercentageDto>> GetCategoryPercentageAsync(int sellerId)
-        {
-
-            var data = await _itemsRepository.GetCategoryCountsBySellerAsync(sellerId);
-
-
-            var total = data.Sum(x => x.Count);
-
-
-            if (total == 0)
-                return new List<CategoryPercentageDto>();
-
-
-            var result = data.Select(x => new CategoryPercentageDto
-            {
-                CategoryName = x.CategoryName,
-                Percentage = Math.Round((double)x.Count / total * 100, 2)
-            }).ToList();
-
-            return result;
-        }
     }
 }
