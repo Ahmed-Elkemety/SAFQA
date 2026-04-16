@@ -5,6 +5,7 @@ using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
 using SAFQA.BLL.Enums;
 using SAFQA.BLL.Help;
 using SAFQA.BLL.Managers.AccountManager.Auth;
+using SAFQA.DAL.Database;
 using SAFQA.DAL.Enums;
 using SAFQA.DAL.Models;
 using SAFQA.DAL.Repository.Auction;
@@ -28,13 +29,15 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
         private readonly IUserRepo _userRepo;
         private readonly IsellerRepo _sellerRepository;
         private readonly INotificationRepository _notification;
+        private readonly SAFQA_Context _context;
 
-        public AuctionManager(IAuctionRepository auctionRepository, IitemsRepository itemsRepository, IcategoryRepo categoryRepository, IUserRepo userRepo , IsellerRepo sellerRepository , INotificationRepository notification)
+        public AuctionManager(IAuctionRepository auctionRepository, IitemsRepository itemsRepository, IcategoryRepo categoryRepository, IUserRepo userRepo , IsellerRepo sellerRepository , INotificationRepository notification , SAFQA_Context context)
         {
             _auctionRepository = auctionRepository;
             _userRepo = userRepo;
             _sellerRepository = sellerRepository;
             _notification = notification;
+            _context = context;
         }
         public Task<int> GetTotalSellerAuctions(int sellerId)
         {
@@ -286,9 +289,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
                 TotalBids = a.TotalBids,
                 Status = a.Status,
 
-                Image = a.Image != null
-                    ? Convert.ToBase64String(a.Image)
-                    : null
+                Image = a.Image
             });
 
             if (status.HasValue)
@@ -476,7 +477,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
             _auctionRepository.Delete(auction);
         }
 
-        public async Task<AuthResult> CreateAuctionAsync(CreateAuctionDto dto , string UserId)
+        public async Task<AuthResult> CreateAuction(CreateAuctionDto dto , string UserId)
         {
             if (UserId == null)
                 return new AuthResult { IsSuccess = false, Message = "Unauthorized" };
@@ -487,7 +488,12 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
             if (seller == null)
                 return new AuthResult { IsSuccess = false, Message = "Seller not found" };
 
-            // 3️⃣ Create Auction
+            var errors = ValidateAuction(dto);
+            if (errors.Any())
+                return new AuthResult { Errors = errors };
+
+
+
             var auction = new Auction
             {
                 Title = dto.Title,
@@ -495,23 +501,26 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
                 StartingPrice = dto.StartingPrice,
                 CurrentPrice = dto.StartingPrice,
                 BidIncrement = dto.BidIncrement,
+
+                StartDate = dto.StartDate,
+                EndDate = dto.EndDate,
+
+                CreatedAt = DateTime.UtcNow.AddHours(2),
                 SellerId = seller.Id,
-                StartDate = DateTime.UtcNow,
                 Status = AuctionStatus.Upcoming,
                 IsDeleted = false,
-                EndDate = DateTime.UtcNow.AddDays(dto.DurationInDays),
-                CreatedAt = DateTime.UtcNow,
                 items = new List<Item>()
             };
 
+
             // 4️⃣ Head Image Validation
-            var headVal = FileValidator.Validate(dto.HeadImage);
+            var headVal = FileValidator.Validate(dto.Image);
             if (!headVal.ok)
                 return new AuthResult { IsSuccess = false, Message = headVal.error };
 
             using (var ms = new MemoryStream())
             {
-                await dto.HeadImage.CopyToAsync(ms);
+                await dto.Image.CopyToAsync(ms);
                 auction.Image = ms.ToArray();
             }
 
@@ -535,6 +544,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
                 {
                     var imgVal = FileValidator.Validate(img);
                     if (!imgVal.ok)
+
                         return new AuthResult { IsSuccess = false, Message = imgVal.error };
 
                     using var ms = new MemoryStream();
@@ -564,11 +574,193 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
             // 6️⃣ Save
             await _auctionRepository.AddAsync(auction);
 
+
             var notification = new DAL.Models.Notification
             {
                 Title = "Auction Created",
                 Message = $"Your auction '{auction.Title}' has been created",
                 UserId = UserId,
+                notificationType = NotificationTypes.AuctionsStatus,
+                ReferenceId = auction.Id,
+                IsRead = false,
+                CreatedAt = DateTime.Now.AddHours(2)
+            };
+
+            await _notification.AddAsync(notification);
+            await _notification.SaveChangesAsync();
+
+            return new AuthResult
+            {
+                IsSuccess = true,
+                Message = "Auction created successfully"
+            };
+        }
+
+        public async Task<AuthResult> EditAuction(int auctionId, EditAuctionDto dto, string userId)
+        {
+            var auction = await _auctionRepository.GetByIdWithDetailsAsync(auctionId);
+
+            if (auction == null)
+                return new AuthResult { IsSuccess = false, Message = "Auction not found" };
+
+            if (auction.Status == AuctionStatus.Active)
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Errors = new List<string> { "Cannot edit active auction" }
+                };
+
+            // ✅ Authorization (safe)
+            if (auction.Seller == null || auction.Seller.UserId != userId)
+                return new AuthResult { IsSuccess = false, Message = "Unauthorized" };
+
+            var errors = ValidateAuction(dto);
+            if (errors.Any())
+                return new AuthResult { IsSuccess = false, Errors = errors };
+
+            // ✅ Update Auction
+            auction.Title = dto.Title;
+            auction.Description = dto.Description;
+            auction.UpdatedAt = DateTime.UtcNow.AddHours(2);
+
+            // ✅ Head Image
+            if (dto.Image != null)
+            {
+                var val = FileValidator.Validate(dto.Image);
+                if (!val.ok)
+                    return new AuthResult { IsSuccess = false, Message = val.error };
+
+                using var ms = new MemoryStream();
+                await dto.Image.CopyToAsync(ms);
+                auction.Image = ms.ToArray();
+            }
+
+            // =========================================
+            // 🟢 1. existing IDs (صح 100%)
+            // =========================================
+            var existingIds = dto.Items?
+                .Where(x => x.id.HasValue)
+                .Select(x => x.id.Value)
+                .ToList() ?? new List<int>();
+
+            // =========================================
+            // 🔴 2. Delete removed items (safe)
+            // =========================================
+            var toRemove = auction.items
+                .Where(i => !existingIds.Contains(i.Id))
+                .ToList();
+
+            foreach (var item in toRemove)
+            {
+                _context.images.RemoveRange(item.images);
+                _context.itemAttributesValues.RemoveRange(item.itemAttributesValues);
+                _context.Items.Remove(item);
+            }
+
+            // =========================================
+            // 🟡 3. Add / Update
+            // =========================================
+            foreach (var itemDto in dto.Items ?? new List<EditItemDto>())
+            {
+                Item item;
+
+                if (itemDto.id.HasValue)
+                {
+                    // ✅ بدل First (عشان متكراشّش)
+                    item = auction.items
+                        .FirstOrDefault(x => x.Id == itemDto.id.Value);
+
+                    if (item == null)
+                    {
+                        return new AuthResult
+                        {
+                            IsSuccess = false,
+                            Message = $"Item with id {itemDto.id} not found in this auction"
+                        };
+                    }
+
+                    // 🟢 Update
+                    item.title = itemDto.Title;
+                    item.Description = itemDto.Description;
+                    item.Count = itemDto.Count;
+                    item.WarrantyInfo = itemDto.WarrantyInfo;
+                    item.Condition = itemDto.Condition;
+                    item.CategoryId = itemDto.CategoryId;
+
+                    // Reset attributes
+                    _context.itemAttributesValues.RemoveRange(item.itemAttributesValues);
+                    item.itemAttributesValues.Clear();
+                }
+                else
+                {
+                    // 🆕 Add
+                    item = new Item
+                    {
+                        title = itemDto.Title,
+                        Description = itemDto.Description,
+                        Count = itemDto.Count,
+                        WarrantyInfo = itemDto.WarrantyInfo,
+                        Condition = itemDto.Condition,
+                        CategoryId = itemDto.CategoryId,
+                        images = new List<Images>(),
+                        itemAttributesValues = new List<ItemAttributesValue>()
+                    };
+
+                    auction.items.Add(item);
+                }
+
+                // =========================================
+                // 🖼️ Images (safe)
+                // =========================================
+                if (itemDto.Images != null)
+                {
+                    _context.images.RemoveRange(item.images);
+                    item.images.Clear();
+
+                    foreach (var img in itemDto.Images)
+                    {
+                        var val = FileValidator.Validate(img);
+                        if (!val.ok)
+                            return new AuthResult { IsSuccess = false, Message = val.error };
+
+                        using var ms = new MemoryStream();
+                        await img.CopyToAsync(ms);
+
+                        item.images.Add(new Images
+                        {
+                            Image = ms.ToArray(),
+                            item = item
+                        });
+                    }
+                }
+
+                // =========================================
+                // 🧩 Attributes
+                // =========================================
+                if (itemDto.Attributes != null)
+                {
+                    foreach (var attr in itemDto.Attributes)
+                    {
+                        item.itemAttributesValues.Add(new ItemAttributesValue
+                        {
+                            CategoryAttributeId = attr.CategoryAttributeId,
+                            value = attr.Value,
+                            Item = item
+                        });
+                    }
+                }
+            }
+
+            await _auctionRepository.SaveChangesAsync();
+
+            // =========================================
+            // 🔔 Notification
+            // =========================================
+            var notification = new DAL.Models.Notification
+            {
+                Title = "Auction Edited",
+                Message = $"Your auction '{auction.Title}' has been edited",
+                UserId = userId,
                 notificationType = NotificationTypes.AuctionsStatus,
                 ReferenceId = auction.Id,
                 IsRead = false,
@@ -581,8 +773,135 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
             return new AuthResult
             {
                 IsSuccess = true,
-                Message = "Auction created successfully"
+                Message = "Auction updated successfully"
             };
+        }
+
+        public async Task<ViewAuctionDto> GetAuction(int id,string userid)
+        {
+            if (userid == null)
+                throw new Exception ( "Unauthorized") ;
+
+            // 2️⃣ Get Seller
+            var seller = await _sellerRepository.GetByUserIdAsync(userid);
+
+            if (seller == null)
+                throw new Exception("Seller not found");
+
+            var auction = await _auctionRepository.GetWithDetailsAsync(id);
+
+            if (auction == null)
+                return null;
+
+            var result = new ViewAuctionDto
+            {
+                Title = auction.Title,
+                Description = auction.Description,
+                Image = auction.Image,
+                BidIncrement = auction.BidIncrement,
+                StartingPrice = auction.StartingPrice,
+                StartDate = auction.StartDate,
+                EndDate = auction.EndDate,
+
+                Items = auction.items.Select(i => new ViewItemDto
+                {
+                    id = i.Id,
+                    Title = i.title,
+                    Description = i.Description,
+                    Count = i.Count,
+                    WarrantyInfo = i.WarrantyInfo,
+                    Condition = i.Condition,
+                    CategoryId = i.CategoryId,
+
+                    Images = i.images?.Select(img => img.Image).ToList()
+                             ?? new List<byte[]>(),
+
+                    Attributes = i.itemAttributesValues?.Select(attr => new ItemAttributeDto
+                    {
+                        CategoryAttributeId = attr.CategoryAttributeId,
+                        Value = attr.value
+                    }).ToList()
+                    ?? new List<ItemAttributeDto>()
+
+                }).ToList()
+            };
+            return result;
+        }
+
+        public async Task<AuthResult> DeleteAuction(int id, string userId)
+        {
+            var auction = await _auctionRepository.GetByIdAsync(id);
+            var seller = await _sellerRepository.GetByUserIdAsync(userId);
+
+
+            if (auction == null)
+                return new AuthResult { Errors = { "Not Found" } };
+
+            if (auction.SellerId != seller.Id)
+                return new AuthResult { Errors = { "Unauthorized" } };
+
+            if (auction.Status == AuctionStatus.Active)
+                return new AuthResult { Errors = { "Cannot delete active auction" } };
+
+
+            auction.IsDeleted = true;
+            auction.DeletedAt = DateTime.UtcNow.AddHours(2).ToString();
+
+            _auctionRepository.Update(auction);
+            await _auctionRepository.SaveChangesAsync();
+
+            var notification = new DAL.Models.Notification
+            {
+                Title = "Auction Created",
+                Message = $"Your auction '{auction.Title}' has been Deleted",
+                UserId = userId,
+                notificationType = NotificationTypes.AuctionsStatus,
+                ReferenceId = auction.Id,
+                IsRead = false,
+                CreatedAt = DateTime.Now.AddHours(2)
+            };
+
+            await _notification.AddAsync(notification);
+            await _notification.SaveChangesAsync();
+
+            return new AuthResult { IsSuccess = true, Message = "Deleted Successfully" };
+        }
+
+
+
+        private List<string> ValidateAuction(CreateAuctionDto dto)
+        {
+            var errors = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(dto.Title))
+                errors.Add("Title is required");
+
+            if (dto.StartingPrice <= 0)
+                errors.Add("Starting price must be greater than 0");
+
+            if (dto.BidIncrement <= 0)
+                errors.Add("Bid increment must be greater than 0");
+
+            if (dto.EndDate <= dto.StartDate)
+                errors.Add("End date must be after start date");
+
+            if (dto.Items == null || !dto.Items.Any())
+                errors.Add("At least one item is required");
+
+            return errors;
+        }
+
+        private List<string> ValidateAuction(EditAuctionDto dto)
+        {
+            var errors = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(dto.Title))
+                errors.Add("Title is required");
+
+            if (dto.Items == null || !dto.Items.Any())
+                errors.Add("At least one item is required");
+
+            return errors;
         }
 
     }

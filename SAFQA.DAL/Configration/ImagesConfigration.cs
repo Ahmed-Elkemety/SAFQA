@@ -18,7 +18,6 @@ namespace SAFQA.DAL.Configration
                 .HasForeignKey(img => img.ItemId);
 
             builder.Property(img => img.Image).IsRequired();
-            builder.Property(img => img.IsMain).HasDefaultValue(false);
             builder.Property(img => img.ItemId).IsRequired();
         }
     }

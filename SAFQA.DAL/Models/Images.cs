@@ -10,7 +10,6 @@ namespace SAFQA.DAL.Models
     {
         public int Id { get; set; }
         public byte[] Image { get; set; }
-        public bool IsMain { get; set; }
         public int ItemId { get; set; }
         public Item item { get; set; }
     }

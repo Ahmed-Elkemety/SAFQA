@@ -27,5 +27,11 @@ namespace SAFQA.DAL.Repository.Auction
         void Update(Models.Auction auction);
         void Delete(Models.Auction auction);
         Task AddAsync(Models.Auction auction);
+        Task<Models.Auction?> GetByIdWithDetailsAsync(int auctionId);
+        Task<Models.Auction?> GetByIdAsync(int id);
+        Task<Models.Auction?> GetWithDetailsAsync(int id);
+        Task<IEnumerable<Models.Auction>> GetAllAsync();
+
+        Task SaveChangesAsync();
     }
 }

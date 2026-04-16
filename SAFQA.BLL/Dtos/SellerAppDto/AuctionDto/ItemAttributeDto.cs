@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SAFQA.BLL.Dtos.SellerAppDto.AuctionDto
 {
-    public class CreateItemAttributeDto
+    public class ItemAttributeDto
     {
         public int CategoryAttributeId { get; set; }
         public string Value { get; set; }

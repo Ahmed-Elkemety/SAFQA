@@ -17,6 +17,6 @@ namespace SAFQA.BLL.Dtos.SellerAppDto.AuctionDto
 
         public AuctionStatus Status { get; set; }
 
-        public string? Image { get; set; }
+        public byte[]? Image { get; set; }
     }
 }
