@@ -148,7 +148,7 @@ namespace SAFQA.DAL.Repository.Auction
         {
             return _context.Auctions
                 .AsNoTracking()
-                .Where(a => a.Seller.UserId == userId && a.IsDeleted != false);
+                .Where(a => a.Seller.UserId == userId && a.IsDeleted == false);
         }
 
 
