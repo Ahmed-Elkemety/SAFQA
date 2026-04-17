@@ -37,38 +37,6 @@ namespace SAFQA.DAL.Repository.Items
                     .Where(a => a.Auction.SellerId == sellerId);
         }
 
-        public async Task<List<(string CategoryName, int Count)>>GetSellerCategoryProductCounts(int sellerId)
-        {
-            var result = await _context.Items
-                .Where(i =>
-                    i.Auction.SellerId == sellerId && 
-                    (i.Auction.Status == AuctionStatus.Active ||
-                        i.Auction.Status == AuctionStatus.Finished))
-                        .GroupBy(i => i.Category.Name)
-                        .Select(g => new ValueTuple<string, int>(
-                                g.Key,
-                                g.Count()
-                        ))
-                        .ToListAsync();
-
-            return result;
-        }
-        public async Task<List<(string CategoryName, int Count)>> GetCategoryCountsBySellerAsync(int sellerId)
-        {
-            return await _context.Items
-                            .Where(i =>
-                            i.Auction.SellerId == sellerId &&
-                            (i.Auction.Status == AuctionStatus.Active ||
-                                i.Auction.Status == AuctionStatus.Finished)
-                            )
-                            .GroupBy(i => i.Category.Name)
-                            .Select(g => new ValueTuple<string, int>(
-                                g.Key,
-                                g.Count()
-                            ))
-                            .ToListAsync();
-        }
-
         public IQueryable<Item> GetAll()
         {
             return _context.Items;
