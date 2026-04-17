@@ -500,15 +500,15 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
                 Description = dto.Description,
                 StartingPrice = dto.StartingPrice,
                 CurrentPrice = dto.StartingPrice,
+                FinalPrice = dto.StartingPrice,
                 BidIncrement = dto.BidIncrement,
+                SecurityDeposit = dto.StartingPrice * 0.1m,
 
                 StartDate = dto.StartDate,
                 EndDate = dto.EndDate,
 
                 CreatedAt = DateTime.UtcNow.AddHours(2),
                 SellerId = seller.Id,
-                Status = AuctionStatus.Upcoming,
-                IsDeleted = false,
                 items = new List<Item>()
             };
 

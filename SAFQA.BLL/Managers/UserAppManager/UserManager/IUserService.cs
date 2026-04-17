@@ -1,4 +1,7 @@
-﻿using SAFQA.BLL.Dtos.UserAppDto.HomeDto;
+﻿using SAFQA.BLL.Dtos.UserAppDto.AccountDto;
+using SAFQA.BLL.Dtos.UserAppDto.HomeDto;
+using SAFQA.BLL.Dtos.UserAppDto.ProfileDto;
+using SAFQA.BLL.Managers.AccountManager.Auth;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,5 +19,9 @@ namespace SAFQA.BLL.Managers.UserAppManager
         Task<int> GetBlockedUsersCountAsync();
         PagedResult<UserListDto> GetUsers(int page, int pageSize);
         bool ChangeStatus(string userId);
+
+        Task<(AuthResult, UserProfileDto?)> GetProfile(string userId);
+        Task<(AuthResult, UserAccountDto?)> GetAccount(string userId);
+        Task<AuthResult> EditAccount(string userId, EditAccountDto dto);
     }
 }

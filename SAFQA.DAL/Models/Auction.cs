@@ -33,7 +33,7 @@ namespace SAFQA.DAL.Models
 
         public int BidIncrement { get; set; }
 
-        public AuctionStatus Status { get; set; } = AuctionStatus.Upcoming;
+        public AuctionStatus Status { get; set; }
 
         public int LikesCount { get; set; }
         public int ParticipationCount { get; set; }
@@ -46,14 +46,14 @@ namespace SAFQA.DAL.Models
         public bool HotScore { get; set; }
 
         public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
 
-        public bool IsDeleted { get; set; } = false;
-        public string? DeletedAt { get; set; } // ✅ بدل string
+        public bool IsDeleted { get; set; }
+        public string? DeletedAt { get; set; }
 
         // Navigation
-        public Review? review { get; set; } // ✅ nullable
-        public Delivery? delivery { get; set; } // ✅ nullable
+        public Review? review { get; set; }
+        public Delivery? delivery { get; set; } 
         public ICollection<AuctionUser> AuctionUsers { get; set; }
         public ICollection<Bid> Bids { get; set; }
         public ICollection<ProxyBidding> ProxyBiddings { get; set; }

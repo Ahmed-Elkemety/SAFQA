@@ -189,9 +189,7 @@ namespace SAFQA.DAL.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("FinalPrice")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("decimal(18,2)")
-                        .HasDefaultValue(100.50m);
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("HotScore")
                         .ValueGeneratedOnAdd()
@@ -217,10 +215,14 @@ namespace SAFQA.DAL.Migrations
                         .HasDefaultValue(false);
 
                     b.Property<int>("LikesCount")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<int>("ParticipationCount")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<decimal>("SecurityDeposit")
                         .ValueGeneratedOnAdd()
@@ -247,15 +249,17 @@ namespace SAFQA.DAL.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<int>("TotalBids")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("ViewsCount")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<string>("WinnerUserId")
                         .IsRequired()

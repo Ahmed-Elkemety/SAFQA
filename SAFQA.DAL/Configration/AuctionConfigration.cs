@@ -35,28 +35,22 @@ namespace SAFQA.DAL.Configration
 
             // 📌 Required Fields
             builder.Property(a => a.Title)
-                   .IsRequired()
                    .HasMaxLength(200);
 
             builder.Property(a => a.Description)
-                   .IsRequired()
                    .HasMaxLength(3000);
 
             builder.Property(a => a.StartingPrice)
-                   .HasColumnType("decimal(18,2)")
-                   .IsRequired();
+                   .HasColumnType("decimal(18,2)");
 
             builder.Property(a => a.CurrentPrice)
-                   .HasColumnType("decimal(18,2)")
-                   .IsRequired();
+                   .HasColumnType("decimal(18,2)");
 
             builder.Property(a => a.FinalPrice)
-                   .HasColumnType("decimal(18,2)").HasDefaultValue(100.50m)
-                   .IsRequired(true);
+                   .HasColumnType("decimal(18,2)");
 
             builder.Property(a => a.SecurityDeposit).HasDefaultValue(100.50m)
-                   .HasColumnType("decimal(18,2)")
-                   .IsRequired(true);
+                   .HasColumnType("decimal(18,2)");
 
             builder.Property(a => a.BidIncrement)
                    .IsRequired();
@@ -65,12 +59,8 @@ namespace SAFQA.DAL.Configration
             builder.Property(a => a.CreatedAt)
                    .HasDefaultValueSql("GETDATE()");
 
-            builder.Property(a => a.UpdatedAt)
-                   .HasDefaultValueSql("GETDATE()");
-
             builder.Property(a => a.Status)
-                   .HasDefaultValue(AuctionStatus.Upcoming)
-                   .IsRequired();
+                   .HasDefaultValue(AuctionStatus.Upcoming);
 
             builder.Property(a => a.IsFeatured)
                    .HasDefaultValue(false);
@@ -82,18 +72,20 @@ namespace SAFQA.DAL.Configration
                    .HasDefaultValue(false);
 
             builder.Property(a => a.IsDeleted)
-                   .HasDefaultValue(false)
-                   .IsRequired();
+                   .HasDefaultValue(false);
+            builder.Property(a => a.WinnerUserId)
+                   .HasDefaultValue(" ");
 
-            builder.Property(a => a.DeletedAt)
-                   .IsRequired(false);
+            builder.Property(a=> a.LikesCount)
+                   .HasDefaultValue(0);
+            builder.Property(a => a.ParticipationCount)
+                .HasDefaultValue(0);
+            builder.Property(a => a.ViewsCount)
+                .HasDefaultValue(0);
+            builder.Property(a => a.TotalBids)
+                .HasDefaultValue(0);
+            
 
-            // 📌 Optional fields
-            builder.Property(a => a.WinnerUserId).HasDefaultValue(" ")
-                   .IsRequired(true);
-
-            builder.Property(a => a.Image)
-                   .IsRequired(false);
         }
     }
 }

@@ -69,5 +69,18 @@ namespace SAFQA.DAL.Repository.Users
             _context.Users.Remove(user);
             _context.SaveChanges();
         }
+
+        public async Task<User> GetByIdAsync(string userId)
+        {
+            return await _context.Users
+                .Include(u => u.City)
+                .FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted);
+        }
+
+        public async Task UpdateAsync(User user)
+        {
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+        }
     }
 }
