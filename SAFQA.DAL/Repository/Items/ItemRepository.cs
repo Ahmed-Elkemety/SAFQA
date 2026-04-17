@@ -28,7 +28,7 @@ namespace SAFQA.DAL.Repository.Items
         public IQueryable<Item> GetProductsByCategory(int sellerId, string categoryName)
         {
             return _context.Items
-                .Where(i => i.Auction.SellerId == sellerId && i.Category.Name == categoryName);
+                .Where(i => i.Auction.SellerId == sellerId && i.Auction.Category.Name == categoryName);
         }
         
         public IQueryable<Item> GetSellerProducts(int sellerId)

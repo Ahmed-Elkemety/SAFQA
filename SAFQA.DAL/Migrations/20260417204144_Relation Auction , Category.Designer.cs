@@ -12,8 +12,8 @@ using SAFQA.DAL.Database;
 namespace SAFQA.DAL.Migrations
 {
     [DbContext(typeof(SAFQA_Context))]
-    [Migration("20260416230203_up")]
-    partial class up
+    [Migration("20260417204144_Relation Auction , Category")]
+    partial class RelationAuctionCategory
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -169,6 +169,11 @@ namespace SAFQA.DAL.Migrations
                     b.Property<int>("BidIncrement")
                         .HasColumnType("int");
 
+                    b.Property<int>("CategoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
                     b.Property<int?>("CountDown")
                         .HasColumnType("int");
 
@@ -192,9 +197,7 @@ namespace SAFQA.DAL.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("FinalPrice")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("decimal(18,2)")
-                        .HasDefaultValue(100.50m);
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("HotScore")
                         .ValueGeneratedOnAdd()
@@ -220,10 +223,14 @@ namespace SAFQA.DAL.Migrations
                         .HasDefaultValue(false);
 
                     b.Property<int>("LikesCount")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<int>("ParticipationCount")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<decimal>("SecurityDeposit")
                         .ValueGeneratedOnAdd()
@@ -250,15 +257,17 @@ namespace SAFQA.DAL.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<int>("TotalBids")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("ViewsCount")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<string>("WinnerUserId")
                         .IsRequired()
@@ -267,6 +276,8 @@ namespace SAFQA.DAL.Migrations
                         .HasDefaultValue(" ");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
 
                     b.HasIndex("SellerId");
 
@@ -766,9 +777,6 @@ namespace SAFQA.DAL.Migrations
                     b.Property<int>("AuctionId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("CategoryId")
-                        .HasColumnType("int");
-
                     b.Property<int>("Condition")
                         .HasColumnType("int");
 
@@ -793,8 +801,6 @@ namespace SAFQA.DAL.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AuctionId");
-
-                    b.HasIndex("CategoryId");
 
                     b.ToTable("Items");
                 });
@@ -1529,10 +1535,18 @@ namespace SAFQA.DAL.Migrations
 
             modelBuilder.Entity("SAFQA.DAL.Models.Auction", b =>
                 {
+                    b.HasOne("SAFQA.DAL.Models.Category", "Category")
+                        .WithMany("Auctions")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("SAFQA.DAL.Models.Seller", "Seller")
                         .WithMany("Auctions")
                         .HasForeignKey("SellerId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Category");
 
                     b.Navigation("Seller");
                 });
@@ -1764,14 +1778,7 @@ namespace SAFQA.DAL.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("SAFQA.DAL.Models.Category", "Category")
-                        .WithMany("Items")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.Navigation("Auction");
-
-                    b.Navigation("Category");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.ItemAttributesValue", b =>
@@ -1979,9 +1986,9 @@ namespace SAFQA.DAL.Migrations
 
             modelBuilder.Entity("SAFQA.DAL.Models.Category", b =>
                 {
-                    b.Navigation("CategoryAttributes");
+                    b.Navigation("Auctions");
 
-                    b.Navigation("Items");
+                    b.Navigation("CategoryAttributes");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.CategoryAttributes", b =>

@@ -56,7 +56,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.UserManager
                 Name = c.Name,
                 Description = c.Description,
                 Image = c.Image,
-                ItemCount = c.ItemCount
+                AuctionCount = c.AuctionCount
             }).ToList();
 
             return result;

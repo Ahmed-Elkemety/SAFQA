@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -32,6 +33,14 @@ namespace SAFQA.DAL.Configration
                    .WithOne(r => r.auction)
                    .HasForeignKey<Review>(r => r.AuctionId)
                    .OnDelete(DeleteBehavior.Cascade);
+
+            builder .HasOne(a => a.Category)
+                    .WithMany(c => c.Auctions)
+                    .HasForeignKey(a => a.CategoryId).
+                    OnDelete(DeleteBehavior.Restrict);
+
+            builder.Property(a => a.CategoryId)
+                .HasDefaultValue(1);
 
             // 📌 Required Fields
             builder.Property(a => a.Title)

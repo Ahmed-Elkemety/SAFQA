@@ -15,8 +15,10 @@ namespace SAFQA.DAL.Models
 
         public int? SellerId { get; set; }
         public Seller Seller { get; set; }
+        public int CategoryId { get; set; }
+        public Category Category { get; set; }
 
-        public string WinnerUserId { get; set; } // ✅ nullable
+        public string WinnerUserId { get; set; }
 
         public string Title { get; set; }
         public byte[]? Image { get; set; }
@@ -25,8 +27,8 @@ namespace SAFQA.DAL.Models
         public decimal StartingPrice { get; set; }
         public decimal CurrentPrice { get; set; }
 
-        public decimal FinalPrice { get; set; } // ✅ nullable
-        public decimal SecurityDeposit { get; set; } // ✅ nullable
+        public decimal FinalPrice { get; set; }
+        public decimal SecurityDeposit { get; set; }
 
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }

@@ -20,7 +20,7 @@ namespace SAFQA.DAL.Repository.Bids
         public async Task<int> GetBidsByCategory(int sellerId, int categoryId)
         {
             var totalBids = await _context.Bids
-                                 .Where(b => b.Auction.SellerId == sellerId && b.Auction.items.Any(i => i.CategoryId == categoryId))
+                                 .Where(b => b.Auction.SellerId == sellerId && b.Auction.CategoryId == categoryId)
                                  .CountAsync();
             return totalBids;
         }

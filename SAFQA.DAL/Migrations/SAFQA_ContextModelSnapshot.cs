@@ -166,6 +166,11 @@ namespace SAFQA.DAL.Migrations
                     b.Property<int>("BidIncrement")
                         .HasColumnType("int");
 
+                    b.Property<int>("CategoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
                     b.Property<int?>("CountDown")
                         .HasColumnType("int");
 
@@ -268,6 +273,8 @@ namespace SAFQA.DAL.Migrations
                         .HasDefaultValue(" ");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
 
                     b.HasIndex("SellerId");
 
@@ -767,9 +774,6 @@ namespace SAFQA.DAL.Migrations
                     b.Property<int>("AuctionId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("CategoryId")
-                        .HasColumnType("int");
-
                     b.Property<int>("Condition")
                         .HasColumnType("int");
 
@@ -794,8 +798,6 @@ namespace SAFQA.DAL.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AuctionId");
-
-                    b.HasIndex("CategoryId");
 
                     b.ToTable("Items");
                 });
@@ -1530,10 +1532,18 @@ namespace SAFQA.DAL.Migrations
 
             modelBuilder.Entity("SAFQA.DAL.Models.Auction", b =>
                 {
+                    b.HasOne("SAFQA.DAL.Models.Category", "Category")
+                        .WithMany("Auctions")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("SAFQA.DAL.Models.Seller", "Seller")
                         .WithMany("Auctions")
                         .HasForeignKey("SellerId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Category");
 
                     b.Navigation("Seller");
                 });
@@ -1765,14 +1775,7 @@ namespace SAFQA.DAL.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("SAFQA.DAL.Models.Category", "Category")
-                        .WithMany("Items")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.Navigation("Auction");
-
-                    b.Navigation("Category");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.ItemAttributesValue", b =>
@@ -1980,9 +1983,9 @@ namespace SAFQA.DAL.Migrations
 
             modelBuilder.Entity("SAFQA.DAL.Models.Category", b =>
                 {
-                    b.Navigation("CategoryAttributes");
+                    b.Navigation("Auctions");
 
-                    b.Navigation("Items");
+                    b.Navigation("CategoryAttributes");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.CategoryAttributes", b =>

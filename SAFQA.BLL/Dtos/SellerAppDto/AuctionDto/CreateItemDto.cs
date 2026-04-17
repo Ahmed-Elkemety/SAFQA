@@ -16,8 +16,6 @@ namespace SAFQA.BLL.Dtos.SellerAppDto.AuctionDto
         public ItemCondition Condition { get; set; }
         public string WarrantyInfo { get; set; }
 
-        public int CategoryId { get; set; }
-
         public List<ItemAttributeDto> Attributes { get; set; }
         public List<IFormFile>? Images { get; set; }
     }

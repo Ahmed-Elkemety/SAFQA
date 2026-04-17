@@ -325,5 +325,23 @@ namespace SAFQA.API.Controllers
                 return NotFound(new { message = ex.Message });
             }
         }
+
+        [HttpGet("categoryAuctions/{categoryId}")]
+        [Authorize(Roles = "USER")]
+        public async Task<IActionResult> GetAuctionsByCategory(int categoryId, int pageNumber = 1, int pageSize = 10)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var result = await _auctionManagerU.GetAuctionsByCategory(categoryId, userId, pageNumber, pageSize);
+
+            if (!result.Item1.IsSuccess)
+                return BadRequest(result.Item1);
+
+            return Ok(new
+            {
+                result.Item1,
+                result.Item2
+            });
+        }
     }
 }

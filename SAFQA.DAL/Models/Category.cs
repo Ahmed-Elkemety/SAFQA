@@ -13,7 +13,8 @@ namespace SAFQA.DAL.Models
         public string Description { get; set; }
         public byte[] Image { get; set; }
 
-        public ICollection<Item> Items { get; set; }
+        public ICollection<Auction> Auctions { get; set; }
+
         public ICollection<CategoryAttributes> CategoryAttributes { get; set; }
     }
 }

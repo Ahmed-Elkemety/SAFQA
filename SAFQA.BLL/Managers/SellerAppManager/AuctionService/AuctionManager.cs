@@ -145,7 +145,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
                     !a.IsDeleted &&
                     a.SellerId == sellerId &&
                     validStatuses.Contains(a.Status) &&
-                    a.items.Any(i => i.CategoryId == categoryId)
+                    a.items.Any(i => i.Auction.CategoryId == categoryId)
                 )
                 .Select(a => new AuctionProfitDto
                 {
@@ -171,10 +171,10 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
                             && !a.IsDeleted
                             && (a.Status == AuctionStatus.Active || a.Status == AuctionStatus.Finished))
                 .Include(a => a.items)
-                .ThenInclude(i => i.Category);
+                .ThenInclude(i => i.Auction.Category);
 
             var allItems = auctions.SelectMany(a => a.items)
-                                   .Where(i => i.CategoryId != null);
+                                   .Where(i => i.Auction.CategoryId != null);
 
             var totalItems = allItems.Count();
 
@@ -183,7 +183,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
                 return new List<CategoryPercentageDto>();
 
             var result = allItems
-                .GroupBy(i => i.Category.Name)
+                .GroupBy(i => i.Auction.Category.Name)
                 .Select(g => new CategoryPercentageDto
                 {
                     CategoryName = g.Key,
@@ -221,7 +221,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
         {
             var auctions = _auctionRepository.GetAll()
                 .Where(a => a.SellerId == sellerId
-                && a.items.Any(i => i.CategoryId == categoryId)
+                && a.items.Any(i => i.Auction.CategoryId == categoryId)
                 && !a.IsDeleted)
                                 .ToList();
 
@@ -503,6 +503,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
                 FinalPrice = dto.StartingPrice,
                 BidIncrement = dto.BidIncrement,
                 SecurityDeposit = dto.StartingPrice * 0.1m,
+                CategoryId = dto.CategoryId,
 
                 StartDate = dto.StartDate,
                 EndDate = dto.EndDate,
@@ -534,7 +535,6 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
                     Description = itemDto.Description,
                     WarrantyInfo = itemDto.WarrantyInfo,
                     Condition = itemDto.Condition,
-                    CategoryId = itemDto.CategoryId,
                     images = new List<Images>(),
                     itemAttributesValues = new List<ItemAttributesValue>()
                 };
@@ -622,6 +622,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
             auction.Title = dto.Title;
             auction.Description = dto.Description;
             auction.UpdatedAt = DateTime.UtcNow.AddHours(2);
+            auction.CategoryId = dto.CategoryId;
 
             // ✅ Head Image
             if (dto.Image != null)
@@ -685,7 +686,6 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
                     item.Count = itemDto.Count;
                     item.WarrantyInfo = itemDto.WarrantyInfo;
                     item.Condition = itemDto.Condition;
-                    item.CategoryId = itemDto.CategoryId;
 
                     // Reset attributes
                     _context.itemAttributesValues.RemoveRange(item.itemAttributesValues);
@@ -701,7 +701,6 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
                         Count = itemDto.Count,
                         WarrantyInfo = itemDto.WarrantyInfo,
                         Condition = itemDto.Condition,
-                        CategoryId = itemDto.CategoryId,
                         images = new List<Images>(),
                         itemAttributesValues = new List<ItemAttributesValue>()
                     };
@@ -782,12 +781,6 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
             if (userid == null)
                 throw new Exception ( "Unauthorized") ;
 
-            // 2️⃣ Get Seller
-            var seller = await _sellerRepository.GetByUserIdAsync(userid);
-
-            if (seller == null)
-                throw new Exception("Seller not found");
-
             var auction = await _auctionRepository.GetWithDetailsAsync(id);
 
             if (auction == null)
@@ -802,6 +795,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
                 StartingPrice = auction.StartingPrice,
                 StartDate = auction.StartDate,
                 EndDate = auction.EndDate,
+                CategoryId = auction.CategoryId,
 
                 Items = auction.items.Select(i => new ViewItemDto
                 {
@@ -811,7 +805,6 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
                     Count = i.Count,
                     WarrantyInfo = i.WarrantyInfo,
                     Condition = i.Condition,
-                    CategoryId = i.CategoryId,
 
                     Images = i.images?.Select(img => img.Image).ToList()
                              ?? new List<byte[]>(),
@@ -869,6 +862,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
 
 
 
+
         private List<string> ValidateAuction(CreateAuctionDto dto)
         {
             var errors = new List<string>();
@@ -903,6 +897,5 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
 
             return errors;
         }
-
     }
 }

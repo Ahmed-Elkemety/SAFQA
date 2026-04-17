@@ -17,19 +17,12 @@ namespace SAFQA.DAL.Configration
                 .WithMany(e => e.items)
                 .HasForeignKey(a => a.AuctionId);
 
-            builder
-                .HasOne(a => a.Category)
-                .WithMany(e => e.Items)
-                .HasForeignKey(a => a.CategoryId)
-                .IsRequired(false);
-
 
             builder.Property(i => i.title).IsRequired().HasMaxLength(200);
             builder.Property(i => i.Description).HasMaxLength(2000);
             builder.Property(i => i.Condition).IsRequired();
             builder.Property(i => i.WarrantyInfo).IsRequired().HasMaxLength(500);
             builder.Property(i => i.AuctionId).IsRequired();
-            builder.Property(i => i.CategoryId);
         }
     }
 }
