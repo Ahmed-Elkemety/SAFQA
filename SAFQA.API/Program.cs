@@ -21,6 +21,7 @@ using SAFQA.BLL.Managers.UserAppManager.AuctionManager;
 using SAFQA.BLL.Managers.UserAppManager.ChatService;
 using SAFQA.BLL.Managers.UserAppManager.ConversationService;
 using SAFQA.BLL.Managers.UserAppManager.DisputeService;
+using SAFQA.BLL.Managers.UserAppManager.OrderService;
 using SAFQA.BLL.Managers.UserAppManager.ReviewService;
 using SAFQA.BLL.Managers.UserAppManager.UserManager;
 using SAFQA.DAL.Database;
@@ -123,6 +124,7 @@ namespace SAFQA.API
             builder.Services.AddScoped<IDisputeService, DisputeService>();
             builder.Services.AddScoped<IReviewRepo, ReviewRepo>();
             builder.Services.AddScoped<IReviewService, ReviewService>();
+            builder.Services.AddScoped<IOrderService, OrderService>();
 
 
 

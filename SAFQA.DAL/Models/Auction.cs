@@ -60,5 +60,6 @@ namespace SAFQA.DAL.Models
         public ICollection<Disputes> disputes { get; set; }
         public ICollection<Item> items { get; set; }
         public ICollection<AuctionReport> Reports { get; set; }
+        public OrderTracking orderTracking { get; set; }
     }
 }
