@@ -33,7 +33,7 @@ namespace SAFQA.DAL.Repository.Auction
         Task<IEnumerable<Models.Auction>> GetAllAsync();
 
         Task<(List<Models.Auction>, int)> GetAuctionsByCategoryId(int categoryId, int pageNumber, int pageSize);
-
+        Task<(List<Models.Auction>, int)> GetFavoriteAuctions(string userId, int pageNumber, int pageSize);
         Task SaveChangesAsync();
     }
 }

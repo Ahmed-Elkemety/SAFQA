@@ -239,6 +239,25 @@ namespace SAFQA.DAL.Repository.Auction
             return (auctions, totalCount);
         }
 
+        public async Task<(List<Models.Auction>, int)> GetFavoriteAuctions(string userId, int pageNumber, int pageSize)
+        {
+            var query = _context.auctionLikes
+                .Where(al => al.UserId == userId)
+                .Include(al => al.Auction)
+                .Select(al => al.Auction)
+                .AsNoTracking();
+
+            var totalCount = await query.CountAsync();
+
+            var data = await query
+                .OrderByDescending(a => a.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (data, totalCount);
+        }
+
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();

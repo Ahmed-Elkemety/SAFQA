@@ -343,5 +343,25 @@ namespace SAFQA.API.Controllers
                 result.Item2
             });
         }
+
+        [HttpGet("favorites")]
+        public async Task<IActionResult> GetFavoriteAuctions(int pageNumber = 1, int pageSize = 10)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var result = await _auctionManagerU.GetFavoriteAuctions(userId, pageNumber, pageSize);
+
+            if (!result.Item1.IsSuccess)
+                return BadRequest(result.Item1);
+
+            return Ok(new
+            {
+                result.Item1,
+                Data = result.Item2,
+                TotalCount = result.Item3,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            });
+        }
     }
 }

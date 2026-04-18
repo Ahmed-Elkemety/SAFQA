@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SAFQA.BLL.Dtos.UserAppDto.AuctionDto;
+using SAFQA.BLL.Enums;
 using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.DAL.Database;
 using SAFQA.DAL.Models;
@@ -92,6 +93,43 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                 TotalCount = totalCount,
                 TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
             });
+        }
+
+        public async Task<(AuthResult, List<FavoritesDto>, int)> GetFavoriteAuctions(
+    string userId, int pageNumber, int pageSize)
+        {
+            var (auctions, totalCount) =
+                await _auctionRepository.GetFavoriteAuctions(userId, pageNumber, pageSize);
+
+            var data = auctions.Select(a => new FavoritesDto
+            {
+                AuctionId = a.Id,
+                Title = a.Title,
+
+                DisplayPrice =
+                    a.Status == AuctionStatus.Upcoming || a.Status == AuctionStatus.Cancelled
+                        ? a.StartingPrice
+                        : a.Status == AuctionStatus.Active || a.Status == AuctionStatus.EndingSoon
+                            ? a.CurrentPrice
+                            : a.Status == AuctionStatus.Finished
+                                ? a.FinalPrice
+                                : a.CurrentPrice,
+
+                DisplayDate =
+                    a.Status == AuctionStatus.Upcoming || a.Status == AuctionStatus.Cancelled
+                        ? a.StartDate
+                        : a.EndDate,
+
+                TotalBids = a.TotalBids,
+                Status = a.Status,
+                Image = a.Image
+            }).ToList();
+
+            return (new AuthResult
+            {
+                IsSuccess = true,
+                Message = "Favorite auctions retrieved successfully"
+            }, data, totalCount);
         }
     }
 }
