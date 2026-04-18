@@ -148,7 +148,7 @@ namespace SAFQA.DAL.Repository.Auction
         {
             return _context.Auctions
                 .AsNoTracking()
-                .Where(a => a.Seller.UserId == userId && a.IsDeleted != false);
+                .Where(a => a.Seller.UserId == userId && a.IsDeleted == false);
         }
 
 
@@ -221,6 +221,22 @@ namespace SAFQA.DAL.Repository.Auction
             return await _context.Auctions
                 .Where(a => !a.IsDeleted)
                 .ToListAsync();
+        }
+
+        public async Task<(List<Models.Auction>, int)> GetAuctionsByCategoryId(int categoryId, int pageNumber, int pageSize)
+        {
+            var query = _context.Auctions
+                .Where(a => !a.IsDeleted && a.CategoryId == categoryId);
+
+            var totalCount = await query.CountAsync();
+
+            var auctions = await query
+                .OrderByDescending(a => a.Id)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (auctions, totalCount);
         }
 
         public async Task SaveChangesAsync()

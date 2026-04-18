@@ -18,5 +18,8 @@ namespace SAFQA.DAL.Repository.Users
         void Add(User user);
         void Update(User user);
         void Delete(User user);
+
+        Task<User> GetByIdAsync(string userId);
+        Task UpdateAsync(User user);
     }
 }

@@ -166,6 +166,11 @@ namespace SAFQA.DAL.Migrations
                     b.Property<int>("BidIncrement")
                         .HasColumnType("int");
 
+                    b.Property<int>("CategoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
                     b.Property<int?>("CountDown")
                         .HasColumnType("int");
 
@@ -189,9 +194,7 @@ namespace SAFQA.DAL.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("FinalPrice")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("decimal(18,2)")
-                        .HasDefaultValue(100.50m);
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("HotScore")
                         .ValueGeneratedOnAdd()
@@ -217,10 +220,14 @@ namespace SAFQA.DAL.Migrations
                         .HasDefaultValue(false);
 
                     b.Property<int>("LikesCount")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<int>("ParticipationCount")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<decimal>("SecurityDeposit")
                         .ValueGeneratedOnAdd()
@@ -247,15 +254,17 @@ namespace SAFQA.DAL.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<int>("TotalBids")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("ViewsCount")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<string>("WinnerUserId")
                         .IsRequired()
@@ -265,9 +274,11 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CategoryId");
+
                     b.HasIndex("SellerId");
 
-                    b.ToTable("Auctions", (string)null);
+                    b.ToTable("Auctions");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.AuctionLike", b =>
@@ -319,7 +330,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("auctionReports", (string)null);
+                    b.ToTable("auctionReports");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.AuctionUser", b =>
@@ -339,7 +350,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AuctionUsers", (string)null);
+                    b.ToTable("AuctionUsers");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.AuctionView", b =>
@@ -413,7 +424,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Bids", (string)null);
+                    b.ToTable("Bids");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.BusinessSeller", b =>
@@ -500,7 +511,7 @@ namespace SAFQA.DAL.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Category", (string)null);
+                    b.ToTable("Category");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.CategoryAttributes", b =>
@@ -534,7 +545,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("categoryAttributes", (string)null);
+                    b.ToTable("categoryAttributes");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.City", b =>
@@ -557,7 +568,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("CountryId");
 
-                    b.ToTable("cities", (string)null);
+                    b.ToTable("cities");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.Conversation", b =>
@@ -619,7 +630,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("countries", (string)null);
+                    b.ToTable("countries");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.Delivery", b =>
@@ -668,7 +679,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Delivery", (string)null);
+                    b.ToTable("Delivery");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.Disputes", b =>
@@ -727,7 +738,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Disputes", (string)null);
+                    b.ToTable("Disputes");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.Images", b =>
@@ -749,7 +760,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("ItemId");
 
-                    b.ToTable("images", (string)null);
+                    b.ToTable("images");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.Item", b =>
@@ -761,9 +772,6 @@ namespace SAFQA.DAL.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AuctionId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("CategoryId")
                         .HasColumnType("int");
 
                     b.Property<int>("Condition")
@@ -791,9 +799,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("AuctionId");
 
-                    b.HasIndex("CategoryId");
-
-                    b.ToTable("Items", (string)null);
+                    b.ToTable("Items");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.ItemAttributesValue", b =>
@@ -820,7 +826,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("ItemId");
 
-                    b.ToTable("itemAttributesValues", (string)null);
+                    b.ToTable("itemAttributesValues");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.Message", b =>
@@ -937,7 +943,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notifications", (string)null);
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.PasswordResetOtp", b =>
@@ -972,7 +978,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PasswordResetOtps", (string)null);
+                    b.ToTable("PasswordResetOtps");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.PendingUserRegistration", b =>
@@ -1032,7 +1038,7 @@ namespace SAFQA.DAL.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("PendingUserRegistrations", (string)null);
+                    b.ToTable("PendingUserRegistrations");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.PersonalSeller", b =>
@@ -1105,7 +1111,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("proxyBiddings", (string)null);
+                    b.ToTable("proxyBiddings");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.Review", b =>
@@ -1154,7 +1160,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Reviews", (string)null);
+                    b.ToTable("Reviews");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.SavedCard", b =>
@@ -1272,7 +1278,7 @@ namespace SAFQA.DAL.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Sellers", (string)null);
+                    b.ToTable("Sellers");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.Transactions", b =>
@@ -1315,7 +1321,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("WalletId");
 
-                    b.ToTable("Transactions", (string)null);
+                    b.ToTable("Transactions");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.User", b =>
@@ -1470,7 +1476,7 @@ namespace SAFQA.DAL.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Wallets", (string)null);
+                    b.ToTable("Wallets");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -1526,10 +1532,18 @@ namespace SAFQA.DAL.Migrations
 
             modelBuilder.Entity("SAFQA.DAL.Models.Auction", b =>
                 {
+                    b.HasOne("SAFQA.DAL.Models.Category", "Category")
+                        .WithMany("Auctions")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("SAFQA.DAL.Models.Seller", "Seller")
                         .WithMany("Auctions")
                         .HasForeignKey("SellerId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Category");
 
                     b.Navigation("Seller");
                 });
@@ -1761,14 +1775,7 @@ namespace SAFQA.DAL.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("SAFQA.DAL.Models.Category", "Category")
-                        .WithMany("Items")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.Navigation("Auction");
-
-                    b.Navigation("Category");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.ItemAttributesValue", b =>
@@ -1976,9 +1983,9 @@ namespace SAFQA.DAL.Migrations
 
             modelBuilder.Entity("SAFQA.DAL.Models.Category", b =>
                 {
-                    b.Navigation("CategoryAttributes");
+                    b.Navigation("Auctions");
 
-                    b.Navigation("Items");
+                    b.Navigation("CategoryAttributes");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.CategoryAttributes", b =>

@@ -15,8 +15,10 @@ namespace SAFQA.DAL.Models
 
         public int? SellerId { get; set; }
         public Seller Seller { get; set; }
+        public int CategoryId { get; set; }
+        public Category Category { get; set; }
 
-        public string WinnerUserId { get; set; } // ✅ nullable
+        public string WinnerUserId { get; set; }
 
         public string Title { get; set; }
         public byte[]? Image { get; set; }
@@ -25,15 +27,15 @@ namespace SAFQA.DAL.Models
         public decimal StartingPrice { get; set; }
         public decimal CurrentPrice { get; set; }
 
-        public decimal FinalPrice { get; set; } // ✅ nullable
-        public decimal SecurityDeposit { get; set; } // ✅ nullable
+        public decimal FinalPrice { get; set; }
+        public decimal SecurityDeposit { get; set; }
 
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 
         public int BidIncrement { get; set; }
 
-        public AuctionStatus Status { get; set; } = AuctionStatus.Upcoming;
+        public AuctionStatus Status { get; set; }
 
         public int LikesCount { get; set; }
         public int ParticipationCount { get; set; }
@@ -46,14 +48,14 @@ namespace SAFQA.DAL.Models
         public bool HotScore { get; set; }
 
         public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
 
-        public bool IsDeleted { get; set; } = false;
-        public string? DeletedAt { get; set; } // ✅ بدل string
+        public bool IsDeleted { get; set; }
+        public string? DeletedAt { get; set; }
 
         // Navigation
-        public Review? review { get; set; } // ✅ nullable
-        public Delivery? delivery { get; set; } // ✅ nullable
+        public Review? review { get; set; }
+        public Delivery? delivery { get; set; } 
         public ICollection<AuctionUser> AuctionUsers { get; set; }
         public ICollection<Bid> Bids { get; set; }
         public ICollection<ProxyBidding> ProxyBiddings { get; set; }

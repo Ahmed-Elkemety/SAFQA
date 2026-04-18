@@ -27,7 +27,7 @@ namespace SAFQA.DAL.Repository.Category
                     Name = c.Name,
                     Description = c.Description,
                     Image = c.Image,
-                    ItemCount = c.Items.Count()
+                    AuctionCount = c.Auctions.Count()
                 })
                 .ToListAsync();
         }

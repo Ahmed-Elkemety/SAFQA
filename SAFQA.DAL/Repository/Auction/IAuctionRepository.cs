@@ -32,6 +32,8 @@ namespace SAFQA.DAL.Repository.Auction
         Task<Models.Auction?> GetWithDetailsAsync(int id);
         Task<IEnumerable<Models.Auction>> GetAllAsync();
 
+        Task<(List<Models.Auction>, int)> GetAuctionsByCategoryId(int categoryId, int pageNumber, int pageSize);
+
         Task SaveChangesAsync();
     }
 }

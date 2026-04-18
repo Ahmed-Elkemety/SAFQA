@@ -20,6 +20,8 @@ namespace SAFQA.BLL.Dtos.SellerAppDto.AuctionDto
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 
+        public int CategoryId { get; set; }
+
         public List<CreateItemDto> Items { get; set; }
     }
 }

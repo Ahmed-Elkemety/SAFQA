@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SAFQA.DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class _ : Migration
+    public partial class intit : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -32,7 +32,8 @@ namespace SAFQA.DAL.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false)
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    Image = table.Column<byte[]>(type: "varbinary(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -146,8 +147,8 @@ namespace SAFQA.DAL.Migrations
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     FullName = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
                     Image = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
-                    BirthDate = table.Column<DateOnly>(type: "date", nullable: true, defaultValueSql: "GETDATE()"),
-                    Gender = table.Column<int>(type: "int", maxLength: 10, nullable: true),
+                    BirthDate = table.Column<DateOnly>(type: "date", nullable: false, defaultValueSql: "GETDATE()"),
+                    Gender = table.Column<int>(type: "int", maxLength: 10, nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETDATE()"),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETDATE()"),
@@ -155,7 +156,8 @@ namespace SAFQA.DAL.Migrations
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", maxLength: 50, nullable: true),
                     IsProfileCompleted = table.Column<bool>(type: "bit", nullable: false),
-                    CityId = table.Column<int>(type: "int", nullable: true),
+                    CityId = table.Column<int>(type: "int", nullable: false),
+                    FacebookId = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -275,7 +277,7 @@ namespace SAFQA.DAL.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     notificationType = table.Column<int>(type: "int", nullable: false),
-                    ReferenceId = table.Column<int>(type: "int", nullable: false),
+                    ReferenceId = table.Column<int>(type: "int", nullable: true),
                     Message = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
                     IsRead = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -317,50 +319,27 @@ namespace SAFQA.DAL.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "refreshTokens",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    TokenHash = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
-                    ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DeviceId = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    IsRevoked = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_refreshTokens", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_refreshTokens_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Sellers",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    CityId = table.Column<int>(type: "int", nullable: true),
-                    StoreLogo = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    CityId = table.Column<int>(type: "int", nullable: false),
+                    StoreLogo = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
                     StoreName = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
                     PhoneNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     BussinessType = table.Column<int>(type: "int", nullable: false),
                     upgradeType = table.Column<int>(type: "int", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
-                    Rating = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    Rating = table.Column<float>(type: "real", nullable: false),
                     Followers = table.Column<int>(type: "int", nullable: false),
                     AuctionCount = table.Column<int>(type: "int", nullable: false),
                     VerificationStatus = table.Column<int>(type: "int", nullable: false),
                     StoreStatus = table.Column<int>(type: "int", nullable: false),
                     SellerAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETDATE()"),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    DeletedAt = table.Column<string>(type: "nvarchar(max)", nullable: false, defaultValueSql: "GETDATE()")
+                    DeletedAt = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -408,28 +387,30 @@ namespace SAFQA.DAL.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     SellerId = table.Column<int>(type: "int", nullable: true),
-                    WinnerUserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    WinnerUserId = table.Column<string>(type: "nvarchar(max)", nullable: false, defaultValue: " "),
                     Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Image = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(3000)", maxLength: 3000, nullable: false),
                     StartingPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     CurrentPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     FinalPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    SecurityDeposit = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    SecurityDeposit = table.Column<decimal>(type: "decimal(18,2)", nullable: false, defaultValue: 100.50m),
                     StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false),
-                    LikesCount = table.Column<int>(type: "int", nullable: false),
-                    ParticipationCount = table.Column<int>(type: "int", nullable: false),
-                    ViewsCount = table.Column<int>(type: "int", nullable: false),
-                    TotalBids = table.Column<int>(type: "int", nullable: false),
+                    BidIncrement = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
+                    LikesCount = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    ParticipationCount = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    ViewsCount = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    TotalBids = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     IsFeatured = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     CountDown = table.Column<int>(type: "int", nullable: true),
                     IsTrending = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     HotScore = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETDATE()"),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    DeletedAt = table.Column<string>(type: "nvarchar(max)", nullable: false, defaultValueSql: "GETDATE()")
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    DeletedAt = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -453,6 +434,7 @@ namespace SAFQA.DAL.Migrations
                     TaxId = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
                     OwnerNationalIdFront = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
                     OwnerNationalIdBack = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    instaPayNumber = table.Column<int>(type: "int", nullable: true),
                     BankName = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
                     AccountName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     IBAN = table.Column<string>(type: "nvarchar(34)", maxLength: 34, nullable: false),
@@ -501,8 +483,7 @@ namespace SAFQA.DAL.Migrations
                     CardBrand = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     ExpiryMonth = table.Column<int>(type: "int", nullable: false),
                     ExpiryYear = table.Column<int>(type: "int", nullable: false),
-                    PaymentToken = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    IsDefault = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    CardholderName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     WalletId = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()")
                 },
@@ -544,6 +525,60 @@ namespace SAFQA.DAL.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AuctionLikes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    AuctionId = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AuctionLikes", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AuctionLikes_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_AuctionLikes_Auctions_AuctionId",
+                        column: x => x.AuctionId,
+                        principalTable: "Auctions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "auctionReports",
+                columns: table => new
+                {
+                    AuctionId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false),
+                    Reason = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_auctionReports", x => new { x.AuctionId, x.UserId });
+                    table.ForeignKey(
+                        name: "FK_auctionReports_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_auctionReports_Auctions_AuctionId",
+                        column: x => x.AuctionId,
+                        principalTable: "Auctions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AuctionUsers",
                 columns: table => new
                 {
@@ -562,6 +597,34 @@ namespace SAFQA.DAL.Migrations
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_AuctionUsers_Auctions_AuctionId",
+                        column: x => x.AuctionId,
+                        principalTable: "Auctions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AuctionViews",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    AuctionId = table.Column<int>(type: "int", nullable: false),
+                    ViewedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETDATE()"),
+                    DeviceType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AuctionViews", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AuctionViews_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_AuctionViews_Auctions_AuctionId",
                         column: x => x.AuctionId,
                         principalTable: "Auctions",
                         principalColumn: "Id",
@@ -618,7 +681,7 @@ namespace SAFQA.DAL.Migrations
                     Condition = table.Column<int>(type: "int", nullable: false),
                     WarrantyInfo = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     AuctionId = table.Column<int>(type: "int", nullable: false),
-                    CategoryId = table.Column<int>(type: "int", nullable: false)
+                    CategoryId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -754,7 +817,6 @@ namespace SAFQA.DAL.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Image = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
-                    IsMain = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     ItemId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -832,6 +894,96 @@ namespace SAFQA.DAL.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Conversations",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    BuyerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    SellerUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    DisputeId = table.Column<int>(type: "int", nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastMessageAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastMessage = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Conversations", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Conversations_AspNetUsers_BuyerId",
+                        column: x => x.BuyerId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Conversations_AspNetUsers_SellerUserId",
+                        column: x => x.SellerUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Conversations_Disputes_DisputeId",
+                        column: x => x.DisputeId,
+                        principalTable: "Disputes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Messages",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ConversationId = table.Column<int>(type: "int", nullable: false),
+                    SenderId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsSeen = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    SeenAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Messages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Messages_AspNetUsers_SenderId",
+                        column: x => x.SenderId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Messages_Conversations_ConversationId",
+                        column: x => x.ConversationId,
+                        principalTable: "Conversations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MessageAttachments",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    MessageId = table.Column<int>(type: "int", nullable: false),
+                    FileUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    FileType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Size = table.Column<long>(type: "bigint", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MessageAttachments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_MessageAttachments_Messages_MessageId",
+                        column: x => x.MessageId,
+                        principalTable: "Messages",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -877,6 +1029,21 @@ namespace SAFQA.DAL.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_AuctionLikes_AuctionId",
+                table: "AuctionLikes",
+                column: "AuctionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AuctionLikes_UserId",
+                table: "AuctionLikes",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_auctionReports_UserId",
+                table: "auctionReports",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Auctions_SellerId",
                 table: "Auctions",
                 column: "SellerId");
@@ -884,6 +1051,16 @@ namespace SAFQA.DAL.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_AuctionUsers_UserId",
                 table: "AuctionUsers",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AuctionViews_AuctionId",
+                table: "AuctionViews",
+                column: "AuctionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AuctionViews_UserId",
+                table: "AuctionViews",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
@@ -927,6 +1104,22 @@ namespace SAFQA.DAL.Migrations
                 name: "IX_cities_CountryId",
                 table: "cities",
                 column: "CountryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Conversations_BuyerId",
+                table: "Conversations",
+                column: "BuyerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Conversations_DisputeId",
+                table: "Conversations",
+                column: "DisputeId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Conversations_SellerUserId",
+                table: "Conversations",
+                column: "SellerUserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Delivery_AuctionId",
@@ -985,6 +1178,21 @@ namespace SAFQA.DAL.Migrations
                 column: "CategoryId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_MessageAttachments_MessageId",
+                table: "MessageAttachments",
+                column: "MessageId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Messages_ConversationId",
+                table: "Messages",
+                column: "ConversationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Messages_SenderId",
+                table: "Messages",
+                column: "SenderId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Notifications_UserId",
                 table: "Notifications",
                 column: "UserId");
@@ -1017,11 +1225,6 @@ namespace SAFQA.DAL.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_refreshTokens_UserId",
-                table: "refreshTokens",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Reviews_AuctionId",
                 table: "Reviews",
                 column: "AuctionId",
@@ -1039,10 +1242,9 @@ namespace SAFQA.DAL.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_SavedCards_WalletId_PaymentToken",
+                name: "IX_SavedCards_WalletId",
                 table: "SavedCards",
-                columns: new[] { "WalletId", "PaymentToken" },
-                unique: true);
+                column: "WalletId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Sellers_CityId",
@@ -1053,8 +1255,7 @@ namespace SAFQA.DAL.Migrations
                 name: "IX_Sellers_UserId",
                 table: "Sellers",
                 column: "UserId",
-                unique: true,
-                filter: "[UserId] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Transactions_WalletId",
@@ -1087,7 +1288,16 @@ namespace SAFQA.DAL.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "AuctionLikes");
+
+            migrationBuilder.DropTable(
+                name: "auctionReports");
+
+            migrationBuilder.DropTable(
                 name: "AuctionUsers");
+
+            migrationBuilder.DropTable(
+                name: "AuctionViews");
 
             migrationBuilder.DropTable(
                 name: "Bids");
@@ -1096,13 +1306,13 @@ namespace SAFQA.DAL.Migrations
                 name: "BusinessSellers");
 
             migrationBuilder.DropTable(
-                name: "Disputes");
-
-            migrationBuilder.DropTable(
                 name: "images");
 
             migrationBuilder.DropTable(
                 name: "itemAttributesValues");
+
+            migrationBuilder.DropTable(
+                name: "MessageAttachments");
 
             migrationBuilder.DropTable(
                 name: "Notifications");
@@ -1115,9 +1325,6 @@ namespace SAFQA.DAL.Migrations
 
             migrationBuilder.DropTable(
                 name: "PersonalSellers");
-
-            migrationBuilder.DropTable(
-                name: "refreshTokens");
 
             migrationBuilder.DropTable(
                 name: "Reviews");
@@ -1135,22 +1342,31 @@ namespace SAFQA.DAL.Migrations
                 name: "proxyBiddings");
 
             migrationBuilder.DropTable(
-                name: "Delivery");
-
-            migrationBuilder.DropTable(
                 name: "Items");
 
             migrationBuilder.DropTable(
                 name: "categoryAttributes");
 
             migrationBuilder.DropTable(
+                name: "Messages");
+
+            migrationBuilder.DropTable(
                 name: "Wallets");
 
             migrationBuilder.DropTable(
-                name: "Auctions");
+                name: "Category");
 
             migrationBuilder.DropTable(
-                name: "Category");
+                name: "Conversations");
+
+            migrationBuilder.DropTable(
+                name: "Disputes");
+
+            migrationBuilder.DropTable(
+                name: "Delivery");
+
+            migrationBuilder.DropTable(
+                name: "Auctions");
 
             migrationBuilder.DropTable(
                 name: "Sellers");

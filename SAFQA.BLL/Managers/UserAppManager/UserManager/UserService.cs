@@ -1,7 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
+using SAFQA.BLL.Dtos.UserAppDto.AccountDto;
 using SAFQA.BLL.Dtos.UserAppDto.HomeDto;
+using SAFQA.BLL.Dtos.UserAppDto.ProfileDto;
 using SAFQA.BLL.Enums;
+using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.DAL.Repository;
 using SAFQA.DAL.Repository.Auction;
 using SAFQA.DAL.Repository.Category;
@@ -53,7 +56,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.UserManager
                 Name = c.Name,
                 Description = c.Description,
                 Image = c.Image,
-                ItemCount = c.ItemCount
+                AuctionCount = c.AuctionCount
             }).ToList();
 
             return result;
@@ -136,6 +139,115 @@ namespace SAFQA.BLL.Managers.UserAppManager.UserManager
         public async Task<int> GetBlockedUsersCountAsync()
         {
             return await _userRepo.GetBlockedUsersCount();
+        }
+
+        // 🟢 Profile
+        public async Task<(AuthResult, UserProfileDto?)> GetProfile(string userId)
+        {
+            var user = await _userRepo.GetByIdAsync(userId);
+
+            if (user == null)
+            {
+                return (new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "User not found"
+                }, null);
+            }
+
+            var data = new UserProfileDto
+            {
+                FullName = user.FullName,
+                Email = user.Email,
+                Image = user.Image
+            };
+
+            return (new AuthResult
+            {
+                IsSuccess = true,
+                Message = "Profile retrieved successfully"
+            }, data);
+        }
+
+        // 🟢 Account Details
+        public async Task<(AuthResult, UserAccountDto?)> GetAccount(string userId)
+        {
+            var user = await _userRepo.GetByIdAsync(userId);
+
+            if (user == null)
+            {
+                return (new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "User not found"
+                }, null);
+            }
+
+            var data = new UserAccountDto
+            {
+                FullName = user.FullName,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                Gender = user.Gender.ToString(),
+                BirthDate = user.BirthDate,
+                City = user.City?.Name,
+                Image = user.Image
+            };
+
+            return (new AuthResult
+            {
+                IsSuccess = true,
+                Message = "Account retrieved successfully"
+            }, data);
+        }
+
+        // 🟢 Edit Account
+        public async Task<AuthResult> EditAccount(string userId, EditAccountDto dto)
+        {
+            var user = await _userRepo.GetByIdAsync(userId);
+
+            if (user == null)
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "User not found"
+                };
+
+            var errors = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(dto.FullName))
+                errors.Add("Full name is required");
+
+            if (errors.Any())
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "Validation failed",
+                    Errors = errors
+                };
+
+            user.FullName = dto.FullName;
+            user.PhoneNumber = dto.PhoneNumber;
+            user.Gender = dto.Gender;
+            user.BirthDate = dto.BirthDate;
+            user.CityId = dto.CityId;
+
+            if (dto.Image != null)
+            {
+                using var ms = new MemoryStream();
+                await dto.Image.CopyToAsync(ms);
+                user.Image = ms.ToArray();
+            }
+
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await _userRepo.UpdateAsync(user);
+
+            return new AuthResult
+            {
+                IsSuccess = true,
+                Message = "Account updated successfully"
+            };
         }
     }
 }
