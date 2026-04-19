@@ -147,7 +147,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
 
             var (auctions, totalCount) =
                 await _auctionRepository.GetFavoriteAuctions(userId, pageNumber, pageSize,
-                    int? CategoryId
+                    queryDto.CategoryId,
                     queryDto.Statuses,
                     queryDto.CityIds,
                     queryDto.MinPrice,
