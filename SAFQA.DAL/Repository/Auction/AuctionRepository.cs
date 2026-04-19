@@ -287,7 +287,7 @@ namespace SAFQA.DAL.Repository.Auction
                    int? userCityId)
         {
             var query = _context.auctionLikes
-                .Where(al => al.UserId == userId)
+                .Where(al => al.UserId == userId && !al.Auction.IsDeleted)
                 .Include(al => al.Auction)
                 .Select(al => al.Auction)
                 .AsNoTracking();
