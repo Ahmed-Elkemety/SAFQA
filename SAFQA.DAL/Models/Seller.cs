@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SAFQA.BLL.Enums;
 using SAFQA.DAL.Enums;
 
 namespace SAFQA.DAL.Models

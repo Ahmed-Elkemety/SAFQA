@@ -1,6 +1,6 @@
 ﻿using SAFQA.BLL.Dtos.SellerAppDto.AuctionDto;
 using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
-using SAFQA.BLL.Enums;
+using SAFQA.DAL.Enums;
 using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.DAL.Models;
 using System;

@@ -5,7 +5,7 @@ using System.Reflection.Metadata.Ecma335;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using SAFQA.BLL.Enums;
+using SAFQA.DAL.Enums;
 
 namespace SAFQA.DAL.Models
 {

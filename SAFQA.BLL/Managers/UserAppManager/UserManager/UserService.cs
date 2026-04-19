@@ -3,7 +3,7 @@ using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
 using SAFQA.BLL.Dtos.UserAppDto.AccountDto;
 using SAFQA.BLL.Dtos.UserAppDto.HomeDto;
 using SAFQA.BLL.Dtos.UserAppDto.ProfileDto;
-using SAFQA.BLL.Enums;
+using SAFQA.DAL.Enums;
 using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.DAL.Repository;
 using SAFQA.DAL.Repository.Auction;

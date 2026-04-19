@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SAFQA.BLL.Enums;
+using SAFQA.DAL.Enums;
 using SAFQA.DAL.Database;
 using SAFQA.DAL.Models;
 using System;

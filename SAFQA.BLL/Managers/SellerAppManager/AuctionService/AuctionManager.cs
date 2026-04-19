@@ -2,11 +2,10 @@
 using Org.BouncyCastle.Asn1.UA;
 using SAFQA.BLL.Dtos.SellerAppDto.AuctionDto;
 using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
-using SAFQA.BLL.Enums;
+using SAFQA.DAL.Enums;
 using SAFQA.BLL.Help;
 using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.DAL.Database;
-using SAFQA.DAL.Enums;
 using SAFQA.DAL.Models;
 using SAFQA.DAL.Repository.Auction;
 using SAFQA.DAL.Repository.Category;

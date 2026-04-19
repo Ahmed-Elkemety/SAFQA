@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using SAFQA.BLL.Dtos.AccountDto.User;
-using SAFQA.BLL.Enums;
+using SAFQA.DAL.Enums;
 using SAFQA.BLL.Help;
 using SAFQA.DAL.Database;
 using SAFQA.DAL.Models;

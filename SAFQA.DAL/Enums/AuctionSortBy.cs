@@ -6,12 +6,11 @@ using System.Threading.Tasks;
 
 namespace SAFQA.DAL.Enums
 {
-    public enum AuctionStatus
+    public enum AuctionSortBy
     {
-        Upcoming = 1,
-        Active = 2,
-        EndingSoon = 3,
-        Finished = 4,
-        Cancelled = 5
+        MostBids = 1,
+        Nearest = 2,
+        PriceHighToLow = 3,
+        PriceLowToHigh = 4
     }
 }

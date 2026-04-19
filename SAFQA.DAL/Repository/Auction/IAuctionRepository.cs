@@ -1,4 +1,5 @@
-﻿using SAFQA.DAL.Models;
+﻿using SAFQA.DAL.Enums;
+using SAFQA.DAL.Models;
 using SAFQA.DAL.RepoDtos.UserApp.Home.TrendingAuction;
 using System;
 using System.Collections.Generic;
@@ -32,8 +33,22 @@ namespace SAFQA.DAL.Repository.Auction
         Task<Models.Auction?> GetWithDetailsAsync(int id);
         Task<IEnumerable<Models.Auction>> GetAllAsync();
 
-        Task<(List<Models.Auction>, int)> GetAuctionsByCategoryId(int categoryId, int pageNumber, int pageSize);
-        Task<(List<Models.Auction>, int)> GetFavoriteAuctions(string userId, int pageNumber, int pageSize);
+        Task<(List<Models.Auction>, int)> GetAuctionsByCategoryId(
+                    int categoryId,
+                    int pageNumber,
+                    int pageSize,
+                    List<AuctionStatus>? statuses,
+                    List<int>? cityIds,
+                    decimal? minPrice,
+                    decimal? maxPrice,
+                    AuctionSortBy sortBy,
+                    int? userCityId);
+        Task<(List<Models.Auction>, int)> GetFavoriteAuctions(string userId, int pageNumber, int pageSize, int? CategoryId, List<AuctionStatus>? statuses,
+                    List<int>? cityIds,
+                    decimal? minPrice,
+                    decimal? maxPrice,
+                    AuctionSortBy sortBy,
+                    int? userCityId);
         Task SaveChangesAsync();
     }
 }

@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SAFQA.BLL.Dtos.UserAppDto.OrdersDto;
-using SAFQA.BLL.Enums;
 using SAFQA.DAL.Enums;
 using SAFQA.DAL.Repository.Auction;
 using System;

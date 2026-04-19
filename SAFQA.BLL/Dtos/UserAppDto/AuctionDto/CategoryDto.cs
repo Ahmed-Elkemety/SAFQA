@@ -7,7 +7,7 @@ using SAFQA.DAL.Enums;
 
 namespace SAFQA.BLL.Dtos.UserAppDto.AuctionDto
 {
-    public class FavoritesDto
+    public class CategoryDto
     {
         public int AuctionId { get; set; }
         public string Title { get; set; }
