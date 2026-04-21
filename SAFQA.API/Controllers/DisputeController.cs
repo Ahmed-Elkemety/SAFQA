@@ -44,5 +44,23 @@ namespace SAFQA.API.Controllers
                 });
             }
         }
+
+        [Authorize( Roles = "USER")]
+        [HttpGet("my-reports")]
+        public async Task<IActionResult> GetMyReports()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var result = await _disputeService.GetUserReports(userId);
+
+            if (!result.Item1.IsSuccess)
+                return BadRequest(result.Item1);
+
+            return Ok(new
+            {
+                result.Item1,
+                Reports = result.Item2
+            });
+        }
     }
 }

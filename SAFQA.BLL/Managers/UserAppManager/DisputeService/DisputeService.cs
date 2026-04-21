@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using SAFQA.BLL.Dtos.UserAppDto.ChatDto;
 using SAFQA.BLL.Dtos.UserAppDto.DisputeDto;
+using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.BLL.Managers.UserAppManager.ChatService;
 using SAFQA.BLL.Managers.UserAppManager.ConversationService;
 using SAFQA.DAL.Enums;
@@ -100,6 +101,41 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
                 });
 
             return conversation;
+        }
+
+        public async Task<(AuthResult, List<DisputeDto>)> GetUserReports(string userId)
+        {
+            var disputes = await _disputeRepo.GetUserDisputesAsync(userId);
+
+            if (disputes == null || !disputes.Any())
+            {
+                return (new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "No reports found"
+                }, new List<DisputeDto>());
+            }
+
+            var result = disputes.Select(d => new DisputeDto
+            {
+                Id = d.Id,
+                Title = d.Title,
+                Status = d.Status,
+                ProblemType = d.ProblemType,
+                Description = d.Description,
+                ResolutionType = d.ResolutionType,
+                Evidences = d.Evidences,
+                Reason = d.Reason,
+                Date = d.Date,
+                AuctionId = d.AuctionId,
+                AuctionTitle = d.Auction.Title
+            }).ToList();
+
+            return (new AuthResult
+            {
+                IsSuccess = true,
+                Message = "Success"
+            }, result);
         }
 
     }

@@ -14,5 +14,7 @@ namespace SAFQA.DAL.Repository.Dispute
         void Add(Disputes disputes);
         void Update(Disputes disputes);
         void Delete(Disputes disputes);
+        Task<List<Disputes>> GetUserDisputesAsync(string userId);
+
     }
 }

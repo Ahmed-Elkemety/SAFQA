@@ -19,14 +19,13 @@ namespace SAFQA.DAL.Configration
             builder
                 .HasOne(a => a.User)
                 .WithMany(e => e.Deliveries)
-                .HasForeignKey(a => a.UserId)
-                .IsRequired(false);
+                .HasForeignKey(a => a.UserId);
 
             builder
                 .HasOne(a => a.Seller)
                 .WithMany(e => e.deliveries)
-                .HasForeignKey(a => a.SellerId)
-                .IsRequired(false);
+                .HasForeignKey(a => a.SellerId);
+
             builder.Property(d => d.Code)
               .IsRequired()
               .HasMaxLength(50);
