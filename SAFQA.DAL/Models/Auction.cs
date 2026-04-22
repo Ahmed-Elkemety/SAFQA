@@ -45,7 +45,7 @@ namespace SAFQA.DAL.Models
         public bool IsFeatured { get; set; }
         public int? CountDown { get; set; }
         public bool IsTrending { get; set; }
-        public bool HotScore { get; set; }
+        public double HotScore { get; set; }
 
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }

@@ -185,5 +185,79 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                 Message = "Favorite auctions retrieved successfully"
             }, data, totalCount);
         }
+        public async Task CalculateHotScoresAsync()
+        {
+            var auctions = await _auctionRepository.GetAllWithSellerAsync();
+
+            var rawScores = new List<(Auction auction, double score)>();
+
+            foreach (var a in auctions)
+            {
+                // ✅ استبعاد الحالات المنتهية أو الملغية
+                if (a.Status == AuctionStatus.Finished || a.Status == AuctionStatus.Cancelled)
+                {
+                    a.HotScore = 0;
+                    a.IsTrending = false;
+                    continue;
+                }
+
+                double upgradeBoost = a.Seller.upgradeType switch
+                {
+                    UpgradeType.Elite => 0.7,
+                    UpgradeType.Premium => 0.4,
+                    UpgradeType.Basic => 0.2,
+                    _ => 0
+                };
+
+                double priceGrowth = 0;
+                double bidScore = 0;
+                double ParticipationBoost = Math.Log(1 + a.ParticipationCount) * 0.54;
+
+
+
+                // 🟢 حالة 2 و 3 (مزاد شغال)
+                if (a.Status == AuctionStatus.Active || a.Status == AuctionStatus.EndingSoon)
+                {
+                    priceGrowth = a.StartingPrice == 0 ? 0 :
+                        (double)(a.CurrentPrice - a.StartingPrice) / (double)a.StartingPrice;
+
+                    bidScore = Math.Log(1 + a.TotalBids) * 0.5;
+                    ParticipationBoost = 0;
+                }
+
+                // 🟡 حالة 1 (مزاد جديد)
+                else if (a.Status == AuctionStatus.Upcoming)
+                {
+                    priceGrowth = 0;
+                    bidScore = 0;
+                }
+
+                double rawScore =
+                    (Math.Log(1 + a.ViewsCount) * 0.2) +
+                    (Math.Log(1 + a.LikesCount) * 0.3) +
+                    bidScore +
+                    (priceGrowth * 0.3) +
+                    ((a.Seller.Rating / 5.0) * 0.4) +
+                    upgradeBoost+
+                    ParticipationBoost;
+
+                rawScores.Add((a, rawScore));
+            }
+
+            // ✅ Normalize من 1 → 10
+            var min = rawScores.Min(x => x.score);
+            var max = rawScores.Max(x => x.score);
+
+            foreach (var item in rawScores)
+            {
+                double normalized = (max - min) == 0 ? 1 :
+                    1 + ((item.score - min) / (max - min)) * 9;
+
+                item.auction.HotScore = normalized;
+                item.auction.IsTrending = normalized >= 7;
+            }
+
+            await _auctionRepository.SaveChangesAsync();
+        }
     }
 }

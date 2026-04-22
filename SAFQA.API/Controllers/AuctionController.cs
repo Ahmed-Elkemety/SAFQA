@@ -366,5 +366,12 @@ namespace SAFQA.API.Controllers
                 PageSize = pageSize
             });
         }
+
+        [HttpPost("calculate")]
+        public async Task<IActionResult> Calculate()
+        {
+            await _auctionManagerU.CalculateHotScoresAsync();
+            return Ok(new { message = "HotScore calculated successfully" });
+        }
     }
 }
