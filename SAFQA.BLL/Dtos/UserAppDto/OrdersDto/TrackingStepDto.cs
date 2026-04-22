@@ -11,6 +11,5 @@ namespace SAFQA.BLL.Dtos.UserAppDto.OrdersDto
         public string step { get; set; }
         public DateTime? Date { get; set; }
         public bool IsCompleted { get; set; }
-        
     }
 }
