@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SAFQA.BLL.Dtos.UserAppDto.AuctionDto;
+using SAFQA.DAL.Enums;
 using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.DAL.Database;
 using SAFQA.DAL.Models;
 using SAFQA.DAL.Repository.Auction;
+using SAFQA.BLL.Dtos.SellerAppDto.CategoryDto;
 
 namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
 {
@@ -56,8 +58,14 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                 Message = "Report submitted successfully"
             };
         }
-        public async Task<(AuthResult, object)> GetAuctionsByCategory(int categoryId, string userId, int pageNumber, int pageSize)
+        public async Task<(AuthResult, object)> GetAuctionsByCategory(
+    int categoryId,
+    string userId,
+    int pageNumber,
+    int pageSize,
+    AuctionQueryDto queryDto)
         {
+            queryDto ??= new AuctionQueryDto();
             var user = await _userManager.FindByIdAsync(userId);
 
             if (user == null)
@@ -70,7 +78,16 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
             }
 
             var (auctions, totalCount) = await _auctionRepository
-                .GetAuctionsByCategoryId(categoryId, pageNumber, pageSize);
+                .GetAuctionsByCategoryId(
+                    categoryId,
+                    pageNumber,
+                    pageSize,
+                    queryDto.Statuses,
+                    queryDto.CityIds,
+                    queryDto.MinPrice,
+                    queryDto.MaxPrice,
+                    queryDto.SortBy,
+                    user.CityId);
 
             if (!auctions.Any())
                 return (new AuthResult
@@ -79,6 +96,34 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                     Message = "No auctions found for this category"
                 }, null);
 
+            var auctionsDto = auctions.Select(a => new CategoryDto
+            {
+                AuctionId = a.Id,
+                Title = a.Title,
+                TotalBids = a.TotalBids,
+                Status = a.Status,
+
+                DisplayPrice =
+                    a.Status == AuctionStatus.Upcoming || a.Status == AuctionStatus.Cancelled
+                        ? a.StartingPrice
+                        : a.Status == AuctionStatus.Active || a.Status == AuctionStatus.EndingSoon
+                            ? a.CurrentPrice
+                            : a.Status == AuctionStatus.Finished
+                                ? a.FinalPrice
+                                : 0,
+
+                DisplayDate =
+                    a.Status == AuctionStatus.Upcoming || a.Status == AuctionStatus.Cancelled
+                        ? a.StartDate
+                        : a.Status == AuctionStatus.Active || a.Status == AuctionStatus.EndingSoon
+                            ? a.EndDate
+                            : a.Status == AuctionStatus.Finished
+                                ? a.EndDate
+                                : DateTime.MinValue,
+
+                Image = a.Image
+            }).ToList();
+
             return (new AuthResult
             {
                 IsSuccess = true,
@@ -86,12 +131,59 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
             },
             new
             {
-                Data = auctions,
+                Data = auctionsDto,
                 PageNumber = pageNumber,
                 PageSize = pageSize,
                 TotalCount = totalCount,
                 TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
             });
+        }
+
+        public async Task<(AuthResult, List<FavoritesDto>, int)> GetFavoriteAuctions(
+    string userId, int pageNumber, int pageSize , AuctionQueryDto queryDto)
+        {
+            queryDto ??= new AuctionQueryDto();
+            var user = await _userManager.FindByIdAsync(userId);
+
+            var (auctions, totalCount) =
+                await _auctionRepository.GetFavoriteAuctions(userId, pageNumber, pageSize,
+                    queryDto.CategoryId,
+                    queryDto.Statuses,
+                    queryDto.CityIds,
+                    queryDto.MinPrice,
+                    queryDto.MaxPrice,
+                    queryDto.SortBy,
+                    user.CityId);
+
+            var data = auctions.Select(a => new FavoritesDto
+            {
+                AuctionId = a.Id,
+                Title = a.Title,
+
+                DisplayPrice =
+                    a.Status == AuctionStatus.Upcoming || a.Status == AuctionStatus.Cancelled
+                        ? a.StartingPrice
+                        : a.Status == AuctionStatus.Active || a.Status == AuctionStatus.EndingSoon
+                            ? a.CurrentPrice
+                            : a.Status == AuctionStatus.Finished
+                                ? a.FinalPrice
+                                : a.CurrentPrice,
+
+                DisplayDate =
+                    a.Status == AuctionStatus.Upcoming || a.Status == AuctionStatus.Cancelled
+                        ? a.StartDate
+                        : a.EndDate,
+
+                TotalBids = a.TotalBids,
+                Status = a.Status,
+                Image = a.Image
+            }).ToList();
+
+            return (new AuthResult
+            {
+                IsSuccess = true,
+                Message = "Favorite auctions retrieved successfully"
+            }, data, totalCount);
         }
     }
 }

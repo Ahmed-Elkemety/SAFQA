@@ -6,6 +6,7 @@ using SAFQA.API.Middleware;
 using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.BLL.Managers.AccountManager.Email_Sender;
 using SAFQA.BLL.Managers.AccountManager.OAuth;
+using SAFQA.BLL.Managers.RecommendationAI;
 using SAFQA.BLL.Managers.SellerAppManager;
 using SAFQA.BLL.Managers.SellerAppManager.AuctionService;
 using SAFQA.BLL.Managers.SellerAppManager.BidService;
@@ -124,6 +125,7 @@ namespace SAFQA.API
             builder.Services.AddScoped<IDisputeService, DisputeService>();
             builder.Services.AddScoped<IReviewRepo, ReviewRepo>();
             builder.Services.AddScoped<IReviewService, ReviewService>();
+            builder.Services.AddHttpClient<IRecommendationAI, RecommendationAI>();
             builder.Services.AddScoped<IOrderService, OrderService>();
 
 

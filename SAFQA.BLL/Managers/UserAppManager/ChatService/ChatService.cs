@@ -46,7 +46,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.ConversationService
             if (dispute == null)
                 throw new Exception("Dispute not found");
 
-            var auction = _auctionRepo.GetById(dispute.AuctionId.Value);
+            var auction = _auctionRepo.GetById(dispute.AuctionId);
             if (auction == null)
                 throw new Exception("Auction not found");
 

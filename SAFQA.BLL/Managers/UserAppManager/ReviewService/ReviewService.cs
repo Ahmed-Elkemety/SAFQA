@@ -45,7 +45,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.ReviewService
 
    
             var delivery = auction.delivery;
-            if (delivery == null || delivery.Status != DeliveryStatus.Delivered)
+            if (delivery == null || delivery.Status != DeliveryStatus.Deliverd)
                 throw new Exception("You can only review after delivery");
 
        

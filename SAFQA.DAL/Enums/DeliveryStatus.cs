@@ -8,12 +8,10 @@ namespace SAFQA.DAL.Enums
 {
     public enum DeliveryStatus
     {
-        Pending = 1,
-        Shipped = 2,
-        InTransit = 3,
-        OutForDelivery = 4,
-        Delivered = 5,
-        Failed = 6,
-        Returned = 7
+        Orderplaced = 1,
+        Inprogress = 2,
+        shipping = 3,
+        Deliverd = 4,
+        Failed = 5,
     }
 }

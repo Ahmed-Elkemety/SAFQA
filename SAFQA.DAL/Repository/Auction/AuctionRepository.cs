@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SAFQA.BLL.Enums;
+using SAFQA.DAL.Enums;
 using SAFQA.DAL.Database;
 using SAFQA.DAL.Models;
 using SAFQA.DAL.RepoDtos.UserApp.Home.TrendingAuction;
@@ -223,20 +223,120 @@ namespace SAFQA.DAL.Repository.Auction
                 .ToListAsync();
         }
 
-        public async Task<(List<Models.Auction>, int)> GetAuctionsByCategoryId(int categoryId, int pageNumber, int pageSize)
+        public async Task<(List<Models.Auction>, int)> GetAuctionsByCategoryId(
+                   int categoryId,
+                   int pageNumber,
+                   int pageSize,
+                   List<AuctionStatus>? statuses,
+                   List<int>? cityIds,
+                   decimal? minPrice,
+                   decimal? maxPrice,
+                   AuctionSortBy sortBy,
+                   int? userCityId)
         {
             var query = _context.Auctions
                 .Where(a => !a.IsDeleted && a.CategoryId == categoryId);
 
+            if (statuses is { Count: > 0 })
+            {
+                query = query.Where(a => statuses.Contains(a.Status));
+            }
+
+            if (cityIds is { Count: > 0 })
+            {
+                query = query.Where(a => a.Seller != null && cityIds.Contains(a.Seller.CityId));
+            }
+
+            if (minPrice.HasValue)
+            {
+                query = query.Where(a => (a.Status == AuctionStatus.Finished ? a.FinalPrice : a.CurrentPrice) >= minPrice.Value);
+            }
+
+            if (maxPrice.HasValue)
+            {
+                query = query.Where(a => (a.Status == AuctionStatus.Finished ? a.FinalPrice : a.CurrentPrice) <= maxPrice.Value);
+            }
+
+            query = sortBy switch
+            {
+                AuctionSortBy.MostBids => query.OrderByDescending(a => a.TotalBids),
+                AuctionSortBy.Nearest when userCityId.HasValue => query
+                    .OrderByDescending(a => a.Seller != null && a.Seller.CityId == userCityId.Value)
+                    .ThenByDescending(a => a.CreatedAt),
+                AuctionSortBy.PriceHighToLow => query.OrderByDescending(a => a.Status == AuctionStatus.Finished ? a.FinalPrice : a.CurrentPrice),
+                AuctionSortBy.PriceLowToHigh => query.OrderBy(a => a.Status == AuctionStatus.Finished ? a.FinalPrice : a.CurrentPrice),
+                _ => query.OrderByDescending(a => a.CreatedAt)
+            };
+
+
             var totalCount = await query.CountAsync();
 
             var auctions = await query
-                .OrderByDescending(a => a.Id)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
 
             return (auctions, totalCount);
+        }
+
+        public async Task<(List<Models.Auction>, int)> GetFavoriteAuctions(string userId, int pageNumber, int pageSize, int? CategoryId, List<AuctionStatus>? statuses,
+                   List<int>? cityIds,
+                   decimal? minPrice,
+                   decimal? maxPrice,
+                   AuctionSortBy sortBy,
+                   int? userCityId)
+        {
+            var query = _context.auctionLikes
+                .Where(al => al.UserId == userId && !al.Auction.IsDeleted)
+                .Include(al => al.Auction)
+                .Select(al => al.Auction)
+                .AsNoTracking();
+
+            if (CategoryId.HasValue)
+            {
+                query = query.Where(a => a.CategoryId == CategoryId.Value);
+            }
+
+            if (statuses is { Count: > 0 })
+            {
+                query = query.Where(a => statuses.Contains(a.Status));
+            }
+
+            if (cityIds is { Count: > 0 })
+            {
+                query = query.Where(a => a.Seller != null && cityIds.Contains(a.Seller.CityId));
+            }
+
+            if (minPrice.HasValue)
+            {
+                query = query.Where(a => (a.Status == AuctionStatus.Finished ? a.FinalPrice : a.CurrentPrice) >= minPrice.Value);
+            }
+
+            if (maxPrice.HasValue)
+            {
+                query = query.Where(a => (a.Status == AuctionStatus.Finished ? a.FinalPrice : a.CurrentPrice) <= maxPrice.Value);
+            }
+
+            query = sortBy switch
+            {
+                AuctionSortBy.MostBids => query.OrderByDescending(a => a.TotalBids),
+                AuctionSortBy.Nearest when userCityId.HasValue => query
+                    .OrderByDescending(a => a.Seller != null && a.Seller.CityId == userCityId.Value)
+                    .ThenByDescending(a => a.CreatedAt),
+                AuctionSortBy.PriceHighToLow => query.OrderByDescending(a => a.Status == AuctionStatus.Finished ? a.FinalPrice : a.CurrentPrice),
+                AuctionSortBy.PriceLowToHigh => query.OrderBy(a => a.Status == AuctionStatus.Finished ? a.FinalPrice : a.CurrentPrice),
+                _ => query.OrderByDescending(a => a.CreatedAt)
+            };
+
+            var totalCount = await query.CountAsync();
+
+            var data = await query
+                .OrderByDescending(a => a.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (data, totalCount);
         }
 
         public async Task SaveChangesAsync()

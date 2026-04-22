@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using SAFQA.BLL.Dtos.SellerAppDto.AuctionDto;
 using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
 using SAFQA.BLL.Dtos.UserAppDto.AuctionDto;
-using SAFQA.BLL.Enums;
+using SAFQA.DAL.Enums;
 using SAFQA.BLL.Managers.SellerAppManager.AuctionService;
 using SAFQA.BLL.Managers.SellerAppManager.CategoryService;
 using SAFQA.BLL.Managers.UserAppManager.AuctionManager;
@@ -328,12 +328,15 @@ namespace SAFQA.API.Controllers
 
         [HttpGet("categoryAuctions/{categoryId}")]
         [Authorize(Roles = "USER")]
-        public async Task<IActionResult> GetAuctionsByCategory(int categoryId, int pageNumber = 1, int pageSize = 10)
+        public async Task<IActionResult> GetAuctionsByCategory(
+            int categoryId,
+            [FromQuery] AuctionQueryDto queryDto,
+            int pageNumber = 1,
+            int pageSize = 10)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            var result = await _auctionManagerU.GetAuctionsByCategory(categoryId, userId, pageNumber, pageSize);
-
+            var result = await _auctionManagerU.GetAuctionsByCategory(categoryId, userId, pageNumber, pageSize, queryDto);
             if (!result.Item1.IsSuccess)
                 return BadRequest(result.Item1);
 
@@ -341,6 +344,26 @@ namespace SAFQA.API.Controllers
             {
                 result.Item1,
                 result.Item2
+            });
+        }
+
+        [HttpGet("favorites")]
+        public async Task<IActionResult> GetFavoriteAuctions([FromQuery] AuctionQueryDto queryDto,int pageNumber = 1, int pageSize = 10 )
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var result = await _auctionManagerU.GetFavoriteAuctions(userId, pageNumber, pageSize, queryDto);
+
+            if (!result.Item1.IsSuccess)
+                return BadRequest(result.Item1);
+
+            return Ok(new
+            {
+                result.Item1,
+                Data = result.Item2,
+                TotalCount = result.Item3,
+                PageNumber = pageNumber,
+                PageSize = pageSize
             });
         }
     }

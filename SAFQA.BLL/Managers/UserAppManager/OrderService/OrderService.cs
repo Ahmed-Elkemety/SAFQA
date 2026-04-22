@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SAFQA.BLL.Dtos.UserAppDto.OrdersDto;
-using SAFQA.BLL.Enums;
 using SAFQA.DAL.Enums;
 using SAFQA.DAL.Repository.Auction;
 using System;
@@ -23,7 +22,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.OrderService
             var orders = await _auctionRepo.GetAll()
                 .Where(a => a.WinnerUserId == userId
                             && a.delivery != null
-                            && a.delivery.Status == DeliveryStatus.Delivered)
+                            && a.delivery.Status == DeliveryStatus.Deliverd)
 
                 .Select(a => new UserOrderDto
                 {
@@ -45,7 +44,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.OrderService
             var orders = await _auctionRepo.GetAll()
                 .Where(a => a.WinnerUserId == userId
                             && a.delivery != null
-                            && a.delivery.Status != DeliveryStatus.Delivered)
+                            && a.delivery.Status != DeliveryStatus.Deliverd)
 
                 .Select(a => new UserInProgressOrderDto
                 {

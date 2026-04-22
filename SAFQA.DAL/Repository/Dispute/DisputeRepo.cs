@@ -44,5 +44,13 @@ namespace SAFQA.DAL.Repository.Dispute
             _context.Disputes.Remove(disputes);
             _context.SaveChanges();
         }
+
+        public async Task<List<Disputes>> GetUserDisputesAsync(string userId)
+        {
+            return await _context.Disputes
+                .Include(d => d.Auction)
+                .Where(d => d.UserId == userId)
+                .ToListAsync();
+        }
     }
 }

@@ -16,18 +16,15 @@ namespace SAFQA.DAL.Configration
             builder
                 .HasOne(a => a.Auction)
                 .WithMany(e => e.disputes)
-                .HasForeignKey(a => a.AuctionId)
-                .IsRequired(false);
+                .HasForeignKey(a => a.AuctionId);
             builder
                 .HasOne(a => a.Delivery)
                 .WithMany(e => e.Disputes)
-                .HasForeignKey(a => a.DeliveryId)
-                .IsRequired(false);
+                .HasForeignKey(a => a.DeliveryId);
             builder
                 .HasOne(a => a.User)
                 .WithMany(e => e.Disputes)
-                .HasForeignKey(a => a.UserId)
-                .IsRequired(false);
+                .HasForeignKey(a => a.UserId);
 
 
             builder.Property(d => d.Title).IsRequired().HasMaxLength(200);

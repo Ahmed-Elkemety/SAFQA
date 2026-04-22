@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using SAFQA.BLL.Enums;
+using SAFQA.DAL.Enums;
 using SAFQA.DAL.Models;
 
 namespace SAFQA.DAL.Configration

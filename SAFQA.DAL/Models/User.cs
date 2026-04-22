@@ -5,7 +5,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
-using SAFQA.BLL.Enums;
 using SAFQA.DAL.Enums;
 
 namespace SAFQA.DAL.Models

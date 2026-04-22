@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SAFQA.BLL.Enums
+namespace SAFQA.DAL.Enums
 {
     public enum SellerBusinessType
     {

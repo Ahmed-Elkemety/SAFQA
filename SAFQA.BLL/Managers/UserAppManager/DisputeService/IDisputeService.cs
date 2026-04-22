@@ -1,5 +1,6 @@
 ﻿using SAFQA.BLL.Dtos.UserAppDto.ChatDto;
 using SAFQA.BLL.Dtos.UserAppDto.DisputeDto;
+using SAFQA.BLL.Managers.AccountManager.Auth;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,5 +12,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
     public interface IDisputeService
     {
         Task<ConversationDto> CreateDispute(string userId, CreateDisputeDto dto);
+        Task<(AuthResult, List<DisputeDto>)> GetUserReports(string userId);
+
     }
 }

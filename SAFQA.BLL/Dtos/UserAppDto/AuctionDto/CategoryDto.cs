@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using SAFQA.DAL.Enums;
 
-namespace SAFQA.BLL.Dtos.SellerAppDto.AuctionDto
+namespace SAFQA.BLL.Dtos.UserAppDto.AuctionDto
 {
-    public class SellerActionHistoryDto
+    public class CategoryDto
     {
         public int AuctionId { get; set; }
         public string Title { get; set; }

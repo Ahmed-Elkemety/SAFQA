@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using SAFQA.DAL.Enums;
 
-namespace SAFQA.DAL.Models
+namespace SAFQA.BLL.Dtos.UserAppDto.DisputeDto
 {
-    public class Disputes
+    public class DisputeDto
     {
         public int Id { get; set; }
         public string Title { get; set; }
@@ -18,11 +18,7 @@ namespace SAFQA.DAL.Models
         public List<byte[]> Evidences { get; set; }
         public string Reason { get; set; }
         public DateTime Date { get; set; }
-        public string UserId { get; set; }
+
         public int AuctionId { get; set; }
-        public int DeliveryId { get; set; }
-        public Delivery Delivery { get; set; }
-        public User User { get; set; }
-        public Auction Auction { get; set; }
-    }
+        public string? AuctionTitle { get; set; }    }
 }
