@@ -32,7 +32,6 @@ namespace SAFQA.DAL.Configration
 
             builder.Property(r => r.Rating).IsRequired();
             builder.Property(r => r.Comment).HasMaxLength(500);
-            builder.Property(r => r.Comment).HasMaxLength(500);
             builder.Property(r => r.Date).HasDefaultValueSql("GETDATE()").IsRequired();
         }
     }

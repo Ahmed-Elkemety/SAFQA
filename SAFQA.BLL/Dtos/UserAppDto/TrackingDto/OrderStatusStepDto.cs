@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SAFQA.BLL.Dtos.UserAppDto.OrdersDto
+namespace SAFQA.BLL.Dtos.UserAppDto.TrackingDto
 {
-    public class TrackingStepDto
+    public class OrderStatusStepDto
     {
-        public string step { get; set; }
+        public string StepName { get; set; }   // Order Placed / In Progress / Shipping / Delivered
         public DateTime? Date { get; set; }
         public bool IsCompleted { get; set; }
     }

@@ -60,8 +60,6 @@ namespace SAFQA.API.Controllers
                 r.Rating,
                 r.Comment,
                 r.Date,
-                r.DeliverySpeed,
-                r.accurateDescription,
                 UserName = r.User.FullName
             });
 

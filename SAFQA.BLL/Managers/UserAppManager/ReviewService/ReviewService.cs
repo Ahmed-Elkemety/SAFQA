@@ -62,9 +62,6 @@ namespace SAFQA.BLL.Managers.UserAppManager.ReviewService
                 Rating = dto.Rating,
                 Comment = dto.Comment,
                 Date = DateTime.UtcNow,
-                DeliverySpeed = dto.DeliverySpeed,
-                accurateDescription = dto.AccurateDescription,
-
                 UserId = userId,
                 AuctionId = dto.AuctionId,
                 SellerId = auction.SellerId
@@ -72,8 +69,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.ReviewService
 
 
             await _reviewRepo.AddAsync(review);
-
-
+            
             await UpdateSellerRatingAsync(auction.SellerId.Value);
         }
 

@@ -15,6 +15,8 @@ namespace SAFQA.DAL.Configration
     {
         public void Configure(EntityTypeBuilder<OrderTracking> builder)
         {
+            builder.ToTable("OrderTracking");
+
             builder
                 .HasOne(ot => ot.Auction)
                 .WithOne(a => a.orderTracking)
