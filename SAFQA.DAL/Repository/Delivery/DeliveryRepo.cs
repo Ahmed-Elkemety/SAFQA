@@ -60,12 +60,11 @@ namespace SAFQA.DAL.Repository.Delivery
 
         public async Task AddTrackingAsync(OrderTracking tracking)
         {
-            await _context.OrderTracking.AddAsync(tracking);
+            await _context.OrderTrackings.AddAsync(tracking);
         }
 
         public async Task SaveChangesAsync()
         {
-            _context.deliveries.Remove(delivery);
             await _context.SaveChangesAsync();
         }
     }

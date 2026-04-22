@@ -33,7 +33,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.TrackingService
             if (auction == null)
                 return null;
 
-            var delivery = await _deliveryRepo.GetByIdAsync(auctionId);
+            var delivery = await _deliveryRepo.GetByAuctionIdAsync(auctionId);
 
             var trackingSteps = await _trackingRepo.GetAllAsync();
 
