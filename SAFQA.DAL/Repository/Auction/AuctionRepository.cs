@@ -339,6 +339,13 @@ namespace SAFQA.DAL.Repository.Auction
             return (data, totalCount);
         }
 
+        public async Task<List<Models.Auction>> GetAllWithSellerAsync()
+        {
+            return await _context.Auctions
+                .Include(a => a.Seller)
+                .ToListAsync();
+        }
+
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();

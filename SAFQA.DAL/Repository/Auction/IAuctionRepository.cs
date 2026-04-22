@@ -49,6 +49,8 @@ namespace SAFQA.DAL.Repository.Auction
                     decimal? maxPrice,
                     AuctionSortBy sortBy,
                     int? userCityId);
+
+        Task<List<Models.Auction>> GetAllWithSellerAsync();
         Task SaveChangesAsync();
     }
 }

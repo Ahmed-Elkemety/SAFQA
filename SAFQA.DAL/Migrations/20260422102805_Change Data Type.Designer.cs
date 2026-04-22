@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SAFQA.DAL.Database;
 
@@ -11,9 +12,11 @@ using SAFQA.DAL.Database;
 namespace SAFQA.DAL.Migrations
 {
     [DbContext(typeof(SAFQA_Context))]
-    partial class SAFQA_ContextModelSnapshot : ModelSnapshot
+    [Migration("20260422102805_Change Data Type")]
+    partial class ChangeDataType
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -649,14 +652,16 @@ namespace SAFQA.DAL.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<DateTime?>("ComfirmedAt")
+                    b.Property<DateTime>("ComfirmedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("ContactNumber")
+                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
                     b.Property<byte[]>("ProfImage")
+                        .IsRequired()
                         .HasColumnType("varbinary(max)");
 
                     b.Property<int>("SellerId")
@@ -829,39 +834,6 @@ namespace SAFQA.DAL.Migrations
                     b.ToTable("itemAttributesValues");
                 });
 
-            modelBuilder.Entity("SAFQA.DAL.Models.LoginOtp", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Attempts")
-                        .HasColumnType("int");
-
-                    b.Property<string>("CodeHash")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("Expiration")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsUsed")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("LoginOtps");
-                });
-
             modelBuilder.Entity("SAFQA.DAL.Models.Message", b =>
                 {
                     b.Property<int>("Id")
@@ -991,14 +963,10 @@ namespace SAFQA.DAL.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Date")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("IsCompleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
+                        .HasColumnType("bit");
 
                     b.Property<int>("Step")
                         .HasColumnType("int");
@@ -1008,7 +976,7 @@ namespace SAFQA.DAL.Migrations
                     b.HasIndex("AuctionId")
                         .IsUnique();
 
-                    b.ToTable("OrderTracking", (string)null);
+                    b.ToTable("OrderTracking");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.PasswordResetOtp", b =>
@@ -1200,6 +1168,9 @@ namespace SAFQA.DAL.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETDATE()");
 
+                    b.Property<int>("DeliverySpeed")
+                        .HasColumnType("int");
+
                     b.Property<int>("Rating")
                         .HasColumnType("int");
 
@@ -1208,6 +1179,9 @@ namespace SAFQA.DAL.Migrations
 
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("accurateDescription")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -2053,7 +2027,8 @@ namespace SAFQA.DAL.Migrations
 
                     b.Navigation("items");
 
-                    b.Navigation("orderTracking");
+                    b.Navigation("orderTracking")
+                        .IsRequired();
 
                     b.Navigation("review");
                 });

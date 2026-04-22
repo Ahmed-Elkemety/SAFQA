@@ -14,5 +14,6 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
         Task<AuthResult> ReportAuctionAsync(string userId, CreateReportDto dto);
         Task<(AuthResult, object)> GetAuctionsByCategory(int categoryId, string userId, int pageNumber, int pageSize, AuctionQueryDto queryDto);
         Task<(AuthResult, List<FavoritesDto>, int)> GetFavoriteAuctions(string userId, int pageNumber, int pageSize , AuctionQueryDto queryDto);
+        Task CalculateHotScoresAsync();
     }
 }

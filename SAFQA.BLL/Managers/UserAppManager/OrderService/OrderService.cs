@@ -27,7 +27,6 @@ namespace SAFQA.BLL.Managers.UserAppManager.OrderService
                 .Select(a => new UserOrderDto
                 {
                     AuctionId = a.Id,
-                    DeliveredAt = a.delivery.ComfirmedAt,
 
                     Images = a.items
                         .SelectMany(i => i.images)
