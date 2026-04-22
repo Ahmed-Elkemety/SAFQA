@@ -66,5 +66,7 @@ namespace SAFQA.DAL.Database
         public DbSet<Conversation> conversations { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<MessageAttachment> MessageAttachments { get; set; }
+        public DbSet<LoginOtp> LoginOtps { get; set; }
+        public DbSet<OrderTracking> OrderTracking { get; set; }
     }
 }

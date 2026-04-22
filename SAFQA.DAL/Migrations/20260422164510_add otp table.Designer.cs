@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SAFQA.DAL.Database;
 
@@ -11,9 +12,11 @@ using SAFQA.DAL.Database;
 namespace SAFQA.DAL.Migrations
 {
     [DbContext(typeof(SAFQA_Context))]
-    partial class SAFQA_ContextModelSnapshot : ModelSnapshot
+    [Migration("20260422164510_add otp table")]
+    partial class addotptable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -649,14 +652,16 @@ namespace SAFQA.DAL.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<DateTime?>("ComfirmedAt")
+                    b.Property<DateTime>("ComfirmedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("ContactNumber")
+                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
                     b.Property<byte[]>("ProfImage")
+                        .IsRequired()
                         .HasColumnType("varbinary(max)");
 
                     b.Property<int>("SellerId")
@@ -1004,7 +1009,7 @@ namespace SAFQA.DAL.Migrations
                     b.HasIndex("AuctionId")
                         .IsUnique();
 
-                    b.ToTable("orderTrackings");
+                    b.ToTable("OrderTracking");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.PasswordResetOtp", b =>

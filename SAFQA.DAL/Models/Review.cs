@@ -14,7 +14,6 @@ namespace SAFQA.DAL.Models
         public DateTime Date { get; set; }
         public int DeliverySpeed { get; set; }
         public int accurateDescription { get; set; }
-
         public string? UserId { get; set; }
         public int? SellerId { get; set; }
         public int? AuctionId { get; set; }

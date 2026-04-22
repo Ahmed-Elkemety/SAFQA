@@ -11,9 +11,9 @@ namespace SAFQA.DAL.Models
     {
         public int Id { get; set; }
         public string Code { get; set; }
-        public DateTime ComfirmedAt { get; set; }
-        public string ContactNumber { get; set; }
-        public byte[] ProfImage { get; set; }
+        public DateTime? ComfirmedAt { get; set; }
+        public string? ContactNumber { get; set; }
+        public byte[]? ProfImage { get; set; }
         public DeliveryStatus Status { get; set; }
         public int AuctionId { get; set; }
         public int SellerId { get; set; }

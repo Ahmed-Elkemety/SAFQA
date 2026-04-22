@@ -6,6 +6,7 @@ using SAFQA.API.Middleware;
 using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.BLL.Managers.AccountManager.Email_Sender;
 using SAFQA.BLL.Managers.AccountManager.OAuth;
+using SAFQA.BLL.Managers.DeliveryAppManager;
 using SAFQA.BLL.Managers.RecommendationAI;
 using SAFQA.BLL.Managers.SellerAppManager;
 using SAFQA.BLL.Managers.SellerAppManager.AuctionService;
@@ -31,6 +32,7 @@ using SAFQA.DAL.Repository.Auction;
 using SAFQA.DAL.Repository.Bids;
 using SAFQA.DAL.Repository.Category;
 using SAFQA.DAL.Repository.Conversation;
+using SAFQA.DAL.Repository.Delivery;
 using SAFQA.DAL.Repository.Dispute;
 using SAFQA.DAL.Repository.Items;
 using SAFQA.DAL.Repository.Location;
@@ -127,6 +129,8 @@ namespace SAFQA.API
             builder.Services.AddScoped<IReviewService, ReviewService>();
             builder.Services.AddHttpClient<IRecommendationAI, RecommendationAI>();
             builder.Services.AddScoped<IOrderService, OrderService>();
+            builder.Services.AddScoped<IDeliveryService, DeliveryService>();
+            builder.Services.AddScoped<IDeliveryRepo, DeliveryRepo>();
 
 
 

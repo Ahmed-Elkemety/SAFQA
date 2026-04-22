@@ -31,9 +31,8 @@ namespace SAFQA.DAL.Configration
               .HasMaxLength(50);
 
             
-            builder.Property(d => d.ComfirmedAt).IsRequired();
-            builder.Property(d => d.ContactNumber).IsRequired().HasMaxLength(20);
-            builder.Property(d => d.ProfImage).HasColumnType("varbinary(max)").IsRequired();
+            builder.Property(d => d.ContactNumber).HasMaxLength(20);
+            builder.Property(d => d.ProfImage).HasColumnType("varbinary(max)");
             builder.Property(d => d.Status).IsRequired().HasConversion<int>();
         }
     }
