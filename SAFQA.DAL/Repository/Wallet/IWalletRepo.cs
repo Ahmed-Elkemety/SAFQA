@@ -15,5 +15,7 @@ namespace SAFQA.DAL.Repository.Wallet
         void Add(Models.Wallet wallet);
         void Update(Models.Wallet wallet);
         void Delete(Models.Wallet wallet);
+        Task<Models.Wallet?> GetByUserIdAsync(string userId);
+
     }
 }

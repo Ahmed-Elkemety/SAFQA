@@ -12,6 +12,9 @@ using SAFQA.DAL.Database;
 using SAFQA.DAL.Models;
 using SAFQA.DAL.Repository.Auction;
 using SAFQA.BLL.Dtos.SellerAppDto.CategoryDto;
+using SAFQA.BLL.Dtos.SellerAppDto.AuctionDto.AuctionProcessDtos;
+using SAFQA.DAL.Repository.Wallet;
+using SAFQA.BLL.Dtos.UserAppDto.HomeDto;
 
 namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
 {
@@ -20,12 +23,14 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
         private readonly SAFQA_Context _context;
         private readonly IAuctionRepository _auctionRepository;
         private readonly UserManager<User> _userManager;
+        private readonly IWalletRepo _wallet;
 
-        public AuctionManagerU(SAFQA_Context Context , IAuctionRepository auctionRepository , UserManager<User> userManager)
+        public AuctionManagerU(SAFQA_Context Context , IAuctionRepository auctionRepository , UserManager<User> userManager , IWalletRepo wallet)
         {
             _context = Context;
             _auctionRepository = auctionRepository;
             _userManager = userManager;
+            _wallet = wallet;
         }
 
         public async Task<AuthResult> ReportAuctionAsync(string userId, CreateReportDto dto)
@@ -96,7 +101,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                     Message = "No auctions found for this category"
                 }, null);
 
-            var auctionsDto = auctions.Select(a => new CategoryDto
+            var auctionsDto = auctions.Select(a => new Dtos.UserAppDto.AuctionDto.CategoryDto
             {
                 AuctionId = a.Id,
                 Title = a.Title,
@@ -259,5 +264,221 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
 
             await _auctionRepository.SaveChangesAsync();
         }
+
+        public async Task<(AuthResult, AuctionDetailsDto?)> GetAuctionDetails(int auctionId, string userId)
+        {
+
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                return (new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "User not found"
+                }, null);
+            }
+            var auction = await _auctionRepository.GetByIdAsync(auctionId);
+
+            if (auction == null)
+            {
+                return (new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "Auction not found"
+                }, null);
+            }
+
+            if(auction.Seller.UserId == userId)
+            {
+                return (new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "The Seller Can Not Be Participaion In Auction"
+                }, null);
+            }
+
+            var dto = new AuctionDetailsDto
+            {
+                Id = auction.Id,
+                Title = auction.Title,
+                Description = auction.Description,
+                StartDate = auction.StartDate,
+                EndDate = auction.EndDate,
+
+                StartingPrice = auction.StartingPrice,
+
+                TotalBids = auction.TotalBids,
+
+                SecurityDeposit = auction.SecurityDeposit,
+
+                SellerId = auction.SellerId ?? 0,
+                StoreName = auction.Seller?.StoreName ?? "",
+                StoreLogo = auction.Seller?.StoreLogo != null
+                    ? Convert.ToBase64String(auction.Seller.StoreLogo)
+                    : null,
+
+                Items = auction.items.Select(i => new ItemDto
+                {
+                    Id = i.Id,
+                    Title = i.title,
+                    Count = i.Count,
+                    Description = i.Description,
+                    Condition = i.Condition.ToString(),
+                    WarrantyInfo = i.WarrantyInfo,
+
+                    Images = i.images
+                        .Select(img => Convert.ToBase64String(img.Image))
+                        .ToList(),
+
+                    Attributes = i.itemAttributesValues
+                        .Select(attr => new ItemAttributeDto
+                        {
+                            Id = attr.Id,
+                            AttributeName = attr.categoryAttributes?.Name ?? "",
+                            Value = attr.value
+                        }).ToList()
+
+                }).ToList()
+            };
+
+            return (new AuthResult
+            {
+                IsSuccess = true,
+                Message = "Auction retrieved successfully"
+            }, dto);
+        }
+
+        public async Task<AuthResult> CheckSecurityDeposit(int auctionId, string userId)
+        {
+            var auction = await _auctionRepository.GetByIdAsync(auctionId);
+
+            if (auction == null)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "Auction not found"
+                };
+            }
+
+            var wallet = await _wallet.GetByUserIdAsync(userId);
+
+            if (wallet == null)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "Wallet not found"
+                };
+            }
+
+            if (wallet.Balance >= auction.SecurityDeposit)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = true,
+                    Message = "You have enough balance to proceed"
+                };
+            }
+
+            return new AuthResult
+            {
+                IsSuccess = false,
+                Message = "Insufficient balance for security deposit"
+            };
+        }
+
+        public async Task UpdateAuctionStatusesAsync()
+        {
+            var now = DateTime.UtcNow;
+
+            var auctions = await _context.Auctions.ToListAsync();
+
+            foreach (var auction in auctions)
+            {
+                if (now < auction.StartDate)
+                {
+                    auction.Status = AuctionStatus.Upcoming;
+                }
+                else if (now >= auction.EndDate)
+                {
+                    auction.Status = AuctionStatus.Finished;
+                }
+                else
+                {
+                    var timeLeft = auction.EndDate - now;
+
+                    if (timeLeft.TotalMinutes <= 10)
+                        auction.Status = AuctionStatus.EndingSoon;
+                    else
+                        auction.Status = AuctionStatus.Active;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<EndingSoonDto>> GetEndingSoonAsync(string userId, int page, int pageSize)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                throw new Exception("User not found");
+            }
+
+            var data = await _auctionRepository.GetEndingSoonAsync(page, pageSize);
+
+            return data.Select(a => new EndingSoonDto
+            {
+                Id = a.Id,
+                Title = a.Title,
+                Image = a.Image,
+                CurrentPrice = a.CurrentPrice,
+                EndDate = a.EndDate
+            }).ToList();
+        }
+
+        public async Task<List<TrendingDto>> GetTrendingAsync(string userId, int page, int pageSize)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                throw new Exception("User not found");
+            }
+
+            var data = await _auctionRepository.GetTrendingAsync(page, pageSize);
+
+            return data.Select(a => new TrendingDto
+            {
+                AuctionId = a.Id,
+                Title = a.Title,
+                DisplayPrice = a.CurrentPrice,
+                DisplayDate = a.CreatedAt,
+                TotalBids = a.TotalBids,
+                Status = a.Status,
+                Image = a.Image
+            }).ToList();
+        }
+
+        public async Task<List<Dtos.UserAppDto.HomeDto.CategoryDto>> GetCategoriesAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                throw new Exception("User not found");
+            }
+
+            var data = await _auctionRepository.GetCategoriesWithCountAsync();
+
+            return data.Select(c => new Dtos.UserAppDto.HomeDto.CategoryDto
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Image = c.Image,
+                AuctionCount = c.Auctions?.Count ?? 0
+            }).ToList();
+        }
+
     }
 }

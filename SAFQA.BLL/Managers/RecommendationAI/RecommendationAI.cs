@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using SAFQA.BLL.Dtos.AIDtos;
+using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.DAL.Models;
 
 namespace SAFQA.BLL.Managers.RecommendationAI
@@ -13,35 +16,34 @@ namespace SAFQA.BLL.Managers.RecommendationAI
     {
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
+        private readonly UserManager<User> _userManager;
 
-        public RecommendationAI(HttpClient httpClient, IConfiguration configuration)
+        public RecommendationAI(HttpClient httpClient, IConfiguration configuration , UserManager<User> userManager)
         {
             _httpClient = httpClient;
             _configuration = configuration;
+            _userManager = userManager;
         }
-        public async Task<List<RecommendationResult>> GetRecommendationsAsync(string userId)
+        public async Task<List<RecommendationDto>> GetRecommendations(string userId, int n = 10)
         {
-            try
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
             {
-                _httpClient.DefaultRequestHeaders.Clear();
-                _httpClient.DefaultRequestHeaders.Add("Bypass-Tunnel-Reminder", "true");
-
-                string fullUrl = $"https://loud-ways-sin.loca.lt/recommend/{userId}";
-
-                var response = await _httpClient.GetAsync(fullUrl);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    return JsonConvert.DeserializeObject<List<RecommendationResult>>(content);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"AI API Error: {ex.Message}");
+                throw new Exception("User not found");
             }
 
-            return new List<RecommendationResult>();
+            var url = $"https://marked-orchestra-committees-sunday.trycloudflare.com/recommend/{userId}?n={n}";
+
+            var response = await _httpClient.GetAsync(url);
+
+            if (!response.IsSuccessStatusCode)
+                return new List<RecommendationDto>();
+
+            var json = await response.Content.ReadAsStringAsync();
+
+            var result = JsonConvert.DeserializeObject<RecommendationResponse>(json);
+
+            return result?.Recommendations ?? new List<RecommendationDto>();
         }
     }
 }

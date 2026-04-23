@@ -202,7 +202,15 @@ namespace SAFQA.DAL.Repository.Auction
         public async Task<Models.Auction?> GetByIdAsync(int id)
         {
             return await _context.Auctions
-                .FirstOrDefaultAsync(a => a.Id == id && !a.IsDeleted);
+            .AsNoTracking()
+            .Where(a => a.Id == id && !a.IsDeleted)
+            .Include(a => a.Seller)
+            .Include(a => a.items)
+                .ThenInclude(i => i.images)
+            .Include(a => a.items)
+                .ThenInclude(i => i.itemAttributesValues)
+                    .ThenInclude(av => av.categoryAttributes)
+            .FirstOrDefaultAsync();
         }
 
         public async Task<Models.Auction?> GetWithDetailsAsync(int id)
@@ -219,8 +227,15 @@ namespace SAFQA.DAL.Repository.Auction
         public async Task<IEnumerable<Models.Auction>> GetAllAsync()
         {
             return await _context.Auctions
-                .Where(a => !a.IsDeleted)
-                .ToListAsync();
+            .AsNoTracking()
+            .Where(a => !a.IsDeleted)
+            .Include(a => a.Seller)
+            .Include(a => a.items)
+                .ThenInclude(i => i.images)
+            .Include(a => a.items)
+                .ThenInclude(i => i.itemAttributesValues)
+                    .ThenInclude(av => av.categoryAttributes)
+            .ToListAsync();
         }
 
         public async Task<(List<Models.Auction>, int)> GetAuctionsByCategoryId(
@@ -343,6 +358,34 @@ namespace SAFQA.DAL.Repository.Auction
         {
             return await _context.Auctions
                 .Include(a => a.Seller)
+                .ToListAsync();
+        }
+
+        public async Task<List<Models.Auction>> GetEndingSoonAsync(int page, int pageSize)
+        {
+            return await _context.Auctions
+                .Where(a => !a.IsDeleted && a.Status == AuctionStatus.EndingSoon)
+                .OrderBy(a => a.EndDate)
+                .ThenByDescending(a => a.HotScore)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        public async Task<List<Models.Auction>> GetTrendingAsync(int page, int pageSize)
+        {
+            return await _context.Auctions
+                .Where(a => !a.IsDeleted)
+                .OrderByDescending(a => a.HotScore)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        public async Task<List<Models.Category>> GetCategoriesWithCountAsync()
+        {
+            return await _context.Category
+                .Include(c => c.Auctions)
                 .ToListAsync();
         }
 

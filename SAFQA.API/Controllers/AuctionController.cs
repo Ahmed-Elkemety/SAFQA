@@ -373,5 +373,43 @@ namespace SAFQA.API.Controllers
             await _auctionManagerU.CalculateHotScoresAsync();
             return Ok(new { message = "HotScore calculated successfully" });
         }
+
+        //=========================  Auction Process =============================
+
+        [HttpGet("User-Auction-View/{id}")]
+        public async Task<IActionResult> GetAuctionById(int id)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var (auth, data) = await _auctionManagerU.GetAuctionDetails(id, userId);
+
+            if (!auth.IsSuccess)
+                return NotFound(auth);
+
+            return Ok(new
+            {
+                auth,
+                data
+            });
+        }
+
+        [HttpPost("check-deposit/{Id}")]
+        public async Task<IActionResult> CheckDeposit(int id)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var result = await _auctionManagerU.CheckSecurityDeposit(id, userId);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
     }
 }

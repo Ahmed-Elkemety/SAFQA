@@ -6,6 +6,7 @@ using SAFQA.API.Middleware;
 using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.BLL.Managers.AccountManager.Email_Sender;
 using SAFQA.BLL.Managers.AccountManager.OAuth;
+using SAFQA.BLL.Managers.BackgroundServices;
 using SAFQA.BLL.Managers.DeliveryAppManager;
 using SAFQA.BLL.Managers.RecommendationAI;
 using SAFQA.BLL.Managers.SellerAppManager;
@@ -131,6 +132,7 @@ namespace SAFQA.API
             builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddScoped<IDeliveryService, DeliveryService>();
             builder.Services.AddScoped<IDeliveryRepo, DeliveryRepo>();
+            builder.Services.AddHostedService<HotScoreBackgroundService>();
 
 
 

@@ -51,6 +51,11 @@ namespace SAFQA.DAL.Repository.Auction
                     int? userCityId);
 
         Task<List<Models.Auction>> GetAllWithSellerAsync();
+
+        Task<List<Models.Auction>> GetEndingSoonAsync(int page, int pageSize);
+        Task<List<Models.Auction>> GetTrendingAsync(int page, int pageSize);
+
+        Task<List<Models.Category>> GetCategoriesWithCountAsync();
         Task SaveChangesAsync();
     }
 }
