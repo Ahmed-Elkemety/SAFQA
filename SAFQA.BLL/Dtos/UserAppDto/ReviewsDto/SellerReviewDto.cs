@@ -6,10 +6,14 @@ using System.Threading.Tasks;
 
 namespace SAFQA.BLL.Dtos.UserAppDto.ReviewsDto
 {
-    public class AddReviewDto
+    public class SellerReviewDto
     {
-        public int AuctionId { get; set; }
+        public string UserName { get; set; }
+        public byte[]? UserImage { get; set; }
+
         public int Rating { get; set; }
         public string Comment { get; set; }
+
+        public DateTime Date { get; set; }
     }
 }

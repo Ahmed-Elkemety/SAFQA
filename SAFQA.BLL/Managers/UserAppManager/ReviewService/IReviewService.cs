@@ -11,8 +11,6 @@ namespace SAFQA.BLL.Managers.UserAppManager.ReviewService
     public interface IReviewService
     {
         Task AddReviewAsync(string userId, AddReviewDto dto);
-        Task<IQueryable<Review>> GetSellerReviewsAsync(string userId); // if User Want To See Review About Specific Seller 
-
-
+        SellerRatingsOverviewDto GetSellerReviews(int sellerId);
     }
 }
