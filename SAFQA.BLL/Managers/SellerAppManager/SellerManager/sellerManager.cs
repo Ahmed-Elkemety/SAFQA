@@ -150,7 +150,6 @@ namespace SAFQA.BLL.Managers.SellerAppManager
                 Description = dto.Description,
                 StoreLogo = logoBytes,
                 VerificationStatus = SellerVerificationStatus.Pending,
-                StoreStatus = StoreStatus.Active,
                 SellerAt = DateTime.UtcNow,
                 Rating = 0.0f,
                 Followers = 0,
@@ -401,7 +400,8 @@ namespace SAFQA.BLL.Managers.SellerAppManager
                 Followers = data.Followers,
                 AuctionsCount = data.AuctionsCount,
                 UpgradeType = data.UpgradeType,
-                StoreLogo = data.StoreLogo
+                StoreLogo = data.StoreLogo,
+                VerificationStatus = data.VerificationStatus
             };
         }
 
@@ -623,7 +623,6 @@ namespace SAFQA.BLL.Managers.SellerAppManager
                 return false;
 
             seller.VerificationStatus = SellerVerificationStatus.Verified;
-            seller.StoreStatus = StoreStatus.Active;
             seller.SellerAt = DateTime.UtcNow;
 
             _sellerRepo.Update(seller);
@@ -667,7 +666,6 @@ namespace SAFQA.BLL.Managers.SellerAppManager
                     Business = s.StoreName,
                     Owner = s.User.FullName,
                     Email = s.User.Email,
-                    Status = s.StoreStatus.ToString()
                 })
                 .ToList();
 
@@ -692,7 +690,6 @@ namespace SAFQA.BLL.Managers.SellerAppManager
 
             user.Status = UserStatus.Blocked;
 
-            seller.StoreStatus = StoreStatus.Suspended;
 
             _userRepo.Update(user);
             _sellerRepo.Update(seller);
@@ -711,8 +708,6 @@ namespace SAFQA.BLL.Managers.SellerAppManager
                 return false;
 
             user.Status = UserStatus.Active;
-
-            seller.StoreStatus = StoreStatus.Active;
 
             _userRepo.Update(user);
             _sellerRepo.Update(seller);
@@ -739,7 +734,6 @@ namespace SAFQA.BLL.Managers.SellerAppManager
                 StoreLogo = seller.StoreLogo,
 
                 VerificationStatus = seller.VerificationStatus.ToString(),
-                StoreStatus = seller.StoreStatus.ToString()
             };
 
             // Personal Seller

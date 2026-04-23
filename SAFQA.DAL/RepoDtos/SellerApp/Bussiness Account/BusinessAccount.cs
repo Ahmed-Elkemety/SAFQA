@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SAFQA.DAL.Enums;
 
 namespace SAFQA.DAL.RepoDtos.SellerApp.Bussiness_Account
 {
@@ -25,5 +26,7 @@ namespace SAFQA.DAL.RepoDtos.SellerApp.Bussiness_Account
         public string UpgradeType { get; set; }
 
         public string? StoreLogo { get; set; }
+
+        public SellerVerificationStatus VerificationStatus { get; set; }
     }
 }

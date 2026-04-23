@@ -59,7 +59,9 @@ namespace SAFQA.DAL.Repository.Seller
 
                     StoreLogo = s.StoreLogo != null
                         ? Convert.ToBase64String(s.StoreLogo)
-                        : null
+                        : null,
+
+                    VerificationStatus = s.VerificationStatus
                 })
                 .FirstOrDefaultAsync();
         }

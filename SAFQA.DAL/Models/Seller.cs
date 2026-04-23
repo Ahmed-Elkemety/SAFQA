@@ -29,7 +29,6 @@ namespace SAFQA.DAL.Models
         public int AuctionCount { get; set; }
 
         public SellerVerificationStatus VerificationStatus { get; set; } //  Pending - Verified - Rejected
-        public StoreStatus StoreStatus { get; set; } // Active - Inactive - Suspended - Closed
         public DateTime SellerAt { get; set; }
         public bool IsDeleted { get; set; }
         public string? DeletedAt { get; set; }
