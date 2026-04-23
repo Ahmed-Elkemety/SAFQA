@@ -205,6 +205,19 @@ namespace SAFQA.DAL.Repository.Auction
                 .FirstOrDefaultAsync(a => a.Id == id && !a.IsDeleted);
         }
 
+        public async Task<Models.Auction?> DeliveryByIdAsync(int id)
+        {
+            return await _context.Auctions
+                .FirstOrDefaultAsync(a => a.Id == id && !a.IsDeleted);
+        }
+
+        public async Task<Models.Auction?> GetAuctionWithDeliveryAsync(int id)
+        {
+            return await _context.Auctions
+                .Include(a => a.delivery)
+                .FirstOrDefaultAsync(a => a.Id == id && !a.IsDeleted);
+        }
+
         public async Task<Models.Auction?> GetWithDetailsAsync(int id)
         {
             return await _context.Auctions

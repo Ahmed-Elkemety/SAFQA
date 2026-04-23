@@ -43,25 +43,14 @@ namespace SAFQA.API.Controllers
             }
         }
 
-        [Authorize(Roles = "SELLER")]
-        [HttpGet("seller/Reviews")]
-        public async Task<IActionResult> GetSellerReviews()
+        [Authorize(Roles = "USER")]
+        [HttpGet("{sellerId}")]
+        public IActionResult GetSellerReviews(int sellerId)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var result = _reviewService.GetSellerReviews(sellerId);
 
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
-
-            var reviews = await _reviewService.GetSellerReviewsAsync(userId);
-
-            var result = reviews.Select(r => new
-            {
-                r.Id,
-                r.Rating,
-                r.Comment,
-                r.Date,
-                UserName = r.User.FullName
-            });
+            if (result == null)
+                return NotFound(new { message = "Seller not found" });
 
             return Ok(result);
         }

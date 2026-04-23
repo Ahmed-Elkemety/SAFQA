@@ -17,7 +17,7 @@ namespace SAFQA.API.Controllers
             _orderService = orderService;
         }
 
-        // [Authorize(Roles = "USER")]
+        [Authorize(Roles = "USER")]
         [HttpGet("delivered")]
         public async Task<IActionResult> GetDeliveredOrders()
         {
@@ -31,7 +31,7 @@ namespace SAFQA.API.Controllers
             return Ok(orders);
         }
 
-        // [Authorize(Roles = "USER")]
+        [Authorize(Roles = "USER")]
         [HttpGet("in-progress")]
         public async Task<IActionResult> GetInProgressOrders()
         {

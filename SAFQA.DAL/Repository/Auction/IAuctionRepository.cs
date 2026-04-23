@@ -52,5 +52,6 @@ namespace SAFQA.DAL.Repository.Auction
 
         Task<List<Models.Auction>> GetAllWithSellerAsync();
         Task SaveChangesAsync();
+        Task<Models.Auction?> GetAuctionWithDeliveryAsync(int id);
     }
 }
