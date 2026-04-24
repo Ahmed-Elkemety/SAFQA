@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SAFQA.DAL.RepoDtos.UserApp.Home.Categorys;
 
 namespace SAFQA.DAL.Repository.Auction
 {
@@ -392,13 +393,6 @@ namespace SAFQA.DAL.Repository.Auction
                 .OrderByDescending(a => a.HotScore)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .ToListAsync();
-        }
-
-        public async Task<List<Models.Category>> GetCategoriesWithCountAsync()
-        {
-            return await _context.Category
-                .Include(c => c.Auctions)
                 .ToListAsync();
         }
 

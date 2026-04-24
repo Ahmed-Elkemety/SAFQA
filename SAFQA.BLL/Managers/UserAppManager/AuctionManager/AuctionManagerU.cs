@@ -15,6 +15,7 @@ using SAFQA.BLL.Dtos.SellerAppDto.CategoryDto;
 using SAFQA.BLL.Dtos.SellerAppDto.AuctionDto.AuctionProcessDtos;
 using SAFQA.DAL.Repository.Wallet;
 using SAFQA.BLL.Dtos.UserAppDto.HomeDto;
+using SAFQA.DAL.Repository.Category;
 
 namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
 {
@@ -24,13 +25,15 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
         private readonly IAuctionRepository _auctionRepository;
         private readonly UserManager<User> _userManager;
         private readonly IWalletRepo _wallet;
+        private readonly IcategoryRepo _category;
 
-        public AuctionManagerU(SAFQA_Context Context , IAuctionRepository auctionRepository , UserManager<User> userManager , IWalletRepo wallet)
+        public AuctionManagerU(SAFQA_Context Context , IAuctionRepository auctionRepository , UserManager<User> userManager , IWalletRepo wallet,IcategoryRepo category)
         {
             _context = Context;
             _auctionRepository = auctionRepository;
             _userManager = userManager;
             _wallet = wallet;
+            _category = category;
         }
 
         public async Task<AuthResult> ReportAuctionAsync(string userId, CreateReportDto dto)
@@ -469,14 +472,14 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                 throw new Exception("User not found");
             }
 
-            var data = await _auctionRepository.GetCategoriesWithCountAsync();
+            var data = await _category.GetCategoriesWithCountAsync();
 
             return data.Select(c => new Dtos.UserAppDto.HomeDto.CategoryDto
             {
                 Id = c.Id,
                 Name = c.Name,
                 Image = c.Image,
-                AuctionCount = c.Auctions?.Count ?? 0
+                AuctionCount = c.AuctionCount
             }).ToList();
         }
 

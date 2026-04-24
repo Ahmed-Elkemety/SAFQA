@@ -1,5 +1,6 @@
 ﻿using SAFQA.DAL.Enums;
 using SAFQA.DAL.Models;
+using SAFQA.DAL.RepoDtos.UserApp.Home.Categorys;
 using SAFQA.DAL.RepoDtos.UserApp.Home.TrendingAuction;
 using System;
 using System.Collections.Generic;
@@ -55,7 +56,6 @@ namespace SAFQA.DAL.Repository.Auction
         Task<List<Models.Auction>> GetEndingSoonAsync(int page, int pageSize);
         Task<List<Models.Auction>> GetTrendingAsync(int page, int pageSize);
 
-        Task<List<Models.Category>> GetCategoriesWithCountAsync();
         Task SaveChangesAsync();
         Task<Models.Auction?> GetAuctionWithDeliveryAsync(int id);
     }
