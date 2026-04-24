@@ -415,15 +415,19 @@ namespace SAFQA.API.Controllers
         [HttpGet("search")]
         [Authorize(Roles = "USER")]
 
-        public async Task<IActionResult> Search([FromQuery] string query)
+        public async Task<IActionResult> Search([FromQuery] AuctionQueryDto queryDto, string query)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrWhiteSpace(query))
                 return BadRequest("Query is required");
 
-            var result = await _auctionManagerU.SearchAsync(query, userId);
+            var result = await _auctionManagerU.SearchAsync(query, userId, queryDto);
 
-            return Ok(result);
+            return Ok(new
+            {
+                result.Item1,
+                Data = result.Item2
+            }); ;
         }
     }
 }

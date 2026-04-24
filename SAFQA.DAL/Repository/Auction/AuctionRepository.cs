@@ -396,27 +396,104 @@ namespace SAFQA.DAL.Repository.Auction
                 .ToListAsync();
         }
 
-        public async Task<List<Models.Auction>> SearchAsync(string query)
+        public async Task<List<Models.Auction>> SearchAsync(string query, int? CategoryId, List<AuctionStatus>? statuses,
+                   List<int>? cityIds,
+                   decimal? minPrice,
+                   decimal? maxPrice,
+                   AuctionSortBy sortBy,
+                   int? userCityId)
         {
             var auctions = _context.Auctions
-                .Where(a => !a.IsDeleted);
+        .Where(a => !a.IsDeleted && a.Status < AuctionStatus.Finished);
 
-            if (int.TryParse(query, out int id))
+            // 🔍 Search
+            if (!string.IsNullOrWhiteSpace(query))
             {
-                auctions = auctions.Where(a => a.Id == id);
+                if (int.TryParse(query, out int id))
+                {
+                    auctions = auctions.Where(a => a.Id == id);
+                }
+                else
+                {
+                    auctions = auctions.Where(a =>
+                        EF.Functions.Like(a.Title, $"%{query}%"));
+                }
             }
-            else
+
+            // 📂 Category
+            if (CategoryId.HasValue)
+            {
+                auctions = auctions.Where(a => a.CategoryId == CategoryId.Value);
+            }
+
+            // 🟢 Status
+            if (statuses is { Count: > 0 })
+            {
+                auctions = auctions.Where(a => statuses.Contains(a.Status));
+            }
+
+            // 📍 City
+            if (cityIds is { Count: > 0 })
             {
                 auctions = auctions.Where(a =>
-                    EF.Functions.Like(a.Title, $"%{query}%"));
+                    a.Seller != null && cityIds.Contains(a.Seller.CityId));
             }
 
+            // 💰 Price (مهم: نحسب مرة واحدة)
+            auctions = auctions.Select(a => new
+            {
+                Auction = a,
+                Price = a.Status == AuctionStatus.Upcoming
+                    ? a.StartingPrice
+                    : a.Status == AuctionStatus.Finished
+                        ? a.FinalPrice
+                        : a.CurrentPrice
+            })
+            .Where(x =>
+                (!minPrice.HasValue || x.Price >= minPrice.Value) &&
+                (!maxPrice.HasValue || x.Price <= maxPrice.Value)
+            )
+            .Select(x => x.Auction);
+
+            // 🔽 Sorting
+            auctions = sortBy switch
+            {
+                AuctionSortBy.MostBids =>
+                    auctions.OrderByDescending(a => a.TotalBids),
+
+                AuctionSortBy.Nearest when userCityId.HasValue =>
+                    auctions
+                        .OrderByDescending(a => a.Seller != null && a.Seller.CityId == userCityId)
+                        .ThenByDescending(a => a.CreatedAt),
+
+                AuctionSortBy.PriceHighToLow =>
+                    auctions.OrderByDescending(a =>
+                        a.Status == AuctionStatus.Upcoming
+                            ? a.StartingPrice
+                            : a.Status == AuctionStatus.Finished
+                                ? a.FinalPrice
+                                : a.CurrentPrice),
+
+                AuctionSortBy.PriceLowToHigh =>
+                    auctions.OrderBy(a =>
+                        a.Status == AuctionStatus.Upcoming
+                            ? a.StartingPrice
+                            : a.Status == AuctionStatus.Finished
+                                ? a.FinalPrice
+                                : a.CurrentPrice),
+
+                _ =>
+                    auctions
+                        .OrderByDescending(a => a.IsFeatured)
+                        .ThenByDescending(a => a.CreatedAt)
+            };
+
+            // ⚡ Limit + Execute
             return await auctions
-                .OrderByDescending(a => a.HotScore)
-                .ThenByDescending(a => a.CreatedAt)
                 .Take(20)
                 .ToListAsync();
         }
+        
 
         public async Task SaveChangesAsync()
         {

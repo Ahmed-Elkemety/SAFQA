@@ -58,7 +58,12 @@ namespace SAFQA.DAL.Repository.Auction
 
         Task SaveChangesAsync();
         Task<Models.Auction?> GetAuctionWithDeliveryAsync(int id);
-        Task<List<Models.Auction>> SearchAsync(string query);
+        Task<List<Models.Auction>> SearchAsync(string query , int? CategoryId, List<AuctionStatus>? statuses,
+                   List<int>? cityIds,
+                   decimal? minPrice,
+                   decimal? maxPrice,
+                   AuctionSortBy sortBy,
+                   int? userCityId);
 
     }
 }

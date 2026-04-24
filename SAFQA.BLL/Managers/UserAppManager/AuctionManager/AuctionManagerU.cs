@@ -16,6 +16,7 @@ using SAFQA.BLL.Dtos.SellerAppDto.AuctionDto.AuctionProcessDtos;
 using SAFQA.DAL.Repository.Wallet;
 using SAFQA.BLL.Dtos.UserAppDto.HomeDto;
 using SAFQA.DAL.Repository.Category;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
 {
@@ -483,14 +484,29 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
             }).ToList();
         }
 
-        public async Task<List<AuctionSearchDto>> SearchAsync(string query , string userId)
+        public async Task<(AuthResult, List<AuctionSearchDto>?)> SearchAsync(string query , string userId , AuctionQueryDto queryDto)
         {
+            queryDto ??= new AuctionQueryDto();
+
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                throw new Exception("User not found");
+                return (new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "User not found"
+                }, null);
             }
-            var auctions = await _auctionRepository.SearchAsync(query);
+            var auctions =
+                await _auctionRepository.SearchAsync(query,
+                    queryDto.CategoryId,
+                    queryDto.Statuses,
+                    queryDto.CityIds,
+                    queryDto.MinPrice,
+                    queryDto.MaxPrice,
+                    queryDto.SortBy,
+                    user.CityId);
+
 
             var result = auctions.Select(a => new AuctionSearchDto
             {
@@ -504,8 +520,6 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                         ? a.StartingPrice
                         : a.Status == AuctionStatus.Active || a.Status == AuctionStatus.EndingSoon
                             ? a.CurrentPrice
-                            : a.Status == AuctionStatus.Finished
-                                ? a.FinalPrice
                                 : 0,
 
                 DisplayDate =
@@ -513,14 +527,16 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                         ? a.StartDate
                         : a.Status == AuctionStatus.Active || a.Status == AuctionStatus.EndingSoon
                             ? a.EndDate
-                            : a.Status == AuctionStatus.Finished
-                                ? a.EndDate
                                 : DateTime.MinValue,
 
                 Image = a.Image
             }).ToList();
 
-            return result;
+            return (new AuthResult
+            {
+                IsSuccess = true,
+                Message = "Favorite auctions retrieved successfully"
+            }, result);
         }
 
     }
