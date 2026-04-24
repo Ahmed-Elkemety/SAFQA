@@ -57,6 +57,8 @@ namespace SAFQA.DAL.Models
         public Review? review { get; set; }
         public Delivery? delivery { get; set; } 
         public ICollection<AuctionUser> AuctionUsers { get; set; }
+        public ICollection<AuctionParticipations> auctionParticipations { get; set; }
+
         public ICollection<Bid> Bids { get; set; }
         public ICollection<ProxyBidding> ProxyBiddings { get; set; }
         public ICollection<Disputes> disputes { get; set; }

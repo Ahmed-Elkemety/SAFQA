@@ -235,34 +235,6 @@ namespace SAFQA.API
 
             var app = builder.Build();
 
-            using (var scope = app.Services.CreateScope())
-            {
-                var context = scope.ServiceProvider.GetRequiredService<SAFQA_Context>();
-
-                var categories = context.Category.ToList();
-
-                foreach (var category in categories)
-                {
-                    string imagePath = category.Name switch
-                    {
-                        "Electronics" => "C:\\Users\\ahmed\\Downloads\\clickerhappy-computer-2982270_1920.jpg",
-                        "Vehicles" => "C:\\Users\\ahmed\\Downloads\\riedelmeier-suv-1344716_1920.jpg",
-                        "Real Estate" => "C:\\Users\\ahmed\\Downloads\\pexels-house-1836070_1920.jpg",
-                        "Sports" => "C:\\Users\\ahmed\\Downloads\\pavellllllll-ball-4353214_1920.jpg",
-                        "Books & Media" => "C:\\Users\\ahmed\\Downloads\\thoughtcatalog-tea-time-3240766_1920.jpg",
-                        "Toys & Hobbies" => "C:\\Users\\ahmed\\Downloads\\adammalycha-rubiks-cube-7359071_1920.jpg",
-                        _ => null
-                    };
-
-                    if (imagePath != null && File.Exists(imagePath))
-                    {
-                        category.Image = File.ReadAllBytes(imagePath);
-                    }
-                }
-
-                context.SaveChanges();
-            }
-
 
             // Configure the HTTP request pipeline.
 

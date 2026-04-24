@@ -34,6 +34,7 @@ namespace SAFQA.DAL.Models
         public string? DeletedAt { get; set; }
 
         // Navigation
+        public ICollection<UserFollowers> userFollowers { get; set; }
         public PersonalSeller? PersonalSeller { get; set; }
         public BusinessSeller? BusinessSeller { get; set; }
         public ICollection<Auction> Auctions { get; set; } // 1 to M
