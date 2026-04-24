@@ -13,7 +13,6 @@ namespace SAFQA.DAL.Configration
     {
         public void Configure(EntityTypeBuilder<AuctionParticipations> builder)
         {
-            builder.ToTable("BidParticipations");
 
             builder.HasKey(b => b.Id);
 
