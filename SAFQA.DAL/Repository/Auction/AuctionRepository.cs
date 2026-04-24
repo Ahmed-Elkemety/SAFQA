@@ -396,6 +396,28 @@ namespace SAFQA.DAL.Repository.Auction
                 .ToListAsync();
         }
 
+        public async Task<List<Models.Auction>> SearchAsync(string query)
+        {
+            var auctions = _context.Auctions
+                .Where(a => !a.IsDeleted);
+
+            if (int.TryParse(query, out int id))
+            {
+                auctions = auctions.Where(a => a.Id == id);
+            }
+            else
+            {
+                auctions = auctions.Where(a =>
+                    EF.Functions.Like(a.Title, $"%{query}%"));
+            }
+
+            return await auctions
+                .OrderByDescending(a => a.HotScore)
+                .ThenByDescending(a => a.CreatedAt)
+                .Take(20)
+                .ToListAsync();
+        }
+
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();

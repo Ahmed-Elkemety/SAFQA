@@ -411,5 +411,19 @@ namespace SAFQA.API.Controllers
 
             return Ok(result);
         }
+
+        [HttpGet("search")]
+        [Authorize(Roles = "USER")]
+
+        public async Task<IActionResult> Search([FromQuery] string query)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrWhiteSpace(query))
+                return BadRequest("Query is required");
+
+            var result = await _auctionManagerU.SearchAsync(query, userId);
+
+            return Ok(result);
+        }
     }
 }

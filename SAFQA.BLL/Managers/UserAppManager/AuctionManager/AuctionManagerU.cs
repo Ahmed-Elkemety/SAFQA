@@ -483,5 +483,45 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
             }).ToList();
         }
 
+        public async Task<List<AuctionSearchDto>> SearchAsync(string query , string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                throw new Exception("User not found");
+            }
+            var auctions = await _auctionRepository.SearchAsync(query);
+
+            var result = auctions.Select(a => new AuctionSearchDto
+            {
+                AuctionId = a.Id,
+                Title = a.Title,
+                TotalBids = a.TotalBids,
+                Status = a.Status,
+
+                DisplayPrice =
+                    a.Status == AuctionStatus.Upcoming
+                        ? a.StartingPrice
+                        : a.Status == AuctionStatus.Active || a.Status == AuctionStatus.EndingSoon
+                            ? a.CurrentPrice
+                            : a.Status == AuctionStatus.Finished
+                                ? a.FinalPrice
+                                : 0,
+
+                DisplayDate =
+                    a.Status == AuctionStatus.Upcoming
+                        ? a.StartDate
+                        : a.Status == AuctionStatus.Active || a.Status == AuctionStatus.EndingSoon
+                            ? a.EndDate
+                            : a.Status == AuctionStatus.Finished
+                                ? a.EndDate
+                                : DateTime.MinValue,
+
+                Image = a.Image
+            }).ToList();
+
+            return result;
+        }
+
     }
 }

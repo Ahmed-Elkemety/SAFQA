@@ -24,5 +24,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
         Task<List<EndingSoonDto>> GetEndingSoonAsync(string userId, int page, int pageSize);
         Task<List<TrendingDto>> GetTrendingAsync(string userId, int page, int pageSize);
         Task<List<Dtos.UserAppDto.HomeDto.CategoryDto>> GetCategoriesAsync(string userId);
+        Task<List<AuctionSearchDto>> SearchAsync(string query , string userId);
+
     }
 }
