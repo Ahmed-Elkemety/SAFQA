@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -48,6 +48,7 @@ using SAFQA.DAL.Repository.Seller;
 using SAFQA.DAL.Repository.Transaction;
 using SAFQA.DAL.Repository.Users;
 using SAFQA.DAL.Repository.Wallet;
+using System.IO;
 using System.Security.Claims;
 using System.Text;
 
@@ -259,6 +260,65 @@ namespace SAFQA.API
             builder.Services.AddHostedService<ExpiredOtpCleanupService>();
 
             var app = builder.Build();
+
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<SAFQA_Context>();
+
+                // 👇 24 صورة بمسارات مختلفة
+                var imagePaths = new List<string>
+                {
+                    "C:\\Users\\ahmed\\Downloads\\brand.png",
+                    "C:\\Users\\ahmed\\Downloads\\boxes.png",
+                    "C:\\Users\\ahmed\\Downloads\\weight.png",
+                    "C:\\Users\\ahmed\\Downloads\\calendar.png",
+                    "C:\\Users\\ahmed\\Downloads\\speedometer.png",
+                    "C:\\Users\\ahmed\\Downloads\\gas-station.png",
+                    "C:\\Users\\ahmed\\Downloads\\maximize.png",
+                    "C:\\Users\\ahmed\\Downloads\\hotel.png",
+                    "C:\\Users\\ahmed\\Downloads\\sofa.png",
+                    "C:\\Users\\ahmed\\Downloads\\membrane.png",
+                    "C:\\Users\\ahmed\\Downloads\\full-size.png",
+                    "C:\\Users\\ahmed\\Downloads\\writer.png",
+                    "C:\\Users\\ahmed\\Downloads\\language.png",
+                    "C:\\Users\\ahmed\\Downloads\\page.png",
+                    "C:\\Users\\ahmed\\Downloads\\maximize (1).png",
+                    "C:\\Users\\ahmed\\Downloads\\transmission.png",
+                    "C:\\Users\\ahmed\\Downloads\\display.png",
+                    "C:\\Users\\ahmed\\Downloads\\art.png",
+                    "C:\\Users\\ahmed\\Downloads\\candidate.png",
+                    "C:\\Users\\ahmed\\Downloads\\publishing.png",
+                    "C:\\Users\\ahmed\\Downloads\\age.png",
+                    "C:\\Users\\ahmed\\Downloads\\charging.png",
+                    "C:\\Users\\ahmed\\Downloads\\art (1).png",
+                    "C:\\Users\\ahmed\\Downloads\\dimensions.png"
+                };
+
+                var attributes = context.categoryAttributes
+                     .OrderBy(x => x.Id)
+                     .ToList();
+
+                int count = Math.Min(attributes.Count, imagePaths.Count);
+
+                for (int i = 0; i < count; i++)
+                {
+                    var path = imagePaths[i];
+
+                    if (File.Exists(path))
+                    {
+                        var imageBytes = File.ReadAllBytes(path);
+
+                        // منع التكرار
+                        if (attributes[i].Image == null || attributes[i].Image.Length == 0)
+                        {
+                            attributes[i].Image = imageBytes;
+                        }
+                    }
+                }
+
+                context.SaveChanges();
+            }
 
 
             // Configure the HTTP request pipeline.

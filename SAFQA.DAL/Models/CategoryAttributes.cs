@@ -13,6 +13,7 @@ namespace SAFQA.DAL.Models
         public int Id { get; set; }
         public string Name { get; set; }
         public DataTypes dataType { get; set; }
+        public byte[] Image { get; set; }
         public Unit unit { get; set; }
         public bool IsRequird { get; set; }
         public int? CategoryId { get; set; }

@@ -811,6 +811,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
                     Attributes = i.itemAttributesValues?.Select(attr => new ItemAttributeDto
                     {
                         CategoryAttributeId = attr.CategoryAttributeId,
+                        Image = attr.categoryAttributes.Image,
                         Value = attr.value
                     }).ToList()
                     ?? new List<ItemAttributeDto>()

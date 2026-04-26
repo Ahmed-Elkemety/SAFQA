@@ -9,6 +9,9 @@ namespace SAFQA.BLL.Dtos.SellerAppDto.AuctionDto
     public class ItemAttributeDto
     {
         public int CategoryAttributeId { get; set; }
+
+        public byte[] Image { get; set; }
+
         public string Value { get; set; }
     }
 }

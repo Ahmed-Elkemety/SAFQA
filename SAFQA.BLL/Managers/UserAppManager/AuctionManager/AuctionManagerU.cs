@@ -349,6 +349,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                         {
                             Id = attr.Id,
                             AttributeName = attr.categoryAttributes?.Name ?? "",
+                            Image = attr.categoryAttributes.Image,
                             Value = attr.value
                         }).ToList()
 
