@@ -421,6 +421,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
             var auctions = await _context.Auctions
                 .Where(a => a.Status != AuctionStatus.Finished)
                 .Include(a => a.auctionParticipations)
+                .Include(a => a.Seller) 
                 .ToListAsync();
 
             foreach (var auction in auctions)
@@ -440,23 +441,31 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                         .OrderByDescending(b => b.Date)
                         .FirstOrDefaultAsync();
 
-                    if (lastBid != null)
+                    if (lastBid != null && !string.IsNullOrEmpty(lastBid.UserId))
                     {
                         auction.WinnerUserId = lastBid.UserId;
                         auction.FinalPrice = lastBid.Amount;
 
-                        // 🚚 Delivery
-                        var delivery = new Delivery
-                        {
-                            Code = GenerateRandomCode(),
-                            Status = DeliveryStatus.Orderplaced,
-                            AuctionId = auction.Id,
-                            SellerId = auction.SellerId.Value,
-                            UserId = lastBid.UserId
-                        };
+                        if (auction.SellerId == null || auction.Seller == null)
+                            continue;
 
-                        _context.Delivery.Add(delivery);
-                        // 💰 WALLET (Buyer → Frozen)
+                        var existingDelivery = await _context.Delivery
+                         .AnyAsync(d => d.AuctionId == auction.Id);
+
+                        if (!existingDelivery)
+                        {
+                            var delivery = new Delivery
+                            {
+                                Code = GenerateRandomCode(),
+                                Status = DeliveryStatus.Orderplaced,
+                                AuctionId = auction.Id,
+                                SellerId = auction.SellerId.Value,
+                                UserId = lastBid.UserId
+                            };
+
+                            _context.Delivery.Add(delivery);
+                        }
+
                         var buyerWallet = await _context.Wallets
                             .FirstOrDefaultAsync(w => w.UserId == lastBid.UserId);
 
