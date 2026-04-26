@@ -49,6 +49,7 @@ namespace SAFQA.DAL.Models
 
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+        public bool IsEscrowReleased { get; set; } = false;
 
         public bool IsDeleted { get; set; }
         public string? DeletedAt { get; set; }

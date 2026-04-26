@@ -17,25 +17,30 @@ using SAFQA.DAL.Repository.Wallet;
 using SAFQA.BLL.Dtos.UserAppDto.HomeDto;
 using SAFQA.DAL.Repository.Category;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using SAFQA.BLL.Managers.SellerAppManager.Notification;
+using SAFQA.BLL.Managers.UserAppManager.NotificationService;
 
 namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
 {
-    public class AuctionManagerU:IAuctionManagerU
+    public class AuctionManagerU : IAuctionManagerU
     {
         private readonly SAFQA_Context _context;
         private readonly IAuctionRepository _auctionRepository;
         private readonly UserManager<User> _userManager;
         private readonly IWalletRepo _wallet;
         private readonly IcategoryRepo _category;
+        private readonly INotificationService _notification;
 
-        public AuctionManagerU(SAFQA_Context Context , IAuctionRepository auctionRepository , UserManager<User> userManager , IWalletRepo wallet,IcategoryRepo category)
+        public AuctionManagerU(SAFQA_Context Context , IAuctionRepository auctionRepository , UserManager<User> userManager , IWalletRepo wallet,IcategoryRepo category,INotificationService notification)
         {
             _context = Context;
             _auctionRepository = auctionRepository;
             _userManager = userManager;
             _wallet = wallet;
             _category = category;
+            _notification = notification;
         }
+
 
         public async Task<AuthResult> ReportAuctionAsync(string userId, CreateReportDto dto)
         {
@@ -310,11 +315,15 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                 StartDate = auction.StartDate,
                 EndDate = auction.EndDate,
 
-                StartingPrice = auction.StartingPrice,
-
+                CurrentPrice = auction.Status == AuctionStatus.Upcoming
+                                ? auction.StartingPrice
+                                : auction.Status == AuctionStatus.Finished
+                                    ? auction.FinalPrice
+                                    : auction.CurrentPrice,
                 TotalBids = auction.TotalBids,
 
                 SecurityDeposit = auction.SecurityDeposit,
+                BidIncrement = auction.BidIncrement,
 
                 SellerId = auction.SellerId ?? 0,
                 StoreName = auction.Seller?.StoreName ?? "",
@@ -397,30 +406,117 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
         {
             var now = DateTime.UtcNow;
 
-            var auctions = await _context.Auctions.ToListAsync();
+            var auctions = await _context.Auctions
+                .Where(a => a.Status != AuctionStatus.Finished) // 🔥 optimization
+                .Include(a => a.auctionParticipations)
+                .ToListAsync();
 
             foreach (var auction in auctions)
             {
+                var oldStatus = auction.Status;
+
                 if (now < auction.StartDate)
-                {
                     auction.Status = AuctionStatus.Upcoming;
-                }
+
                 else if (now >= auction.EndDate)
                 {
                     auction.Status = AuctionStatus.Finished;
+                    auction.UpdatedAt = DateTime.UtcNow;
+                    // 🥇 آخر Bid
+                    var lastBid = await _context.Bids
+                        .Where(b => b.AuctionId == auction.Id)
+                        .OrderByDescending(b => b.Date)
+                        .FirstOrDefaultAsync();
+
+                    if (lastBid != null)
+                    {
+                        auction.WinnerUserId = lastBid.UserId;
+                        auction.FinalPrice = lastBid.Amount;
+
+                        // 🚚 Delivery
+                        var delivery = new Delivery
+                        {
+                            Code = GenerateRandomCode(),
+                            Status = DeliveryStatus.Orderplaced,
+                            AuctionId = auction.Id,
+                            SellerId = auction.SellerId.Value,
+                            UserId = lastBid.UserId
+                        };
+
+                        _context.Delivery.Add(delivery);
+                        // 💰 WALLET (Buyer → Frozen)
+                        var buyerWallet = await _context.Wallets
+                            .FirstOrDefaultAsync(w => w.UserId == lastBid.UserId);
+
+                        var sellerWallet = await _context.Wallets
+                            .FirstOrDefaultAsync(w => w.UserId == auction.Seller.UserId);
+
+                        if (buyerWallet != null && sellerWallet != null)
+                        {
+                            var before = buyerWallet.Balance;
+
+                            buyerWallet.Balance -= auction.FinalPrice;
+                            buyerWallet.FrozenBalance += auction.FinalPrice;
+
+                            _context.Transactions.Add(new Transactions
+                            {
+                                Type = TransactionType.Purchase,
+                                Status = TransactionStatus.Completed,
+                                WalletId = buyerWallet.Id,
+                                Amount = auction.FinalPrice,
+                                BalanceBefore = before,
+                                BalanceAfter = buyerWallet.Balance,
+                                Description = $"Payment for Auction #{auction.Id}",
+                                CreatedAt = DateTime.UtcNow
+                            });
+                        }
+                    }
+
+
+                    // 👥 كل المشاركين
+                    var userIds = auction.auctionParticipations
+                        .Select(x => x.UserId)
+                        .Distinct()
+                        .ToList();
+
+                    // 🔔 Notification مخصوص للـ finish
+                    await _notification.SendAuctionFinishedNotification(
+                                    auction.Id,
+                                    auction.FinalPrice,
+                                    auction.WinnerUserId,
+                                    userIds
+                     
+                                    );
                 }
                 else
                 {
                     var timeLeft = auction.EndDate - now;
 
-                    if (timeLeft.TotalMinutes <= 10)
-                        auction.Status = AuctionStatus.EndingSoon;
-                    else
-                        auction.Status = AuctionStatus.Active;
+                    auction.Status = timeLeft.TotalMinutes <= 10
+                        ? AuctionStatus.EndingSoon
+                        : AuctionStatus.Active;
+                }
+
+                if (oldStatus != auction.Status && auction.Status != AuctionStatus.Finished)
+                {
+                    var userIds = auction.auctionParticipations
+                        .Select(x => x.UserId)
+                        .Distinct()
+                        .ToList();
+
+                    await _notification.SendAuctionStatusUpdated(
+                        auction.Id,
+                        auction.Status.ToString(),
+                        userIds
+                    );
                 }
             }
 
             await _context.SaveChangesAsync();
+        }
+        private string GenerateRandomCode()
+        {
+            return Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper();
         }
 
         public async Task<List<EndingSoonDto>> GetEndingSoonAsync(string userId, int page, int pageSize)
@@ -538,6 +634,5 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                 Message = "Favorite auctions retrieved successfully"
             }, result);
         }
-
     }
 }

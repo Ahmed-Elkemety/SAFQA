@@ -10,7 +10,6 @@ namespace SAFQA.DAL.Enums
     {
         Active = 1,
         Inactive = 2,
-        Suspended = 3,
-        Expired = 4
+        Expired = 3
     }
 }

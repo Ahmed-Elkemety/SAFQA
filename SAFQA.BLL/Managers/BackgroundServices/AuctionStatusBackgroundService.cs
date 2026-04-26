@@ -22,11 +22,12 @@ namespace SAFQA.BLL.Managers.BackgroundServices
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                using (var scope = _scopeFactory.CreateScope())
-                {
-                    var service = scope.ServiceProvider.GetRequiredService<IAuctionManagerU>();
-                    await service.UpdateAuctionStatusesAsync();
-                }
+                using var scope = _scopeFactory.CreateScope();
+
+                var manager = scope.ServiceProvider
+                    .GetRequiredService<IAuctionManagerU>();
+
+                await manager.UpdateAuctionStatusesAsync();
 
                 await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
             }

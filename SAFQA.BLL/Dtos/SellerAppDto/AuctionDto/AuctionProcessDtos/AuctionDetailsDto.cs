@@ -15,9 +15,10 @@ namespace SAFQA.BLL.Dtos.SellerAppDto.AuctionDto.AuctionProcessDtos
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 
-        public decimal StartingPrice { get; set; }
+        public decimal CurrentPrice { get; set; }
         public int TotalBids { get; set; }
         public decimal SecurityDeposit { get; set; }
+        public int BidIncrement { get; set; }
 
         public int SellerId { get; set; }
         public string StoreName { get; set; }
