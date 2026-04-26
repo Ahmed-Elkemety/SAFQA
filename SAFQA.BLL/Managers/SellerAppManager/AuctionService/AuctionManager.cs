@@ -491,7 +491,14 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
             if (errors.Any())
                 return new AuthResult { Errors = errors };
 
-
+            if((dto.EndDate - dto.StartDate).TotalDays < 1)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "Minimam Duration Of Auction 1 Day"
+                };
+            }
 
             var auction = new Auction
             {

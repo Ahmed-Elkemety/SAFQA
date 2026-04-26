@@ -389,6 +389,17 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
 
             if (wallet.Balance >= auction.SecurityDeposit)
             {
+                var auctionParticipation = new AuctionParticipations
+                {
+                    AuctionId = auctionId,
+                    UserId = userId,
+                    PatoicipationTime = DateTime.UtcNow
+                };
+
+                auction.ParticipationCount++;
+                await _auctionRepository.CreateAuctionParticipation(auctionParticipation);
+                await _auctionRepository.SaveChangesAsync();
+
                 return new AuthResult
                 {
                     IsSuccess = true,
@@ -408,7 +419,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
             var now = DateTime.UtcNow;
 
             var auctions = await _context.Auctions
-                .Where(a => a.Status != AuctionStatus.Finished) // 🔥 optimization
+                .Where(a => a.Status != AuctionStatus.Finished)
                 .Include(a => a.auctionParticipations)
                 .ToListAsync();
 
@@ -493,7 +504,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                 {
                     var timeLeft = auction.EndDate - now;
 
-                    auction.Status = timeLeft.TotalMinutes <= 10
+                    auction.Status = timeLeft.Hours <= 3
                         ? AuctionStatus.EndingSoon
                         : AuctionStatus.Active;
                 }

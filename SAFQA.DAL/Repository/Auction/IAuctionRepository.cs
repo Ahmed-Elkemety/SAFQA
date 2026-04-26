@@ -64,6 +64,7 @@ namespace SAFQA.DAL.Repository.Auction
                    decimal? maxPrice,
                    AuctionSortBy sortBy,
                    int? userCityId);
+        Task CreateAuctionParticipation(AuctionParticipations auctionParticipations);
 
     }
 }

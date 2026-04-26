@@ -493,11 +493,15 @@ namespace SAFQA.DAL.Repository.Auction
                 .Take(20)
                 .ToListAsync();
         }
-        
 
+        public async Task CreateAuctionParticipation(AuctionParticipations auctionParticipations)
+        {
+            await _context.auctionParticipations.AddAsync(auctionParticipations);
+        }
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
         }
+
     }
 }
