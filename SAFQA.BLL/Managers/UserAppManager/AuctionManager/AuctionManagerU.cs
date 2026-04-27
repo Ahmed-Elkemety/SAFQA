@@ -207,7 +207,6 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
 
             foreach (var a in auctions)
             {
-                // ✅ استبعاد الحالات المنتهية أو الملغية
                 if (a.Status == AuctionStatus.Finished || a.Status == AuctionStatus.Cancelled)
                 {
                     a.HotScore = 0;
@@ -229,7 +228,6 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
 
 
 
-                // 🟢 حالة 2 و 3 (مزاد شغال)
                 if (a.Status == AuctionStatus.Active || a.Status == AuctionStatus.EndingSoon)
                 {
                     priceGrowth = a.StartingPrice == 0 ? 0 :
@@ -239,7 +237,6 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                     ParticipationBoost = 0;
                 }
 
-                // 🟡 حالة 1 (مزاد جديد)
                 else if (a.Status == AuctionStatus.Upcoming)
                 {
                     priceGrowth = 0;
@@ -435,7 +432,6 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                 {
                     auction.Status = AuctionStatus.Finished;
                     auction.UpdatedAt = DateTime.UtcNow;
-                    // 🥇 آخر Bid
                     var lastBid = await _context.Bids
                         .Where(b => b.AuctionId == auction.Id)
                         .OrderByDescending(b => b.Date)

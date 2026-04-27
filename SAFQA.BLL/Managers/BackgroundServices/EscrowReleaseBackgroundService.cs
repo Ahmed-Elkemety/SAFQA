@@ -26,88 +26,126 @@ namespace SAFQA.BLL.Managers.BackgroundServices
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                await ProcessEscrowPayments();
+                try
+                {
+                    await ProcessEscrowPayments(stoppingToken);
+                }
+                catch (Exception ex)
+                {
+                    // تسجيل الخطأ العام للخدمة
+                    Console.WriteLine($"Critical BackgroundService Error: {ex.Message}");
+                }
 
+                // الانتظار لمدة 10 دقائق قبل الدورة القادمة
                 await Task.Delay(TimeSpan.FromMinutes(10), stoppingToken);
             }
         }
 
-        private async Task ProcessEscrowPayments()
+        private async Task ProcessEscrowPayments(CancellationToken cancellationToken)
         {
-            using var scope = _scopeFactory.CreateScope();
-
-            var context = scope.ServiceProvider.GetRequiredService<SAFQA_Context>();
-            var hub = scope.ServiceProvider.GetRequiredService<IHubContext<NotificationHub>>();
+            using var rootScope = _scopeFactory.CreateScope();
+            var rootContext = rootScope.ServiceProvider.GetRequiredService<SAFQA_Context>();
 
             var threeDaysAgo = DateTime.UtcNow.AddDays(-3);
 
-            var auctions = await context.Auctions
-                .Include(a => a.Seller)
-                .Include(a => a.disputes)
-                .Where(a =>
-                    a.Status == AuctionStatus.Finished &&
-                    !a.IsDeleted &&
-                    !a.IsEscrowReleased &&
-                    a.EndDate <= threeDaysAgo)
-                .ToListAsync();
+            var auctionIds = await rootContext.Auctions
+                .Where(a => a.Status == AuctionStatus.Finished &&
+                            !a.IsDeleted &&
+                            !a.IsEscrowReleased &&
+                            a.EndDate <= threeDaysAgo)
+                .Select(a => a.Id)
+                .Take(50) 
+                .ToListAsync(cancellationToken);
 
-            foreach (var auction in auctions)
+            if (!auctionIds.Any())
+                return;
+
+            foreach (var auctionId in auctionIds)
             {
-                if (auction.disputes.Any())
-                    continue;
+                using var innerScope = _scopeFactory.CreateScope();
+                var context = innerScope.ServiceProvider.GetRequiredService<SAFQA_Context>();
+                var hub = innerScope.ServiceProvider.GetRequiredService<IHubContext<NotificationHub>>();
 
-                if (string.IsNullOrEmpty(auction.WinnerUserId))
-                    continue;
+                using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
 
-                var buyerWallet = await context.Wallets
-                    .FirstOrDefaultAsync(w => w.UserId == auction.WinnerUserId);
-
-                var sellerWallet = await context.Wallets
-                    .FirstOrDefaultAsync(w => w.UserId == auction.Seller.UserId);
-
-                if (buyerWallet == null || sellerWallet == null)
-                    continue;
-
-                decimal amount = auction.FinalPrice;
-
-                buyerWallet.FrozenBalance -= amount;
-
-                var sellerBefore = sellerWallet.Balance;
-
-                sellerWallet.Balance += amount;
-                sellerWallet.UpdatedAt = DateTime.UtcNow;
-
-                // 🧾 Transaction
-                context.Transactions.Add(new Transactions
+                try
                 {
-                    Type = TransactionType.Sale,
-                    Status = TransactionStatus.Completed,
-                    WalletId = sellerWallet.Id,
-                    Amount = amount,
-                    BalanceBefore = sellerBefore,
-                    BalanceAfter = sellerWallet.Balance,
-                    Description = $"Sale from Auction #{auction.Id}",
-                    CreatedAt = DateTime.UtcNow
-                });
-                auction.IsEscrowReleased = true;
+                    var auction = await context.Auctions
+                        .Include(a => a.Seller)
+                        .Include(a => a.disputes)
+                        .FirstOrDefaultAsync(a => a.Id == auctionId, cancellationToken);
 
-                // 🔔 Seller Notification
+                    if (auction == null || auction.disputes.Any() || string.IsNullOrEmpty(auction.WinnerUserId))
+                    {
+                        await transaction.RollbackAsync(cancellationToken);
+                        continue;
+                    }
+
+                    var buyerWallet = await context.Wallets.FirstOrDefaultAsync(w => w.UserId == auction.WinnerUserId, cancellationToken);
+                    var sellerWallet = await context.Wallets.FirstOrDefaultAsync(w => w.UserId == auction.Seller.UserId, cancellationToken);
+
+                    if (buyerWallet == null || sellerWallet == null)
+                    {
+                        await transaction.RollbackAsync(cancellationToken);
+                        continue;
+                    }
+
+                    decimal amount = auction.FinalPrice;
+
+                    buyerWallet.FrozenBalance -= amount;
+
+                    var sellerBefore = sellerWallet.Balance;
+                    sellerWallet.Balance += amount;
+                    sellerWallet.UpdatedAt = DateTime.UtcNow;
+
+                    auction.IsEscrowReleased = true;
+
+                    context.Transactions.Add(new Transactions
+                    {
+                        Type = TransactionType.Sale,
+                        Status = TransactionStatus.Completed,
+                        WalletId = sellerWallet.Id,
+                        Amount = amount,
+                        BalanceBefore = sellerBefore,
+                        BalanceAfter = sellerWallet.Balance,
+                        Description = $"Escrow release for Auction #{auction.Id}",
+                        CreatedAt = DateTime.UtcNow
+                    });
+
+                    await context.SaveChangesAsync(cancellationToken);
+                    await transaction.CommitAsync(cancellationToken);
+
+                    await NotifyUsers(hub, auction, sellerWallet.Balance, amount);
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                    Console.WriteLine($"Error processing Auction {auctionId}: {ex.Message}");
+                }
+            }
+        }
+
+        private async Task NotifyUsers(IHubContext<NotificationHub> hub, Auction auction, decimal newBalance, decimal amount)
+        {
+            try
+            {
                 await hub.Clients.Group($"user-{auction.Seller.UserId}")
-                     .SendAsync("WalletUpdated", new
-                     {
-                         message = $"+{amount} received from Auction #{auction.Id}",
-                         balance = sellerWallet.Balance
-                     });
+                    .SendAsync("WalletUpdated", new
+                    {
+                        message = $"+{amount} received from Auction #{auction.Id}",
+                        balance = newBalance
+                    });
 
-                // 🔔 Buyer Notification
                 await hub.Clients.Group($"user-{auction.WinnerUserId}")
                     .SendAsync("PaymentReleased", new
                     {
                         message = $"Payment released for Auction #{auction.Id}"
                     });
             }
-
-            await context.SaveChangesAsync();
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Notification Error: {ex.Message}");
+            }
         }
     }
 }

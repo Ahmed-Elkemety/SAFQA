@@ -32,7 +32,7 @@ namespace SAFQA.BLL.Managers.RecommendationAI
                 throw new Exception("User not found");
             }
 
-            var url = $"https://celtic-ira-consists-freelance.trycloudflare.com/recommend/{userId}?n={n}";
+            var url = $"https://file-defining-proposed-belkin.trycloudflare.com/recommend/{userId}?n={n}";
 
             var response = await _httpClient.GetAsync(url);
 
@@ -41,9 +41,9 @@ namespace SAFQA.BLL.Managers.RecommendationAI
 
             var json = await response.Content.ReadAsStringAsync();
 
-            var result = JsonConvert.DeserializeObject<RecommendationResponse>(json);
+            var result = JsonConvert.DeserializeObject<List<RecommendationDto>>(json);
 
-            return result?.Recommendations ?? new List<RecommendationDto>();
+            return result ?? new List<RecommendationDto>();
         }
     }
 }
