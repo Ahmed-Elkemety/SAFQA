@@ -32,7 +32,7 @@ namespace SAFQA.BLL.Managers.RecommendationAI
                 throw new Exception("User not found");
             }
 
-            var url = $"https://file-defining-proposed-belkin.trycloudflare.com/recommend/{userId}?n={n}";
+            var url = $"https://rapidly-twisted-dimensions-jelsoft.trycloudflare.com/recommend/{userId}?n={n}";
 
             var response = await _httpClient.GetAsync(url);
 

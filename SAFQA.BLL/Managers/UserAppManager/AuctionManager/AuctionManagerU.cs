@@ -413,123 +413,189 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
 
         public async Task UpdateAuctionStatusesAsync()
         {
-            var now = DateTime.UtcNow;
-
-            var auctions = await _context.Auctions
-                .Where(a => a.Status != AuctionStatus.Finished)
-                .Include(a => a.auctionParticipations)
-                .Include(a => a.Seller) 
-                .ToListAsync();
-
-            foreach (var auction in auctions)
+            try
             {
-                var oldStatus = auction.Status;
+                var now = DateTime.UtcNow;
 
-                if (now < auction.StartDate)
-                    auction.Status = AuctionStatus.Upcoming;
-
-                else if (now >= auction.EndDate)
-                {
-                    auction.Status = AuctionStatus.Finished;
-                    auction.UpdatedAt = DateTime.UtcNow;
-                    var lastBid = await _context.Bids
-                        .Where(b => b.AuctionId == auction.Id)
-                        .OrderByDescending(b => b.Date)
-                        .FirstOrDefaultAsync();
-
-                    if (lastBid != null && !string.IsNullOrEmpty(lastBid.UserId))
+                // ✂️ 1. بيانات خفيفة
+                var auctionsData = await _context.Auctions
+                    .Where(a => a.Status != AuctionStatus.Finished)
+                    .Select(a => new
                     {
-                        auction.WinnerUserId = lastBid.UserId;
-                        auction.FinalPrice = lastBid.Amount;
+                        a.Id,
+                        a.StartDate,
+                        a.EndDate,
+                        a.Status,
+                        a.SellerId,
+                        SellerUserId = a.Seller.UserId
+                    })
+                    .ToListAsync();
 
-                        if (auction.SellerId == null || auction.Seller == null)
-                            continue;
+                if (!auctionsData.Any())
+                    return;
 
-                        var existingDelivery = await _context.Delivery
-                         .AnyAsync(d => d.AuctionId == auction.Id);
+                var auctionIds = auctionsData.Select(a => a.Id).ToList();
 
-                        if (!existingDelivery)
+                // 🧠 2. نجيب الـ Auctions tracked مرة واحدة
+                var trackedAuctions = await _context.Auctions
+                    .Where(a => auctionIds.Contains(a.Id))
+                    .ToDictionaryAsync(a => a.Id);
+
+                // ⚡ 3. آخر Bid لكل Auction
+                var lastBids = await _context.Bids
+                    .Where(b => auctionIds.Contains(b.AuctionId.Value))
+                    .GroupBy(b => b.AuctionId)
+                    .Select(g => g.OrderByDescending(b => b.Date).FirstOrDefault())
+                    .ToListAsync();
+
+                // ⚡ 4. كل UserIds
+                var userIds = lastBids
+                    .Where(b => b != null && b.UserId != null)
+                    .Select(b => b.UserId)
+                    .Concat(auctionsData.Select(a => a.SellerUserId))
+                    .Where(x => x != null)
+                    .Distinct()
+                    .ToList();
+
+                // ⚡ 5. Wallets
+                var wallets = await _context.Wallets
+                    .Where(w => userIds.Contains(w.UserId))
+                    .ToDictionaryAsync(w => w.UserId);
+
+                // ⚡ 6. المشاركين
+                var participations = await _context.auctionParticipations
+                    .Where(p => auctionIds.Contains(p.AuctionId))
+                    .GroupBy(p => p.AuctionId)
+                    .ToDictionaryAsync(
+                        g => g.Key,
+                        g => g.Select(x => x.UserId).Distinct().ToList()
+                    );
+
+                // ⚡ 7. Delivery الموجودة
+                var existingDeliveries = (await _context.Delivery
+                    .Where(d => auctionIds.Contains(d.AuctionId))
+                    .Select(d => d.AuctionId)
+                    .ToListAsync())
+                    .ToHashSet();
+
+                // 🔥 تحسين الأداء
+                _context.ChangeTracker.AutoDetectChangesEnabled = false;
+
+                int batchSize = 20;
+                int counter = 0;
+
+                // 🔁 8. Loop
+                foreach (var a in auctionsData)
+                {
+                    if (!trackedAuctions.TryGetValue(a.Id, out var auction))
+                        continue;
+
+                    var oldStatus = auction.Status;
+
+                    if (now < a.StartDate)
+                    {
+                        auction.Status = AuctionStatus.Upcoming;
+                    }
+                    else if (now >= a.EndDate)
+                    {
+                        auction.Status = AuctionStatus.Finished;
+                        auction.UpdatedAt = now;
+
+                        var lastBid = lastBids.FirstOrDefault(b => b.AuctionId == a.Id);
+
+                        if (lastBid != null && !string.IsNullOrEmpty(lastBid.UserId))
                         {
-                            var delivery = new Delivery
-                            {
-                                Code = GenerateRandomCode(),
-                                Status = DeliveryStatus.Orderplaced,
-                                AuctionId = auction.Id,
-                                SellerId = auction.SellerId.Value,
-                                UserId = lastBid.UserId
-                            };
+                            auction.WinnerUserId = lastBid.UserId;
+                            auction.FinalPrice = lastBid.Amount;
 
-                            _context.Delivery.Add(delivery);
+                            // ✅ Delivery
+                            if (a.SellerId != null && !existingDeliveries.Contains(a.Id))
+                            {
+                                _context.Delivery.Add(new Delivery
+                                {
+                                    Code = GenerateRandomCode(),
+                                    Status = DeliveryStatus.Orderplaced,
+                                    AuctionId = a.Id,
+                                    SellerId = a.SellerId.Value,
+                                    UserId = lastBid.UserId
+                                });
+                            }
+
+                            // ✅ Wallets
+                            if (wallets.TryGetValue(lastBid.UserId, out var buyerWallet) &&
+                                wallets.TryGetValue(a.SellerUserId, out var sellerWallet))
+                            {
+                                var before = buyerWallet.Balance;
+
+                                buyerWallet.Balance -= lastBid.Amount;
+                                buyerWallet.FrozenBalance += lastBid.Amount;
+
+                                _context.Transactions.Add(new Transactions
+                                {
+                                    Type = TransactionType.Purchase,
+                                    Status = TransactionStatus.Completed,
+                                    WalletId = buyerWallet.Id,
+                                    Amount = lastBid.Amount,
+                                    BalanceBefore = before,
+                                    BalanceAfter = buyerWallet.Balance,
+                                    Description = $"Payment for Auction #{a.Id}",
+                                    CreatedAt = now
+                                });
+                            }
                         }
 
-                        var buyerWallet = await _context.Wallets
-                            .FirstOrDefaultAsync(w => w.UserId == lastBid.UserId);
-
-                        var sellerWallet = await _context.Wallets
-                            .FirstOrDefaultAsync(w => w.UserId == auction.Seller.UserId);
-
-                        if (buyerWallet != null && sellerWallet != null)
+                        // 🔔 Notification finish
+                        if (participations.TryGetValue(a.Id, out var users))
                         {
-                            var before = buyerWallet.Balance;
+                            await _notification.SendAuctionFinishedNotification(
+                                a.Id,
+                                auction.FinalPrice,
+                                auction.WinnerUserId,
+                                users
+                            );
+                        }
+                    }
+                    else
+                    {
+                        var timeLeft = a.EndDate - now;
 
-                            buyerWallet.Balance -= auction.FinalPrice;
-                            buyerWallet.FrozenBalance += auction.FinalPrice;
+                        auction.Status = timeLeft.TotalHours <= 3
+                            ? AuctionStatus.EndingSoon
+                            : AuctionStatus.Active;
+                    }
 
-                            _context.Transactions.Add(new Transactions
-                            {
-                                Type = TransactionType.Purchase,
-                                Status = TransactionStatus.Completed,
-                                WalletId = buyerWallet.Id,
-                                Amount = auction.FinalPrice,
-                                BalanceBefore = before,
-                                BalanceAfter = buyerWallet.Balance,
-                                Description = $"Payment for Auction #{auction.Id}",
-                                CreatedAt = DateTime.UtcNow
-                            });
+                    // 🔔 Status change
+                    if (oldStatus != auction.Status && auction.Status != AuctionStatus.Finished)
+                    {
+                        if (participations.TryGetValue(a.Id, out var users))
+                        {
+                            await _notification.SendAuctionStatusUpdated(
+                                a.Id,
+                                auction.Status.ToString()
+                            );
                         }
                     }
 
+                    counter++;
 
-                    // 👥 كل المشاركين
-                    var userIds = auction.auctionParticipations
-                        .Select(x => x.UserId)
-                        .Distinct()
-                        .ToList();
-
-                    // 🔔 Notification مخصوص للـ finish
-                    await _notification.SendAuctionFinishedNotification(
-                                    auction.Id,
-                                    auction.FinalPrice,
-                                    auction.WinnerUserId,
-                                    userIds
-                     
-                                    );
-                }
-                else
-                {
-                    var timeLeft = auction.EndDate - now;
-
-                    auction.Status = timeLeft.Hours <= 3
-                        ? AuctionStatus.EndingSoon
-                        : AuctionStatus.Active;
+                    // 💥 Save على دفعات
+                    if (counter % batchSize == 0)
+                    {
+                        await _context.SaveChangesAsync();
+                        _context.ChangeTracker.Clear();
+                    }
                 }
 
-                if (oldStatus != auction.Status && auction.Status != AuctionStatus.Finished)
-                {
-                    var userIds = auction.auctionParticipations
-                        .Select(x => x.UserId)
-                        .Distinct()
-                        .ToList();
+                // آخر batch
+                await _context.SaveChangesAsync();
+                _context.ChangeTracker.Clear();
 
-                    await _notification.SendAuctionStatusUpdated(
-                        auction.Id,
-                        auction.Status.ToString(),
-                        userIds
-                    );
-                }
+                _context.ChangeTracker.AutoDetectChangesEnabled = true;
             }
-
-            await _context.SaveChangesAsync();
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in UpdateAuctionStatusesAsync: {ex.Message}");
+            }
         }
         private string GenerateRandomCode()
         {

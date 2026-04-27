@@ -26,20 +26,23 @@ namespace SAFQA.BLL.Managers.UserAppManager.BidService
     {
         private readonly SAFQA_Context _context;
         private readonly INotificationService _notification;
+        private readonly IHubContext<NotificationHub> _hub;
 
-        // 🔒 Lock per Auction
         private static readonly ConcurrentDictionary<int, SemaphoreSlim> _locks = new();
 
-        public BidService(SAFQA_Context context, INotificationService notification)
+        public BidService(
+            SAFQA_Context context,
+            INotificationService notification,
+            IHubContext<NotificationHub> hub)
         {
             _context = context;
             _notification = notification;
+            _hub = hub;
         }
 
         public async Task PlaceManualBid(string userId, int auctionId, decimal amount)
         {
             var auctionLock = _locks.GetOrAdd(auctionId, _ => new SemaphoreSlim(1, 1));
-
             await auctionLock.WaitAsync();
 
             decimal manualPrice = amount;
@@ -60,14 +63,13 @@ namespace SAFQA.BLL.Managers.UserAppManager.BidService
                 if (auction.EndDate <= DateTime.UtcNow)
                     throw new Exception("Auction is closed");
 
-                // 💰 WALLET CHECK (Manual)
                 if (!await HasEnoughBalance(userId, amount))
                     throw new Exception("Insufficient balance");
 
                 if (amount < auction.CurrentPrice + auction.BidIncrement)
                     throw new Exception("Outbid - price changed");
 
-                // ✅ Manual Bid
+                // Manual Bid
                 _context.Bids.Add(new Bid
                 {
                     UserId = userId,
@@ -76,11 +78,12 @@ namespace SAFQA.BLL.Managers.UserAppManager.BidService
                     Type = BidType.Manual,
                     Date = DateTime.UtcNow
                 });
+
                 auction.TotalBids++;
                 auction.CurrentPrice = amount;
                 auction.UpdatedAt = DateTime.UtcNow;
 
-                // 🤖 Proxy Logic
+                // Proxy
                 (finalPrice, hasProxy) = await HandleProxyTop2(auctionId, userId, amount);
 
                 auction.CurrentPrice = finalPrice;
@@ -93,15 +96,29 @@ namespace SAFQA.BLL.Managers.UserAppManager.BidService
                 auctionLock.Release();
             }
 
+            // 🔥 بعد الـ commit مباشرة
             await _notification.SendAuctionNotification(auctionId, manualPrice, "manual");
 
             if (hasProxy)
             {
                 await _notification.SendAuctionNotification(auctionId, finalPrice, "auto");
             }
+
+            // 🔥 SignalR push مباشر (اختياري لكن أفضل)
+            await _hub.Clients
+                .Group($"auction-{auctionId}")
+                .SendAsync("ReceiveBid", new
+                {
+                    auctionId,
+                    price = finalPrice,
+                    type = hasProxy ? "auto" : "manual"
+                });
         }
 
-        private async Task<(decimal price, bool hasProxy)> HandleProxyTop2(int auctionId, string manualUserId, decimal currentPrice)
+        private async Task<(decimal price, bool hasProxy)> HandleProxyTop2(
+            int auctionId,
+            string manualUserId,
+            decimal currentPrice)
         {
             var proxies = await _context.proxyBiddings
                 .Where(p => p.AuctionId == auctionId && p.Status == ProxyStatus.Active)
@@ -114,11 +131,9 @@ namespace SAFQA.BLL.Managers.UserAppManager.BidService
 
             var first = proxies[0];
 
-            // لو نفس اليوزر → مفيش Proxy
             if (first.UserId == manualUserId)
                 return (currentPrice, false);
 
-            // 💰 WALLET CHECK (Proxy Owner)
             if (!await HasEnoughBalance(first.UserId, first.Max))
             {
                 first.Status = ProxyStatus.Expired;
@@ -144,7 +159,6 @@ namespace SAFQA.BLL.Managers.UserAppManager.BidService
                 newPrice = second.Max + first.Step;
             }
 
-
             if (newPrice > first.Max)
             {
                 newPrice = first.Max;
@@ -160,7 +174,6 @@ namespace SAFQA.BLL.Managers.UserAppManager.BidService
                 ProxyBiddingId = first.Id,
                 Date = DateTime.UtcNow
             });
-            first.auction.TotalBids++;
 
             return (newPrice, true);
         }
@@ -170,10 +183,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.BidService
             var wallet = await _context.Wallets
                 .FirstOrDefaultAsync(w => w.UserId == userId);
 
-            if (wallet == null)
-                return false;
-
-            return wallet.Balance >= amount;
+            return wallet != null && wallet.Balance >= amount;
         }
     }
 }

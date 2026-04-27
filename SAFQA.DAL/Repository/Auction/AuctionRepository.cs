@@ -177,6 +177,20 @@ namespace SAFQA.DAL.Repository.Auction
             _context.SaveChanges();
         }
 
+        public async Task MarkAsDeletedAsync(Models.Auction auction)
+        {
+            var existing = await _context.Auctions.FindAsync(auction.Id);
+
+            if (existing == null)
+                return;
+
+            existing.IsDeleted = auction.IsDeleted;
+            existing.DeletedAt = auction.DeletedAt;
+            existing.Status = auction.Status;
+
+            await _context.SaveChangesAsync();
+        }
+
         public void Delete(Models.Auction auction)
         {
             _context.Auctions.Remove(auction);

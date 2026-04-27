@@ -8,7 +8,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.NotificationService
 {
     public interface INotificationService
     {
-        Task SendAuctionStatusUpdated(int auctionId, string status, List<string> userIds);
+        Task SendAuctionStatusUpdated(int auctionId, string status);
         Task SendAuctionNotification(int auctionId, decimal price, string type);
         Task SendAuctionFinishedNotification(int id, decimal finalPrice, string? winnerUserId, List<string> userIds);
     }

@@ -65,30 +65,40 @@ namespace SAFQA.BLL.Managers.UserAppManager.NotificationService
             await _context.SaveChangesAsync();
         }
 
-        public async Task SendAuctionStatusUpdated(int auctionId, string status, List<string> userIds)
+        public async Task SendAuctionStatusUpdated(int auctionId, string status)
         {
-            // ✅ 1. Real-time via SignalR
-            await _hub.Clients.Group($"auction-{auctionId}")
+            // ✅ 1. Get users from AuctionParticipations
+            var userIds = await _context.auctionParticipations
+                .Where(p => p.AuctionId == auctionId)
+                .Select(p => p.UserId)
+                .Distinct()
+                .ToListAsync();
+
+            // ✅ 2. Real-time SignalR (only active connected users in group)
+            await _hub.Clients
+                .Group($"auction-{auctionId}")
                 .SendAsync("AuctionStatusUpdated", new
                 {
                     auctionId,
                     status
                 });
 
-            // ✅ 2. Save in DB (for offline users)
-            foreach (var userId in userIds)
+            // ✅ 3. Save notifications for offline users
+            if (userIds.Any())
             {
-                _context.Notifications.Add(new Notification
+                var notifications = userIds.Select(userId => new Notification
                 {
                     Title = "Auction Update",
                     Message = $"Auction is now {status}",
                     UserId = userId,
                     CreatedAt = DateTime.UtcNow,
-                    IsRead = false
+                    IsRead = false,
+                    notificationType = NotificationTypes.AuctionsActivity
                 });
-            }
 
-            await _context.SaveChangesAsync();
+                await _context.Notifications.AddRangeAsync(notifications);
+                await _context.SaveChangesAsync();
+            }
         }
 
         public async Task SendAuctionNotification(int auctionId, decimal price, string type)
@@ -98,6 +108,9 @@ namespace SAFQA.BLL.Managers.UserAppManager.NotificationService
                 .Select(b => b.UserId)
                 .Distinct()
                 .ToListAsync();
+
+            if (!users.Any())
+                return;
 
             var title = type == "auto" ? "Auto Bid" : "New Bid";
 
@@ -114,7 +127,6 @@ namespace SAFQA.BLL.Managers.UserAppManager.NotificationService
             await _context.Notifications.AddRangeAsync(notifications);
             await _context.SaveChangesAsync();
 
-            // 📡 SignalR
             await _hub.Clients
                 .Group($"auction-{auctionId}")
                 .SendAsync("ReceiveBid", new

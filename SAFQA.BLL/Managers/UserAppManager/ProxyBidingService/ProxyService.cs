@@ -10,6 +10,7 @@ using SAFQA.DAL.Database;
 using SAFQA.DAL.Enums;
 using SAFQA.DAL.Models;
 using SAFQA.DAL.Repository.ProxyBiding;
+using SAFQA.DAL.Repository.Wallet;
 
 namespace SAFQA.BLL.Managers.UserAppManager.ProxyBidingService
 {
@@ -17,11 +18,13 @@ namespace SAFQA.BLL.Managers.UserAppManager.ProxyBidingService
     {  
         private readonly IProxyRepository _repo;
         private readonly SAFQA_Context _context;
+        private readonly IWalletRepo _wallet;
 
-        public ProxyService(IProxyRepository repo,SAFQA_Context context)
+        public ProxyService(IProxyRepository repo,SAFQA_Context context,IWalletRepo wallet)
         {
             _repo = repo;
             _context = context;
+            _wallet = wallet;
         }
 
         public async Task<AuthResult> ActivateAsync(int auctionId, string userId)
@@ -77,6 +80,32 @@ namespace SAFQA.BLL.Managers.UserAppManager.ProxyBidingService
         public async Task<AuthResult> CreateAsync(CreateProxyDto dto, string userId)
         {
             var existing = await _repo.GetAsync(dto.AuctionId, userId);
+            var walletuser = _wallet.GetByIdd(userId);
+            if (walletuser == null)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "Wallet not found"
+                };
+            }
+            if (walletuser.Balance < dto.Max)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "Insufficient balance"
+                };
+            }
+
+            if(walletuser.Balance < dto.Max)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "Insufficient balance"
+                };
+            }
 
             if (existing != null)
             {

@@ -27,6 +27,7 @@ namespace SAFQA.DAL.Repository.Auction
         IQueryable<Models.Auction> GetSellerAuctions(string userId);
         void Add(Models.Auction auction);
         void Update(Models.Auction auction);
+        Task MarkAsDeletedAsync(Models.Auction auction);
         void Delete(Models.Auction auction);
         Task AddAsync(Models.Auction auction);
         Task<Models.Auction?> GetByIdWithDetailsAsync(int auctionId);

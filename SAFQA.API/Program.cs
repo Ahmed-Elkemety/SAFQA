@@ -136,14 +136,16 @@ namespace SAFQA.API
             builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddScoped<IDeliveryService, DeliveryService>();
             builder.Services.AddScoped<IDeliveryRepo, DeliveryRepo>();
-            builder.Services.AddHostedService<HotScoreBackgroundService>();
             builder.Services.AddSignalR();
             builder.Services.AddScoped<INotificationService, NotificationService>();
-            builder.Services.AddHostedService<AuctionStatusBackgroundService>();
             builder.Services.AddScoped<IBidService, BidService>();
             builder.Services.AddScoped<IProxyRepository, ProxyRepository>();
             builder.Services.AddScoped<IProxyService, ProxyService>();
+            builder.Services.AddHostedService<HotScoreBackgroundService>();
+            builder.Services.AddHostedService<AuctionStatusBackgroundService>();
             builder.Services.AddHostedService<EscrowReleaseBackgroundService>();
+            builder.Services.AddHostedService<ExpiredOtpCleanupService>();
+
 
 
 
@@ -257,7 +259,6 @@ namespace SAFQA.API
                     });
             });
 
-            builder.Services.AddHostedService<ExpiredOtpCleanupService>();
 
             var app = builder.Build();
 
