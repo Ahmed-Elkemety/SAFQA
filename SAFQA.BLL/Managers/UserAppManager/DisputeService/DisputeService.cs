@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using SAFQA.BLL.Dtos.UserAppDto.ChatDto;
 using SAFQA.BLL.Dtos.UserAppDto.DisputeDto;
 using SAFQA.BLL.Managers.AccountManager.Auth;
@@ -7,6 +8,7 @@ using SAFQA.BLL.Managers.UserAppManager.ConversationService;
 using SAFQA.DAL.Enums;
 using SAFQA.DAL.Models;
 using SAFQA.DAL.Repository.Auction;
+using SAFQA.DAL.Repository.Delivery;
 using SAFQA.DAL.Repository.Dispute;
 using SAFQA.DAL.Repository.Seller;
 using SAFQA.DAL.Repository.Users;
@@ -25,6 +27,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
         private readonly IUserRepo _userRepo;
         private readonly IsellerRepo _sellerRepo;
         private readonly IChatService _chatService;
+        private readonly IDeliveryRepo _deliveryRepo;
         private readonly IHubContext<ChatHub> _hub;
         public DisputeService(
             IDiputeRepo disputeRepo,
@@ -32,6 +35,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
             IUserRepo userRepo,
             IsellerRepo sellerRepo,
             IChatService chatService,
+            IDeliveryRepo deliveryRepo,
             IHubContext<ChatHub> hub)
         {
             _disputeRepo = disputeRepo;
@@ -39,6 +43,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
             _userRepo = userRepo;
             _sellerRepo = sellerRepo;
             _chatService = chatService;
+            _deliveryRepo = deliveryRepo;
             _hub = hub;
         }
 
@@ -48,6 +53,11 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
             var auction = _auctionRepo.GetById(dto.AuctionId);
             if (auction == null)
                 throw new Exception("Auction not found");
+
+            var delivery = await _deliveryRepo.GetByAuctionIdAsync(auction.Id);
+
+            if (delivery == null)
+                throw new Exception("No delivery found for this auction");
 
             var user = _userRepo.GetById(userId);
             if (user == null)
@@ -81,14 +91,14 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
                 Reason = dto.Description,
                 ResolutionType = dto.ResolutionType,
                 Evidences = evidenceBytes,
-                Status = DisputeStatus.UnderReview,
+                Status = DisputeStatus.Open,
                 Date = DateTime.UtcNow,
                 UserId = userId,
-                AuctionId = auction.Id
+                AuctionId = auction.Id,
+                DeliveryId = delivery.Id
             };
 
             _disputeRepo.Add(dispute);
-
             var conversation = _chatService.GetOrCreateConversation(dispute.Id, userId);
 
             await _hub.Clients
@@ -138,5 +148,53 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
             }, result);
         }
 
+
+        public async Task<DisputeTrackingDto> GetDisputeTracking(int disputeId)
+        {
+            var dispute = _disputeRepo.GetAll()
+                .FirstOrDefault(d => d.Id == disputeId);
+
+            if (dispute == null)
+                throw new Exception("Dispute not found");
+
+            dispute.Status = DisputeStatus.Open;
+
+            string statusText = dispute.Status switch
+            {
+                DisputeStatus.Open => "Waiting for seller",
+                DisputeStatus.Negotiation => "Negotiation",
+                DisputeStatus.UnderReview => "Admin Review",
+                DisputeStatus.Resolved => "Resolved",
+                _ => "Rejected"
+            };
+
+
+            var deadline = dispute.Date.AddDays(3);
+            var remaining = deadline - DateTime.UtcNow;
+
+            int days = remaining > TimeSpan.Zero ? remaining.Days : 0;
+            int hours = remaining > TimeSpan.Zero ? remaining.Hours : 0;
+            int minutes = remaining > TimeSpan.Zero ? remaining.Minutes : 0;
+
+            bool isExpired = remaining <= TimeSpan.Zero;
+
+            bool canChat = !isExpired;
+            bool canEscalate = isExpired;
+            bool canCancel = true;
+
+            return new DisputeTrackingDto
+            {
+                DisputeId = dispute.Id,
+                Status = statusText,
+
+                Days = days,
+                Hours = hours,
+                Minutes = minutes,
+
+                CanChat = canChat,
+                CanEscalate = canEscalate,
+                CanCancel = canCancel
+            };
+        }
     }
 }

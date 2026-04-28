@@ -44,6 +44,7 @@ using SAFQA.DAL.Repository.Location;
 using SAFQA.DAL.Repository.Message;
 using SAFQA.DAL.Repository.Notification;
 using SAFQA.DAL.Repository.ProxyBiding;
+using SAFQA.DAL.Repository.OrderTrack;
 using SAFQA.DAL.Repository.Review;
 using SAFQA.DAL.Repository.Seller;
 using SAFQA.DAL.Repository.Transaction;
@@ -147,6 +148,7 @@ namespace SAFQA.API
             builder.Services.AddScoped<IReviewService, ReviewService>();
             builder.Services.AddHttpClient<IRecommendationAI, RecommendationAI>();
             builder.Services.AddScoped<IOrderService, OrderService>();
+            builder.Services.AddScoped<IOrderRepo, OrderRepo>();
             builder.Services.AddScoped<IDeliveryService, DeliveryService>();
             builder.Services.AddScoped<IDeliveryRepo, DeliveryRepo>();
             builder.Services.AddSignalR();

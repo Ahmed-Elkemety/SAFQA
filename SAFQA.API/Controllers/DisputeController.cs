@@ -17,7 +17,9 @@ namespace SAFQA.API.Controllers
         {
             _disputeService = disputeService;
         }
-        [Authorize("USER")]
+
+
+        [Authorize(Roles = "USER")]
         [HttpPost("create")]
         public async Task<IActionResult> CreateDispute([FromBody] CreateDisputeDto dto)
         {
@@ -61,6 +63,22 @@ namespace SAFQA.API.Controllers
                 result.Item1,
                 Reports = result.Item2
             });
+        }
+
+        [Authorize(Roles = "USER")]
+        [HttpGet("tracking/{disputeId}")]
+        public async Task<IActionResult> GetDisputeTracking(int disputeId)
+        {
+            try
+            {
+                var result = await _disputeService.GetDisputeTracking(disputeId);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }
