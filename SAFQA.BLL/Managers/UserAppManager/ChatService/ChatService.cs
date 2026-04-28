@@ -56,6 +56,8 @@ namespace SAFQA.BLL.Managers.UserAppManager.ConversationService
             if (seller == null)
                 throw new Exception("Seller not found");
 
+            // UserId --->  1c2bdfb8-0fc3-4645-9f40-e5de69bc4dc8
+            // SellerId ---> 8c5884bf-cd45-4740-87d8-e7c40e8f7098
             var buyerId = dispute.UserId;
             var sellerId = seller.UserId;
 
@@ -118,6 +120,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.ConversationService
             conversation.LastMessageAt = DateTime.UtcNow;
             _conversationRepo.Update(conversation);
 
+            await HandleDisputeStateTransition(conversation, dto.SenderId);
 
             await _hub.Clients
                 .Group(dto.ConversationId.ToString())
@@ -128,6 +131,34 @@ namespace SAFQA.BLL.Managers.UserAppManager.ConversationService
                     content = dto.Content,
                     createdAt = message.CreatedAt
                 });
+        }
+
+        private async Task HandleDisputeStateTransition(Conversation conversation, string senderId)
+        {
+            if (conversation.DisputeId == null)
+                return;
+
+            var dispute = _disputeRepo.GetById(conversation.DisputeId);
+
+            if (dispute == null)
+                return;
+
+            if (dispute.Status != DisputeStatus.Open)
+                return;
+
+ 
+            var auction = _auctionRepo.GetById(dispute.AuctionId);
+            var seller = _sellerRepo.GetAll()
+                .FirstOrDefault(s => s.Id == auction.SellerId);
+
+            if (seller == null)
+                return;
+
+            if (senderId == seller.UserId)
+            {
+                dispute.Status = DisputeStatus.Negotiation;
+                _disputeRepo.Update(dispute);
+            }
         }
     }
 }

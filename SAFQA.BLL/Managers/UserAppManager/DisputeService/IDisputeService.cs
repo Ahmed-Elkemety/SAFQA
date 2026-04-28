@@ -13,6 +13,6 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
     {
         Task<ConversationDto> CreateDispute(string userId, CreateDisputeDto dto);
         Task<(AuthResult, List<DisputeDto>)> GetUserReports(string userId);
-
+        Task<DisputeTrackingDto> GetDisputeTracking(int disputeId);
     }
 }

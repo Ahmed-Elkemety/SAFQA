@@ -9,6 +9,9 @@ namespace SAFQA.DAL.Repository.Delivery
 {
     public interface IDeliveryRepo
     {
+        IQueryable<Models.Delivery> GetAll();
+        Models.Delivery GetById(int id);
+        Models.Delivery GetByIdd(string userId);
         Task<List<Models.Delivery>> GetDeliveries(string sellerId);
         Task AddAsync(LoginOtp otp);
         Task<LoginOtp?> GetLatestValidOtpAsync(string userId);

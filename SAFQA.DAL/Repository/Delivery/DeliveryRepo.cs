@@ -9,7 +9,7 @@ using SAFQA.DAL.Models;
 
 namespace SAFQA.DAL.Repository.Delivery
 {
-    public class DeliveryRepo:IDeliveryRepo
+    public class DeliveryRepo : IDeliveryRepo
     {
         private readonly SAFQA_Context _context;
 
@@ -24,6 +24,18 @@ namespace SAFQA.DAL.Repository.Delivery
                 .Include(d => d.User)
                 .Include(d => d.Auction)
                 .ToListAsync();
+        }
+        public IQueryable<Models.Delivery> GetAll()
+        {
+            return _context.Delivery;
+        }
+        public Models.Delivery GetById(int id)
+        {
+            return _context.Delivery.FirstOrDefault(c => c.Id == id);
+        }
+        public Models.Delivery GetByIdd(string userId)
+        {
+            return _context.Delivery.FirstOrDefault(w => w.UserId == userId);
         }
 
         public async Task AddAsync(LoginOtp otp)
