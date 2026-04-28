@@ -64,6 +64,7 @@ namespace SAFQA.API.Controllers
             return Ok(result);
         }
 
+        [AllowAnonymous]
         [HttpPost("google")]
         public async Task<IActionResult> GoogleLogin([FromBody] GoogleDto dto)
         {

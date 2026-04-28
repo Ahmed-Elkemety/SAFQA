@@ -417,7 +417,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
             {
                 var now = DateTime.UtcNow;
 
-                // ✂️ 1. بيانات خفيفة
+                // 1. بيانات خفيفة
                 var auctionsData = await _context.Auctions
                     .Where(a => a.Status != AuctionStatus.Finished)
                     .Select(a => new
@@ -436,19 +436,19 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
 
                 var auctionIds = auctionsData.Select(a => a.Id).ToList();
 
-                // 🧠 2. نجيب الـ Auctions tracked مرة واحدة
+                // 2. tracked Auctions
                 var trackedAuctions = await _context.Auctions
                     .Where(a => auctionIds.Contains(a.Id))
                     .ToDictionaryAsync(a => a.Id);
 
-                // ⚡ 3. آخر Bid لكل Auction
+                // 3. آخر Bid لكل Auction
                 var lastBids = await _context.Bids
                     .Where(b => auctionIds.Contains(b.AuctionId.Value))
                     .GroupBy(b => b.AuctionId)
                     .Select(g => g.OrderByDescending(b => b.Date).FirstOrDefault())
                     .ToListAsync();
 
-                // ⚡ 4. كل UserIds
+                // 4. كل UserIds الخاصة بالـ Wallets
                 var userIds = lastBids
                     .Where(b => b != null && b.UserId != null)
                     .Select(b => b.UserId)
@@ -457,12 +457,12 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                     .Distinct()
                     .ToList();
 
-                // ⚡ 5. Wallets
+                // 5. Wallets
                 var wallets = await _context.Wallets
                     .Where(w => userIds.Contains(w.UserId))
                     .ToDictionaryAsync(w => w.UserId);
 
-                // ⚡ 6. المشاركين
+                // 6. المشاركين في كل Auction
                 var participations = await _context.auctionParticipations
                     .Where(p => auctionIds.Contains(p.AuctionId))
                     .GroupBy(p => p.AuctionId)
@@ -471,20 +471,17 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                         g => g.Select(x => x.UserId).Distinct().ToList()
                     );
 
-                // ⚡ 7. Delivery الموجودة
+                // 7. Delivery الموجودة بالفعل
                 var existingDeliveries = (await _context.Delivery
                     .Where(d => auctionIds.Contains(d.AuctionId))
                     .Select(d => d.AuctionId)
                     .ToListAsync())
                     .ToHashSet();
 
-                // 🔥 تحسين الأداء
-                _context.ChangeTracker.AutoDetectChangesEnabled = false;
-
                 int batchSize = 20;
                 int counter = 0;
 
-                // 🔁 8. Loop
+                // 8. Loop
                 foreach (var a in auctionsData)
                 {
                     if (!trackedAuctions.TryGetValue(a.Id, out var auction))
@@ -508,7 +505,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                             auction.WinnerUserId = lastBid.UserId;
                             auction.FinalPrice = lastBid.Amount;
 
-                            // ✅ Delivery
+                            // Delivery
                             if (a.SellerId != null && !existingDeliveries.Contains(a.Id))
                             {
                                 _context.Delivery.Add(new Delivery
@@ -521,7 +518,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                                 });
                             }
 
-                            // ✅ Wallets
+                            // Wallets
                             if (wallets.TryGetValue(lastBid.UserId, out var buyerWallet) &&
                                 wallets.TryGetValue(a.SellerUserId, out var sellerWallet))
                             {
@@ -544,14 +541,20 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                             }
                         }
 
-                        // 🔔 Notification finish
+                        // كل المشاركين + Seller
                         if (participations.TryGetValue(a.Id, out var users))
                         {
+                            var usersToNotify = users
+                                .Append(a.SellerUserId)
+                                .Where(x => !string.IsNullOrEmpty(x))
+                                .Distinct()
+                                .ToList();
+
                             await _notification.SendAuctionFinishedNotification(
                                 a.Id,
                                 auction.FinalPrice,
                                 auction.WinnerUserId,
-                                users
+                                usersToNotify
                             );
                         }
                     }
@@ -564,33 +567,36 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                             : AuctionStatus.Active;
                     }
 
-                    // 🔔 Status change
+                    // إشعار تغيير الحالة (غير Finished)
                     if (oldStatus != auction.Status && auction.Status != AuctionStatus.Finished)
                     {
                         if (participations.TryGetValue(a.Id, out var users))
                         {
+                            var usersToNotify = users
+                                .Append(a.SellerUserId)
+                                .Where(x => !string.IsNullOrEmpty(x))
+                                .Distinct()
+                                .ToList();
+
                             await _notification.SendAuctionStatusUpdated(
                                 a.Id,
-                                auction.Status.ToString()
+                                auction.Status.ToString(),
+                                usersToNotify
                             );
                         }
                     }
 
                     counter++;
 
-                    // 💥 Save على دفعات
+                    // Save على دفعات
                     if (counter % batchSize == 0)
                     {
                         await _context.SaveChangesAsync();
-                        _context.ChangeTracker.Clear();
                     }
                 }
 
                 // آخر batch
                 await _context.SaveChangesAsync();
-                _context.ChangeTracker.Clear();
-
-                _context.ChangeTracker.AutoDetectChangesEnabled = true;
             }
             catch (Exception ex)
             {

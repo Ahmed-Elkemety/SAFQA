@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using SAFQA.BLL.Dtos.UserAppDto.AccountDto;
 using SAFQA.BLL.Managers.UserAppManager;
 using SAFQA.BLL.Managers.UserAppManager.AuctionManager;
+using SAFQA.BLL.Managers.UserAppManager.InteractionService;
 using SAFQA.BLL.Managers.UserAppManager.UserManager;
 
 namespace SAFQA.API.Controllers
@@ -18,11 +19,13 @@ namespace SAFQA.API.Controllers
     {
         private readonly IUserService _userService;
         private readonly IAuctionManagerU _managerU;
+        private readonly IUserInteractionService _interactionService;
 
-        public UserController(IUserService homeService ,IAuctionManagerU managerU)
+        public UserController(IUserService homeService ,IAuctionManagerU managerU , IUserInteractionService interactionService)
         {
             _userService = homeService;
             _managerU = managerU;
+            _interactionService = interactionService;
         }
 
 
@@ -140,6 +143,54 @@ namespace SAFQA.API.Controllers
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var result = await _managerU.GetCategoriesAsync(userId);
+            return Ok(result);
+        }
+
+        // ===============================
+        // ADD FAVORITE
+        // ===============================
+        [HttpPost("add-favorite/{auctionId}")]
+        public async Task<IActionResult> AddFavorite(int auctionId)
+        {
+
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var result = await _interactionService.AddFavoriteAsync(auctionId, userId);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        // ===============================
+        // ADD VIEW
+        // ===============================
+        [HttpPost("add-view/{auctionId}")]
+        public async Task<IActionResult> AddView(int auctionId, [FromQuery] string deviceType)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var result = await _interactionService.AddViewAsync(auctionId, userId, deviceType);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        // ===============================
+        // ADD FOLLOW
+        // ===============================
+        [HttpPost("add-follow/{sellerId}")]
+        public async Task<IActionResult> AddFollow(int sellerId)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var result = await _interactionService.AddFollowAsync(sellerId, userId);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
             return Ok(result);
         }
 

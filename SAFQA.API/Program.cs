@@ -25,6 +25,7 @@ using SAFQA.BLL.Managers.UserAppManager.BidService;
 using SAFQA.BLL.Managers.UserAppManager.ChatService;
 using SAFQA.BLL.Managers.UserAppManager.ConversationService;
 using SAFQA.BLL.Managers.UserAppManager.DisputeService;
+using SAFQA.BLL.Managers.UserAppManager.InteractionService;
 using SAFQA.BLL.Managers.UserAppManager.NotificationService;
 using SAFQA.BLL.Managers.UserAppManager.OrderService;
 using SAFQA.BLL.Managers.UserAppManager.ProxyBidingService;
@@ -93,7 +94,20 @@ namespace SAFQA.API
                 });
             });
 
-            builder.Services.AddDbContext<SAFQA_Context>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("cs")));
+            builder.Services.AddDbContext<SAFQA_Context>(options =>
+               options.UseSqlServer(
+                   builder.Configuration.GetConnectionString("cs"),
+                   sqlOptions =>
+                   {
+                       sqlOptions.EnableRetryOnFailure(
+                           maxRetryCount: 5,
+                           maxRetryDelay: TimeSpan.FromSeconds(10),
+                           errorNumbersToAdd: null
+                       );
+                       sqlOptions.CommandTimeout(120);
+                   }
+               )
+           );
 
             builder.Services.AddIdentity<User, IdentityRole>()
                 .AddEntityFrameworkStores<SAFQA_Context>()
@@ -106,7 +120,6 @@ namespace SAFQA.API
             builder.Services.AddScoped<IcategoryRepo, categoryRepo>();
             builder.Services.AddScoped<IAuctionManager, AuctionManager>();
             builder.Services.AddScoped<IAuctionRepository, AuctionRepository>();
-            builder.Services.AddScoped<IAuctionManager, AuctionManager>();
             builder.Services.AddScoped<IitemsRepository, ItemRepository>();
             builder.Services.AddScoped<IItemManager, ItemManager>(); 
             builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
@@ -141,6 +154,7 @@ namespace SAFQA.API
             builder.Services.AddScoped<IBidService, BidService>();
             builder.Services.AddScoped<IProxyRepository, ProxyRepository>();
             builder.Services.AddScoped<IProxyService, ProxyService>();
+            builder.Services.AddScoped<IUserInteractionService, UserInteractionService>();
             builder.Services.AddHostedService<HotScoreBackgroundService>();
             builder.Services.AddHostedService<AuctionStatusBackgroundService>();
             builder.Services.AddHostedService<EscrowReleaseBackgroundService>();
@@ -223,21 +237,6 @@ namespace SAFQA.API
                     }
                 };
             });
-
-            builder.Services.AddDbContext<SAFQA_Context>(options =>
-                options.UseSqlServer(
-                    builder.Configuration.GetConnectionString("DefaultConnection"),
-                    sqlOptions =>
-                    {
-                        sqlOptions.EnableRetryOnFailure(
-                            maxRetryCount: 5,      
-                            maxRetryDelay: TimeSpan.FromSeconds(10), 
-                            errorNumbersToAdd: null  
-                        );
-                        sqlOptions.CommandTimeout(120);
-                    }
-                )
-            );
 
             builder.Services.Configure<IdentityOptions>(options =>
             {

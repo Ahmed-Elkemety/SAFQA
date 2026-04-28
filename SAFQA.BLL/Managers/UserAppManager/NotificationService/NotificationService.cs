@@ -51,10 +51,10 @@ namespace SAFQA.BLL.Managers.UserAppManager.NotificationService
                 notifications.Add(new Notification
                 {
                     UserId = userId,
-                    Title = isWinner ? "🎉 You Won!" : "Auction Finished",
+                    Title = isWinner ? $"🎉 You Won! in Auction {auctionId}" : $"Auction {auctionId} Finished",
                     Message = isWinner
-                        ? $"Congratulations! You won the auction. Final price: {finalPrice}"
-                        : $"Auction has ended. Final price: {finalPrice}",
+                        ? $"Congratulations! You won the auction {auctionId}. Final price: {finalPrice}"
+                        : $"Auction {auctionId} has ended. Final price: {finalPrice}",
                     notificationType = NotificationTypes.AuctionsActivity,
                     CreatedAt = DateTime.UtcNow,
                     IsRead = false
@@ -65,16 +65,12 @@ namespace SAFQA.BLL.Managers.UserAppManager.NotificationService
             await _context.SaveChangesAsync();
         }
 
-        public async Task SendAuctionStatusUpdated(int auctionId, string status)
+        public async Task SendAuctionStatusUpdated(
+            int auctionId,
+            string status,
+            List<string> userIds)
         {
-            // ✅ 1. Get users from AuctionParticipations
-            var userIds = await _context.auctionParticipations
-                .Where(p => p.AuctionId == auctionId)
-                .Select(p => p.UserId)
-                .Distinct()
-                .ToListAsync();
-
-            // ✅ 2. Real-time SignalR (only active connected users in group)
+            // 📡 Real-time
             await _hub.Clients
                 .Group($"auction-{auctionId}")
                 .SendAsync("AuctionStatusUpdated", new
@@ -83,18 +79,20 @@ namespace SAFQA.BLL.Managers.UserAppManager.NotificationService
                     status
                 });
 
-            // ✅ 3. Save notifications for offline users
+            // 💾 DB Notifications
             if (userIds.Any())
             {
-                var notifications = userIds.Select(userId => new Notification
-                {
-                    Title = "Auction Update",
-                    Message = $"Auction is now {status}",
-                    UserId = userId,
-                    CreatedAt = DateTime.UtcNow,
-                    IsRead = false,
-                    notificationType = NotificationTypes.AuctionsActivity
-                });
+                var notifications = userIds
+                    .Distinct()
+                    .Select(userId => new Notification
+                    {
+                        Title = $"Auction {auctionId} Update",
+                        Message = $"Auction {auctionId} is now {status}",
+                        UserId = userId,
+                        CreatedAt = DateTime.UtcNow,
+                        IsRead = false,
+                        notificationType = NotificationTypes.AuctionsActivity
+                    });
 
                 await _context.Notifications.AddRangeAsync(notifications);
                 await _context.SaveChangesAsync();
@@ -118,7 +116,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.NotificationService
             {
                 UserId = u,
                 Title = title,
-                Message = $"Current price: {price}",
+                Message = $"Current price in Auction {auctionId}: {price}",
                 notificationType = NotificationTypes.AuctionsActivity,
                 CreatedAt = DateTime.UtcNow,
                 IsRead = false
