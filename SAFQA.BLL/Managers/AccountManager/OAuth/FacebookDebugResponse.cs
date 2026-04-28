@@ -21,5 +21,8 @@ namespace SAFQA.BLL.Managers.AccountManager.OAuth
 
         [JsonPropertyName("user_id")]
         public string UserId { get; set; }
+
+        [JsonPropertyName("app_id")]
+        public string AppId { get; set; }
     }
 }
