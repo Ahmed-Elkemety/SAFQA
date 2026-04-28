@@ -19,8 +19,8 @@ namespace SAFQA.DAL.Configration
 
             builder
                 .HasOne(ot => ot.Auction)
-                .WithOne(a => a.orderTracking)
-                .HasForeignKey<OrderTracking>(ot => ot.AuctionId)
+                .WithMany(a => a.orderTracking)
+                .HasForeignKey(ot => ot.AuctionId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.Property(e => e.Date)

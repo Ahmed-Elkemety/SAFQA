@@ -14,5 +14,6 @@ namespace SAFQA.BLL.Dtos.SellerAppDto.NotificationDto
         public string Type { get; set; }
         public bool IsRead { get; set; }
         public DateTime CreatedAt { get; set; }
+        public int? ConversationId { get; set; }
     }
 }

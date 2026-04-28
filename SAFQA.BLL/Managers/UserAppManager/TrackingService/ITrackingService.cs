@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SAFQA.BLL.Dtos.UserAppDto.TrackingDto;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,6 @@ namespace SAFQA.BLL.Managers.UserAppManager.TrackingService
 {
     public interface ITrackingService
     {
-
+        Task<OrderTrackingDto> GetOrderTrackingAsync(int auctionId);
     }
 }

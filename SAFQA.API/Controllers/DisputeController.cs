@@ -80,5 +80,31 @@ namespace SAFQA.API.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpDelete("cancel/{disputeId}")]
+        public async Task<IActionResult> CancelDispute(int disputeId)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized("User not found");
+
+                await _disputeService.CancelDisputeAsync(disputeId, userId);
+
+                return Ok(new
+                {
+                    message = "Dispute cancelled successfully"
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = ex.Message
+                });
+            }
+        }
     }
 }

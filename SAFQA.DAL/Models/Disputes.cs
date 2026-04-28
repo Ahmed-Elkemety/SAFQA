@@ -24,5 +24,6 @@ namespace SAFQA.DAL.Models
         public Delivery Delivery { get; set; }
         public User User { get; set; }
         public Auction Auction { get; set; }
+        public bool IsDeleted { get; set; } = false;
     }
 }
