@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SAFQA.DAL.Database;
 using SAFQA.DAL.Models;
-using SAFQA.DAL.RepoDtos.UserApp.Home.CategoryWithDetails;
+using SAFQA.DAL.RepoDtos.UserApp.Home.Categorys;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,19 +18,7 @@ namespace SAFQA.DAL.Repository.Category
         {
             _context = context;
         }
-        public async Task<List<CategoryWithDetails>> GetCategoriesWithDetailsAsync()
-        {
-            return await _context.Category
-                .Select(c => new CategoryWithDetails
-                {
-                    Id = c.Id,
-                    Name = c.Name,
-                    Description = c.Description,
-                    Image = c.Image,
-                    AuctionCount = c.Auctions.Count()
-                })
-                .ToListAsync();
-        }
+
         public IQueryable<Models.Category> GetAll()
         {
             return _context.Category;
@@ -70,6 +58,20 @@ namespace SAFQA.DAL.Repository.Category
             return await _context.categoryAttributes
                 .Where(a => a.CategoryId == categoryId)
                 .ToListAsync();
+        }
+
+        public async Task<List<Categorys>> GetCategoriesWithCountAsync()
+        {
+            return await _context.Category
+             .AsNoTracking()
+             .Select(c => new Categorys
+             {
+                 Id = c.Id,
+                 Name = c.Name,
+                 Image = c.Image,
+                 AuctionCount = c.Auctions.Count()
+             })
+             .ToListAsync();
         }
     }
 }

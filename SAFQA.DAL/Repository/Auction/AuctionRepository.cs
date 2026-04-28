@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SAFQA.DAL.RepoDtos.UserApp.Home.Categorys;
 
 namespace SAFQA.DAL.Repository.Auction
 {
@@ -176,6 +177,20 @@ namespace SAFQA.DAL.Repository.Auction
             _context.SaveChanges();
         }
 
+        public async Task MarkAsDeletedAsync(Models.Auction auction)
+        {
+            var existing = await _context.Auctions.FindAsync(auction.Id);
+
+            if (existing == null)
+                return;
+
+            existing.IsDeleted = auction.IsDeleted;
+            existing.DeletedAt = auction.DeletedAt;
+            existing.Status = auction.Status;
+
+            await _context.SaveChangesAsync();
+        }
+
         public void Delete(Models.Auction auction)
         {
             _context.Auctions.Remove(auction);
@@ -202,7 +217,15 @@ namespace SAFQA.DAL.Repository.Auction
         public async Task<Models.Auction?> GetByIdAsync(int id)
         {
             return await _context.Auctions
-                .FirstOrDefaultAsync(a => a.Id == id && !a.IsDeleted);
+            .AsNoTracking()
+            .Where(a => a.Id == id && !a.IsDeleted)
+            .Include(a => a.Seller)
+            .Include(a => a.items)
+                .ThenInclude(i => i.images)
+            .Include(a => a.items)
+                .ThenInclude(i => i.itemAttributesValues)
+                    .ThenInclude(av => av.categoryAttributes)
+            .FirstOrDefaultAsync();
         }
 
         public async Task<Models.Auction?> DeliveryByIdAsync(int id)
@@ -232,8 +255,15 @@ namespace SAFQA.DAL.Repository.Auction
         public async Task<IEnumerable<Models.Auction>> GetAllAsync()
         {
             return await _context.Auctions
-                .Where(a => !a.IsDeleted)
-                .ToListAsync();
+            .AsNoTracking()
+            .Where(a => !a.IsDeleted)
+            .Include(a => a.Seller)
+            .Include(a => a.items)
+                .ThenInclude(i => i.images)
+            .Include(a => a.items)
+                .ThenInclude(i => i.itemAttributesValues)
+                    .ThenInclude(av => av.categoryAttributes)
+            .ToListAsync();
         }
 
         public async Task<(List<Models.Auction>, int)> GetAuctionsByCategoryId(
@@ -359,9 +389,133 @@ namespace SAFQA.DAL.Repository.Auction
                 .ToListAsync();
         }
 
+        public async Task<List<Models.Auction>> GetEndingSoonAsync(int page, int pageSize)
+        {
+            return await _context.Auctions
+                .Where(a => !a.IsDeleted && a.Status == AuctionStatus.EndingSoon)
+                .OrderBy(a => a.EndDate)
+                .ThenByDescending(a => a.HotScore)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        public async Task<List<Models.Auction>> GetTrendingAsync(int page, int pageSize)
+        {
+            return await _context.Auctions
+                .Where(a => !a.IsDeleted)
+                .OrderByDescending(a => a.HotScore)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        public async Task<List<Models.Auction>> SearchAsync(string query, int? CategoryId, List<AuctionStatus>? statuses,
+                   List<int>? cityIds,
+                   decimal? minPrice,
+                   decimal? maxPrice,
+                   AuctionSortBy sortBy,
+                   int? userCityId)
+        {
+            var auctions = _context.Auctions
+        .Where(a => !a.IsDeleted && a.Status < AuctionStatus.Finished);
+
+            // 🔍 Search
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                if (int.TryParse(query, out int id))
+                {
+                    auctions = auctions.Where(a => a.Id == id);
+                }
+                else
+                {
+                    auctions = auctions.Where(a =>
+                        EF.Functions.Like(a.Title, $"%{query}%"));
+                }
+            }
+
+            // 📂 Category
+            if (CategoryId.HasValue)
+            {
+                auctions = auctions.Where(a => a.CategoryId == CategoryId.Value);
+            }
+
+            // 🟢 Status
+            if (statuses is { Count: > 0 })
+            {
+                auctions = auctions.Where(a => statuses.Contains(a.Status));
+            }
+
+            // 📍 City
+            if (cityIds is { Count: > 0 })
+            {
+                auctions = auctions.Where(a =>
+                    a.Seller != null && cityIds.Contains(a.Seller.CityId));
+            }
+
+            // 💰 Price (مهم: نحسب مرة واحدة)
+            auctions = auctions.Select(a => new
+            {
+                Auction = a,
+                Price = a.Status == AuctionStatus.Upcoming
+                    ? a.StartingPrice
+                    : a.Status == AuctionStatus.Finished
+                        ? a.FinalPrice
+                        : a.CurrentPrice
+            })
+            .Where(x =>
+                (!minPrice.HasValue || x.Price >= minPrice.Value) &&
+                (!maxPrice.HasValue || x.Price <= maxPrice.Value)
+            )
+            .Select(x => x.Auction);
+
+            // 🔽 Sorting
+            auctions = sortBy switch
+            {
+                AuctionSortBy.MostBids =>
+                    auctions.OrderByDescending(a => a.TotalBids),
+
+                AuctionSortBy.Nearest when userCityId.HasValue =>
+                    auctions
+                        .OrderByDescending(a => a.Seller != null && a.Seller.CityId == userCityId)
+                        .ThenByDescending(a => a.CreatedAt),
+
+                AuctionSortBy.PriceHighToLow =>
+                    auctions.OrderByDescending(a =>
+                        a.Status == AuctionStatus.Upcoming
+                            ? a.StartingPrice
+                            : a.Status == AuctionStatus.Finished
+                                ? a.FinalPrice
+                                : a.CurrentPrice),
+
+                AuctionSortBy.PriceLowToHigh =>
+                    auctions.OrderBy(a =>
+                        a.Status == AuctionStatus.Upcoming
+                            ? a.StartingPrice
+                            : a.Status == AuctionStatus.Finished
+                                ? a.FinalPrice
+                                : a.CurrentPrice),
+
+                _ =>
+                    auctions
+                        .OrderByDescending(a => a.IsFeatured)
+                        .ThenByDescending(a => a.CreatedAt)
+            };
+
+            // ⚡ Limit + Execute
+            return await auctions
+                .Take(20)
+                .ToListAsync();
+        }
+
+        public async Task CreateAuctionParticipation(AuctionParticipations auctionParticipations)
+        {
+            await _context.auctionParticipations.AddAsync(auctionParticipations);
+        }
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
         }
+
     }
 }

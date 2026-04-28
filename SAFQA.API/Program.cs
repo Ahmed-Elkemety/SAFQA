@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -6,6 +6,7 @@ using SAFQA.API.Middleware;
 using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.BLL.Managers.AccountManager.Email_Sender;
 using SAFQA.BLL.Managers.AccountManager.OAuth;
+using SAFQA.BLL.Managers.BackgroundServices;
 using SAFQA.BLL.Managers.DeliveryAppManager;
 using SAFQA.BLL.Managers.RecommendationAI;
 using SAFQA.BLL.Managers.SellerAppManager;
@@ -20,10 +21,13 @@ using SAFQA.BLL.Managers.SellerAppManager.WalletServeice;
 using SAFQA.BLL.Managers.SellerAppManager.WalletService;
 using SAFQA.BLL.Managers.UserAppManager;
 using SAFQA.BLL.Managers.UserAppManager.AuctionManager;
+using SAFQA.BLL.Managers.UserAppManager.BidService;
 using SAFQA.BLL.Managers.UserAppManager.ChatService;
 using SAFQA.BLL.Managers.UserAppManager.ConversationService;
 using SAFQA.BLL.Managers.UserAppManager.DisputeService;
+using SAFQA.BLL.Managers.UserAppManager.NotificationService;
 using SAFQA.BLL.Managers.UserAppManager.OrderService;
+using SAFQA.BLL.Managers.UserAppManager.ProxyBidingService;
 using SAFQA.BLL.Managers.UserAppManager.ReviewService;
 using SAFQA.BLL.Managers.UserAppManager.UserManager;
 using SAFQA.DAL.Database;
@@ -38,12 +42,14 @@ using SAFQA.DAL.Repository.Items;
 using SAFQA.DAL.Repository.Location;
 using SAFQA.DAL.Repository.Message;
 using SAFQA.DAL.Repository.Notification;
+using SAFQA.DAL.Repository.ProxyBiding;
 using SAFQA.DAL.Repository.OrderTrack;
 using SAFQA.DAL.Repository.Review;
 using SAFQA.DAL.Repository.Seller;
 using SAFQA.DAL.Repository.Transaction;
 using SAFQA.DAL.Repository.Users;
 using SAFQA.DAL.Repository.Wallet;
+using System.IO;
 using System.Security.Claims;
 using System.Text;
 
@@ -61,7 +67,6 @@ namespace SAFQA.API
 
 
             builder.Services.AddControllers();
-            builder.Services.AddSignalR();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
             {
@@ -133,7 +138,15 @@ namespace SAFQA.API
             builder.Services.AddScoped<IOrderRepo, OrderRepo>();
             builder.Services.AddScoped<IDeliveryService, DeliveryService>();
             builder.Services.AddScoped<IDeliveryRepo, DeliveryRepo>();
-
+            builder.Services.AddSignalR();
+            builder.Services.AddScoped<INotificationService, NotificationService>();
+            builder.Services.AddScoped<IBidService, BidService>();
+            builder.Services.AddScoped<IProxyRepository, ProxyRepository>();
+            builder.Services.AddScoped<IProxyService, ProxyService>();
+            builder.Services.AddHostedService<HotScoreBackgroundService>();
+            builder.Services.AddHostedService<AuctionStatusBackgroundService>();
+            builder.Services.AddHostedService<EscrowReleaseBackgroundService>();
+            builder.Services.AddHostedService<ExpiredOtpCleanupService>();
 
 
 
@@ -158,11 +171,27 @@ namespace SAFQA.API
                     ValidIssuer = jwtSettings["ValidIssuer"],
                     ValidAudience = jwtSettings["ValidAudience"],
                     IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(jwtSettings["Secret"]))
+                        Encoding.UTF8.GetBytes(jwtSettings["Secret"])),
+                    NameClaimType = ClaimTypes.NameIdentifier
+
                 };
 
                 options.Events = new JwtBearerEvents
                 {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+
+                        var path = context.HttpContext.Request.Path;
+
+                        if (!string.IsNullOrEmpty(accessToken) &&
+                            path.StartsWithSegments("/notificationHub"))
+                        {
+                            context.Token = accessToken;
+                        }
+
+                        return Task.CompletedTask;
+                    },
                     OnTokenValidated = async context =>
                     {
                         var userManager = context.HttpContext.RequestServices
@@ -207,6 +236,7 @@ namespace SAFQA.API
                             maxRetryDelay: TimeSpan.FromSeconds(10), 
                             errorNumbersToAdd: null  
                         );
+                        sqlOptions.CommandTimeout(120);
                     }
                 )
             );
@@ -231,11 +261,11 @@ namespace SAFQA.API
                     });
             });
 
-            builder.Services.AddHostedService<ExpiredOtpCleanupService>();
 
-            var app = builder.Build(); 
+            var app = builder.Build();
 
-          
+
+            
 
 
             // Configure the HTTP request pipeline.
@@ -254,6 +284,7 @@ namespace SAFQA.API
 
             app.MapControllers();
             app.MapHub<ChatHub>("/chatHub");
+            app.MapHub<NotificationHub>("/notificationHub");
 
             async Task SeedRolesAsync(WebApplication app)
             {

@@ -491,7 +491,14 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
             if (errors.Any())
                 return new AuthResult { Errors = errors };
 
-
+            if((dto.EndDate - dto.StartDate).TotalDays < 1)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "Minimam Duration Of Auction 1 Day"
+                };
+            }
 
             var auction = new Auction
             {
@@ -811,6 +818,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
                     Attributes = i.itemAttributesValues?.Select(attr => new ItemAttributeDto
                     {
                         CategoryAttributeId = attr.CategoryAttributeId,
+                        Image = attr.categoryAttributes.Image,
                         Value = attr.value
                     }).ToList()
                     ?? new List<ItemAttributeDto>()
@@ -825,32 +833,29 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
             var auction = await _auctionRepository.GetByIdAsync(id);
             var seller = await _sellerRepository.GetByUserIdAsync(userId);
 
-
             if (auction == null)
                 return new AuthResult { Errors = { "Not Found" } };
 
             if (auction.SellerId != seller.Id)
                 return new AuthResult { Errors = { "Unauthorized" } };
 
-            if (auction.Status == AuctionStatus.Active)
-                return new AuthResult { Errors = { "Cannot delete active auction" } };
+            if (auction.Status != AuctionStatus.Upcoming)
+                return new AuthResult { Errors = { $"Cannot delete {auction.Status} auction" } };
 
-
+            // ✂️ Update only fields (NO navigation objects)
             auction.IsDeleted = true;
-            auction.DeletedAt = DateTime.UtcNow.AddHours(2).ToString();
-
-            _auctionRepository.Update(auction);
-            await _auctionRepository.SaveChangesAsync();
+            auction.DeletedAt = DateTime.UtcNow.AddHours(3).ToString();
+            await _auctionRepository.MarkAsDeletedAsync(auction);
 
             var notification = new DAL.Models.Notification
             {
-                Title = "Auction Created",
-                Message = $"Your auction '{auction.Title}' has been Deleted",
+                Title = "Auction Deleted",
+                Message = $"Your auction '{auction.Title}' has been deleted",
                 UserId = userId,
                 notificationType = NotificationTypes.AuctionsStatus,
                 ReferenceId = auction.Id,
                 IsRead = false,
-                CreatedAt = DateTime.Now.AddHours(2)
+                CreatedAt = DateTime.UtcNow.AddHours(3)
             };
 
             await _notification.AddAsync(notification);

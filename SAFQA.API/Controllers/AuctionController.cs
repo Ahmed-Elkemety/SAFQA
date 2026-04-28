@@ -373,5 +373,61 @@ namespace SAFQA.API.Controllers
             await _auctionManagerU.CalculateHotScoresAsync();
             return Ok(new { message = "HotScore calculated successfully" });
         }
+
+        //=========================  Auction Process =============================
+
+        [HttpGet("User-Auction-View/{id}")]
+        public async Task<IActionResult> GetAuctionById(int id)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var (auth, data) = await _auctionManagerU.GetAuctionDetails(id, userId);
+
+            if (!auth.IsSuccess)
+                return NotFound(auth);
+
+            return Ok(new
+            {
+                auth,
+                data
+            });
+        }
+
+        [HttpPost("check-deposit/{Id}")]
+        public async Task<IActionResult> CheckDeposit(int id)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var result = await _auctionManagerU.CheckSecurityDeposit(id, userId);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        [HttpGet("search")]
+        [Authorize(Roles = "USER")]
+
+        public async Task<IActionResult> Search([FromQuery] AuctionQueryDto queryDto, string query)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrWhiteSpace(query))
+                return BadRequest("Query is required");
+
+            var result = await _auctionManagerU.SearchAsync(query, userId, queryDto);
+
+            return Ok(new
+            {
+                result.Item1,
+                Data = result.Item2
+            }); ;
+        }
     }
 }

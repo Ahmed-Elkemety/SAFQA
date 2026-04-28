@@ -12,6 +12,8 @@ namespace SAFQA.BLL.Dtos.SellerAppDto.CategoryDto
         public int Id { get; set; }
         public string Name { get; set; }
         public DataTypes DataType { get; set; }
+        public byte[] Image { get; set; }
+
         public Unit Unit { get; set; }
         public bool IsRequired { get; set; }
     }

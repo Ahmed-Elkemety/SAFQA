@@ -68,5 +68,7 @@ namespace SAFQA.DAL.Database
         public DbSet<MessageAttachment> MessageAttachments { get; set; }
         public DbSet<OrderTracking> OrderTrackings { get; set; }
         public DbSet<LoginOtp> LoginOtps { get; set; }
+        public DbSet<UserFollowers> UserFollowers { get; set; }
+        public DbSet<AuctionParticipations> auctionParticipations { get; set; }
     }
 }

@@ -16,9 +16,9 @@ namespace SAFQA.DAL.Models
         public int Step { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdateAt { get; set; }
-        public string? UserId { get; set; }
+        public string UserId { get; set; }
         public User user { get; set; }
-        public int? AuctionId { get; set; }
+        public int AuctionId { get; set; }
         public Auction auction { get; set; }
         public ICollection<Bid> bids { get; set; }
     }

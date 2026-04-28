@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SAFQA.BLL.Dtos.UserAppDto.AccountDto;
 using SAFQA.BLL.Managers.UserAppManager;
+using SAFQA.BLL.Managers.UserAppManager.AuctionManager;
 using SAFQA.BLL.Managers.UserAppManager.UserManager;
 
 namespace SAFQA.API.Controllers
@@ -16,23 +17,12 @@ namespace SAFQA.API.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly IAuctionManagerU _managerU;
 
-        public UserController(IUserService homeService)
+        public UserController(IUserService homeService ,IAuctionManagerU managerU)
         {
             _userService = homeService;
-        }
-
-        [HttpGet("Home")]
-        public async Task<IActionResult> GetHomeData()
-        {
-            var trending = await _userService.GetTrendingAuctionsAsync();
-            var categories = await _userService.GetCategoriesWithDetailsAsync();
-
-            return Ok(new
-            {
-                TrendingAuctions = trending,
-                Categories = categories
-            });
+            _managerU = managerU;
         }
 
 
@@ -60,13 +50,6 @@ namespace SAFQA.API.Controllers
         {
             int blockedCount = await _userService.GetBlockedUsersCountAsync();
             return Ok(new { Count = blockedCount });
-        }
-
-        [HttpGet]
-        public IActionResult GetUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
-        {
-            var result = _userService.GetUsers(page, pageSize);
-            return Ok(result);
         }
 
 
@@ -135,5 +118,30 @@ namespace SAFQA.API.Controllers
 
             return Ok(result);
         }
+
+        [HttpGet("ending-soon")]
+        public async Task<IActionResult> GetEndingSoon(int page = 1, int pageSize = 10)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var result = await _managerU.GetEndingSoonAsync( userId,page, pageSize);
+            return Ok(result);
+        }
+
+        [HttpGet("trending")]
+        public async Task<IActionResult> GetTrending(int page = 1, int pageSize = 10)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var result = await _managerU.GetTrendingAsync(userId,page, pageSize);
+            return Ok(result);
+        }
+
+        [HttpGet("categories")]
+        public async Task<IActionResult> GetCategories()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var result = await _managerU.GetCategoriesAsync(userId);
+            return Ok(result);
+        }
+
     }
 }

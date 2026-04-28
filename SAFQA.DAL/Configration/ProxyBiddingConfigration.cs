@@ -14,13 +14,11 @@ namespace SAFQA.DAL.Configration
         {
             builder.HasOne(a => a.auction)
                    .WithMany(pb => pb.ProxyBiddings)
-                   .HasForeignKey(a => a.AuctionId)
-                   .IsRequired(false);
+                   .HasForeignKey(a => a.AuctionId);
 
             builder.HasOne(u => u.user)
                     .WithMany(pb => pb.ProxyBiddings)
-                    .HasForeignKey(u => u.UserId)
-                    .IsRequired(false);
+                    .HasForeignKey(u => u.UserId);
 
             builder.Property(pb => pb.Status).IsRequired();
             builder.Property(pb => pb.Max).IsRequired();

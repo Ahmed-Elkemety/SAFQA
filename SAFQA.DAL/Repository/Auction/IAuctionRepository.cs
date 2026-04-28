@@ -1,5 +1,6 @@
 ﻿using SAFQA.DAL.Enums;
 using SAFQA.DAL.Models;
+using SAFQA.DAL.RepoDtos.UserApp.Home.Categorys;
 using SAFQA.DAL.RepoDtos.UserApp.Home.TrendingAuction;
 using System;
 using System.Collections.Generic;
@@ -26,6 +27,7 @@ namespace SAFQA.DAL.Repository.Auction
         IQueryable<Models.Auction> GetSellerAuctions(string userId);
         void Add(Models.Auction auction);
         void Update(Models.Auction auction);
+        Task MarkAsDeletedAsync(Models.Auction auction);
         void Delete(Models.Auction auction);
         Task AddAsync(Models.Auction auction);
         Task<Models.Auction?> GetByIdWithDetailsAsync(int auctionId);
@@ -51,7 +53,19 @@ namespace SAFQA.DAL.Repository.Auction
                     int? userCityId);
 
         Task<List<Models.Auction>> GetAllWithSellerAsync();
+
+        Task<List<Models.Auction>> GetEndingSoonAsync(int page, int pageSize);
+        Task<List<Models.Auction>> GetTrendingAsync(int page, int pageSize);
+
         Task SaveChangesAsync();
         Task<Models.Auction?> GetAuctionWithDeliveryAsync(int id);
+        Task<List<Models.Auction>> SearchAsync(string query , int? CategoryId, List<AuctionStatus>? statuses,
+                   List<int>? cityIds,
+                   decimal? minPrice,
+                   decimal? maxPrice,
+                   AuctionSortBy sortBy,
+                   int? userCityId);
+        Task CreateAuctionParticipation(AuctionParticipations auctionParticipations);
+
     }
 }

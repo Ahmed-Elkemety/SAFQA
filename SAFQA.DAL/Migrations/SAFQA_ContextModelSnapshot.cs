@@ -209,6 +209,9 @@ namespace SAFQA.DAL.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
+                    b.Property<bool>("IsEscrowReleased")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsFeatured")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -306,6 +309,29 @@ namespace SAFQA.DAL.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("AuctionLikes", (string)null);
+                });
+
+            modelBuilder.Entity("SAFQA.DAL.Models.AuctionParticipations", b =>
+                {
+                    b.Property<int>("AuctionId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("PatoicipationTime")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2(7)")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.HasKey("AuctionId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("auctionParticipations");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.AuctionReport", b =>
@@ -524,6 +550,10 @@ namespace SAFQA.DAL.Migrations
 
                     b.Property<int?>("CategoryId")
                         .HasColumnType("int");
+
+                    b.Property<byte[]>("Image")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<bool>("IsRequird")
                         .ValueGeneratedOnAdd()
@@ -1145,7 +1175,7 @@ namespace SAFQA.DAL.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("AuctionId")
+                    b.Property<int>("AuctionId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
@@ -1168,6 +1198,7 @@ namespace SAFQA.DAL.Migrations
                         .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
@@ -1500,6 +1531,30 @@ namespace SAFQA.DAL.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("SAFQA.DAL.Models.UserFollowers", b =>
+                {
+                    b.Property<int>("SellerId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("FollowedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2(7)")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.HasKey("SellerId", "UserId");
+
+                    b.HasIndex("UserId", "SellerId")
+                        .IsUnique();
+
+                    b.ToTable("UserFollowers");
+                });
+
             modelBuilder.Entity("SAFQA.DAL.Models.Wallet", b =>
                 {
                     b.Property<int>("Id")
@@ -1614,6 +1669,25 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasOne("SAFQA.DAL.Models.User", "User")
                         .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Auction");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SAFQA.DAL.Models.AuctionParticipations", b =>
+                {
+                    b.HasOne("SAFQA.DAL.Models.Auction", "Auction")
+                        .WithMany("auctionParticipations")
+                        .HasForeignKey("AuctionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SAFQA.DAL.Models.User", "User")
+                        .WithMany("auctionParticipations")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -1936,12 +2010,14 @@ namespace SAFQA.DAL.Migrations
                     b.HasOne("SAFQA.DAL.Models.Auction", "auction")
                         .WithMany("ProxyBiddings")
                         .HasForeignKey("AuctionId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("SAFQA.DAL.Models.User", "user")
                         .WithMany("ProxyBiddings")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("auction");
 
@@ -2023,6 +2099,25 @@ namespace SAFQA.DAL.Migrations
                     b.Navigation("City");
                 });
 
+            modelBuilder.Entity("SAFQA.DAL.Models.UserFollowers", b =>
+                {
+                    b.HasOne("SAFQA.DAL.Models.Seller", "Seller")
+                        .WithMany("userFollowers")
+                        .HasForeignKey("SellerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SAFQA.DAL.Models.User", "User")
+                        .WithMany("UserFollowers")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Seller");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("SAFQA.DAL.Models.Wallet", b =>
                 {
                     b.HasOne("SAFQA.DAL.Models.User", "User")
@@ -2043,6 +2138,8 @@ namespace SAFQA.DAL.Migrations
                     b.Navigation("ProxyBiddings");
 
                     b.Navigation("Reports");
+
+                    b.Navigation("auctionParticipations");
 
                     b.Navigation("delivery");
 
@@ -2117,6 +2214,8 @@ namespace SAFQA.DAL.Migrations
                     b.Navigation("deliveries");
 
                     b.Navigation("reviews");
+
+                    b.Navigation("userFollowers");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.User", b =>
@@ -2138,8 +2237,12 @@ namespace SAFQA.DAL.Migrations
                     b.Navigation("Seller")
                         .IsRequired();
 
+                    b.Navigation("UserFollowers");
+
                     b.Navigation("Wallet")
                         .IsRequired();
+
+                    b.Navigation("auctionParticipations");
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.Wallet", b =>

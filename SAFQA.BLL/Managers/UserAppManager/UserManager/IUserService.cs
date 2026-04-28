@@ -12,12 +12,9 @@ namespace SAFQA.BLL.Managers.UserAppManager
 {
     public interface IUserService
     {
-        Task<List<TrendingAuctionDto>> GetTrendingAuctionsAsync();
-        Task<List<CategoryWithDetailsDto>> GetCategoriesWithDetailsAsync();
         Task<int> GetTotalUsersAsync();
         Task<int> GetActiveUsersCountAsync();
         Task<int> GetBlockedUsersCountAsync();
-        PagedResult<UserListDto> GetUsers(int page, int pageSize);
         bool ChangeStatus(string userId);
 
         Task<(AuthResult, UserProfileDto?)> GetProfile(string userId);

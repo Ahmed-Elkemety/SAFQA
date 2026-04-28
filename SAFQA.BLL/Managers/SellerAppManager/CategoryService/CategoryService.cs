@@ -52,6 +52,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager.CategoryService
                 Id = a.Id,
                 Name = a.Name,
                 DataType = a.dataType,
+                Image = a.Image,
                 Unit = a.unit,
                 IsRequired = a.IsRequird
             }).ToList();

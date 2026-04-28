@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -22,17 +23,14 @@ namespace SAFQA.API.Controllers
             _context = Context;
         }
 
-        [HttpGet("my-recommendations/{userId}")]
-        public async Task<IActionResult> GetUserRecs(string userId)
+        [HttpGet("recommendations")]
+        public async Task<IActionResult> GetRecommendations()
         {
-            var recommendations = await _recommendationService.GetRecommendationsAsync(userId);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            if (recommendations == null || recommendations.Count == 0)
-            {
-                return Ok(await _context.Auctions.OrderByDescending(a => a.CreatedAt).Take(10).ToListAsync());
-            }
+            var result = await _recommendationService.GetRecommendations(userId);
 
-            return Ok(recommendations);
+            return Ok(result);
         }
     }
 }

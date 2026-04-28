@@ -48,5 +48,12 @@ namespace SAFQA.DAL.Repository.Wallet
         {
             return _context.Wallets.FirstOrDefault(w => w.UserId == userId);
         }
+
+        public async Task<Models.Wallet?> GetByUserIdAsync(string userId)
+        {
+            return await _context.Wallets
+                .AsNoTracking()
+                .FirstOrDefaultAsync(w => w.UserId == userId);
+        }
     }
 }
