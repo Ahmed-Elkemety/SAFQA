@@ -18,8 +18,8 @@ namespace SAFQA.DAL.Configration
                 .HasForeignKey<Wallet>(a => a.UserId);
 
 
-            builder.Property(w => w.Balance).IsRequired().HasDefaultValue(0);
-            builder.Property(w => w.FrozenBalance).IsRequired().HasDefaultValue(0);
+            builder.Property(w => w.Balance).IsRequired().HasDefaultValue(0).HasPrecision(18, 2);
+            builder.Property(w => w.FrozenBalance).IsRequired().HasDefaultValue(0).HasPrecision(18, 2);
             builder.Property(w => w.UpdatedAt).HasDefaultValueSql("GETDATE()").IsRequired();
         }
     }

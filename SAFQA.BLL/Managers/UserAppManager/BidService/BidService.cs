@@ -51,52 +51,57 @@ namespace SAFQA.BLL.Managers.UserAppManager.BidService
 
             try
             {
-                await using var transaction = await _context.Database
-                    .BeginTransactionAsync(IsolationLevel.ReadCommitted);
+                var strategy = _context.Database.CreateExecutionStrategy();
 
-                var auction = await _context.Auctions
-                    .FirstOrDefaultAsync(a => a.Id == auctionId);
-
-                if (auction == null)
-                    throw new Exception("Auction not found");
-
-                if (auction.EndDate <= DateTime.UtcNow)
-                    throw new Exception("Auction is closed");
-
-                if (!await HasEnoughBalance(userId, amount))
-                    throw new Exception("Insufficient balance");
-
-                if (amount < auction.CurrentPrice + auction.BidIncrement)
-                    throw new Exception("Outbid - price changed");
-
-                // Manual Bid
-                _context.Bids.Add(new Bid
+                await strategy.ExecuteAsync(async () =>
                 {
-                    UserId = userId,
-                    AuctionId = auctionId,
-                    Amount = amount,
-                    Type = BidType.Manual,
-                    Date = DateTime.UtcNow
+                    await using var transaction = await _context.Database
+                        .BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted);
+
+                    var auction = await _context.Auctions
+                        .FirstOrDefaultAsync(a => a.Id == auctionId);
+
+                    if (auction == null)
+                        throw new Exception("Auction not found");
+
+                    if (auction.EndDate <= DateTime.UtcNow)
+                        throw new Exception("Auction is closed");
+
+                    if (!await HasEnoughBalance(userId, amount))
+                        throw new Exception("Insufficient balance");
+
+                    if (amount < auction.CurrentPrice + auction.BidIncrement)
+                        throw new Exception("Outbid - price changed");
+
+                    // Manual Bid
+                    _context.Bids.Add(new Bid
+                    {
+                        UserId = userId,
+                        AuctionId = auctionId,
+                        Amount = amount,
+                        Type = BidType.Manual,
+                        Date = DateTime.UtcNow
+                    });
+
+                    auction.TotalBids++;
+                    auction.CurrentPrice = amount;
+                    auction.UpdatedAt = DateTime.UtcNow;
+
+                    // Proxy logic
+                    (finalPrice, hasProxy) = await HandleProxyTop2(auctionId, userId, amount);
+
+                    auction.CurrentPrice = finalPrice;
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
                 });
-
-                auction.TotalBids++;
-                auction.CurrentPrice = amount;
-                auction.UpdatedAt = DateTime.UtcNow;
-
-                // Proxy
-                (finalPrice, hasProxy) = await HandleProxyTop2(auctionId, userId, amount);
-
-                auction.CurrentPrice = finalPrice;
-
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
             }
             finally
             {
                 auctionLock.Release();
             }
 
-            // 🔥 بعد الـ commit مباشرة
+            // 🔥 Notifications بعد النجاح
             await _notification.SendAuctionNotification(auctionId, manualPrice, "manual");
 
             if (hasProxy)
@@ -104,7 +109,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.BidService
                 await _notification.SendAuctionNotification(auctionId, finalPrice, "auto");
             }
 
-            // 🔥 SignalR push مباشر (اختياري لكن أفضل)
+            // 🔥 SignalR
             await _hub.Clients
                 .Group($"auction-{auctionId}")
                 .SendAsync("ReceiveBid", new

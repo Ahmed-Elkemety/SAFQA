@@ -31,7 +31,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.NotificationService
             string winnerId,
             List<string> userIds)
         {
-            // 📡 1. Real-time (SignalR)
+            // SignalR
             await _hub.Clients
                 .Group($"auction-{auctionId}")
                 .SendAsync("AuctionFinished", new
@@ -41,36 +41,42 @@ namespace SAFQA.BLL.Managers.UserAppManager.NotificationService
                     winnerId
                 });
 
-            // 💾 2. Notifications DB
+            // DB Notifications فقط (بدون SaveChanges هنا)
             var notifications = new List<Notification>();
 
-            foreach (var userId in userIds)
+            foreach (var userId in userIds.Distinct())
             {
                 var isWinner = userId == winnerId;
 
                 notifications.Add(new Notification
                 {
                     UserId = userId,
-                    Title = isWinner ? $"🎉 You Won! in Auction {auctionId}" : $"Auction {auctionId} Finished",
+                    Title = isWinner
+                        ? $"🎉 You Won! in Auction {auctionId}"
+                        : $"Auction {auctionId} Finished",
+
                     Message = isWinner
-                        ? $"Congratulations! You won the auction {auctionId}. Final price: {finalPrice}"
+                        ? $"Congratulations! You won auction {auctionId}. Final price: {finalPrice}"
                         : $"Auction {auctionId} has ended. Final price: {finalPrice}",
+
                     notificationType = NotificationTypes.AuctionsActivity,
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.UtcNow.AddHours(3),
                     IsRead = false
                 });
             }
 
             await _context.Notifications.AddRangeAsync(notifications);
-            await _context.SaveChangesAsync();
+
+            // ❌ ممنوع هنا:
+            // await _context.SaveChangesAsync();
         }
 
         public async Task SendAuctionStatusUpdated(
-            int auctionId,
-            string status,
-            List<string> userIds)
+    int auctionId,
+    string status,
+    List<string> userIds)
         {
-            // 📡 Real-time
+            // SignalR
             await _hub.Clients
                 .Group($"auction-{auctionId}")
                 .SendAsync("AuctionStatusUpdated", new
@@ -79,7 +85,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.NotificationService
                     status
                 });
 
-            // 💾 DB Notifications
+            // DB Notifications فقط (بدون SaveChanges)
             if (userIds.Any())
             {
                 var notifications = userIds
@@ -89,13 +95,12 @@ namespace SAFQA.BLL.Managers.UserAppManager.NotificationService
                         Title = $"Auction {auctionId} Update",
                         Message = $"Auction {auctionId} is now {status}",
                         UserId = userId,
-                        CreatedAt = DateTime.UtcNow,
+                        CreatedAt = DateTime.UtcNow.AddHours(3),
                         IsRead = false,
                         notificationType = NotificationTypes.AuctionsActivity
                     });
 
                 await _context.Notifications.AddRangeAsync(notifications);
-                await _context.SaveChangesAsync();
             }
         }
 
@@ -118,7 +123,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.NotificationService
                 Title = title,
                 Message = $"Current price in Auction {auctionId}: {price}",
                 notificationType = NotificationTypes.AuctionsActivity,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow.AddHours(3),
                 IsRead = false
             });
 

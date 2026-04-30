@@ -281,7 +281,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("SellerId");
 
-                    b.ToTable("Auctions");
+                    b.ToTable("Auctions", (string)null);
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.AuctionLike", b =>
@@ -331,7 +331,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("auctionParticipations");
+                    b.ToTable("auctionParticipations", (string)null);
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.AuctionReport", b =>
@@ -356,7 +356,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("auctionReports");
+                    b.ToTable("auctionReports", (string)null);
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.AuctionUser", b =>
@@ -376,7 +376,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AuctionUsers");
+                    b.ToTable("AuctionUsers", (string)null);
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.AuctionView", b =>
@@ -450,7 +450,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Bids");
+                    b.ToTable("Bids", (string)null);
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.BusinessSeller", b =>
@@ -537,7 +537,7 @@ namespace SAFQA.DAL.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Category");
+                    b.ToTable("Category", (string)null);
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.CategoryAttributes", b =>
@@ -575,7 +575,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("categoryAttributes");
+                    b.ToTable("categoryAttributes", (string)null);
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.City", b =>
@@ -598,7 +598,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("CountryId");
 
-                    b.ToTable("cities");
+                    b.ToTable("cities", (string)null);
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.Conversation", b =>
@@ -660,7 +660,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("countries");
+                    b.ToTable("countries", (string)null);
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.Delivery", b =>
@@ -708,7 +708,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Delivery");
+                    b.ToTable("Delivery", (string)null);
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.Disputes", b =>
@@ -768,7 +768,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Disputes");
+                    b.ToTable("Disputes", (string)null);
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.Images", b =>
@@ -790,7 +790,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("ItemId");
 
-                    b.ToTable("images");
+                    b.ToTable("images", (string)null);
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.Item", b =>
@@ -829,7 +829,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("AuctionId");
 
-                    b.ToTable("Items");
+                    b.ToTable("Items", (string)null);
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.ItemAttributesValue", b =>
@@ -856,7 +856,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("ItemId");
 
-                    b.ToTable("itemAttributesValues");
+                    b.ToTable("itemAttributesValues", (string)null);
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.LoginOtp", b =>
@@ -889,7 +889,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("LoginOtps");
+                    b.ToTable("LoginOtps", (string)null);
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.Message", b =>
@@ -1006,7 +1006,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notifications");
+                    b.ToTable("Notifications", (string)null);
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.OrderTracking", b =>
@@ -1073,7 +1073,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PasswordResetOtps");
+                    b.ToTable("PasswordResetOtps", (string)null);
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.PendingUserRegistration", b =>
@@ -1133,7 +1133,7 @@ namespace SAFQA.DAL.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("PendingUserRegistrations");
+                    b.ToTable("PendingUserRegistrations", (string)null);
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.PersonalSeller", b =>
@@ -1207,7 +1207,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("proxyBiddings");
+                    b.ToTable("proxyBiddings", (string)null);
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.Review", b =>
@@ -1250,7 +1250,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Reviews");
+                    b.ToTable("Reviews", (string)null);
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.SavedCard", b =>
@@ -1365,7 +1365,7 @@ namespace SAFQA.DAL.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Sellers");
+                    b.ToTable("Sellers", (string)null);
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.Transactions", b =>
@@ -1408,7 +1408,7 @@ namespace SAFQA.DAL.Migrations
 
                     b.HasIndex("WalletId");
 
-                    b.ToTable("Transactions");
+                    b.ToTable("Transactions", (string)null);
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.User", b =>
@@ -1552,7 +1552,7 @@ namespace SAFQA.DAL.Migrations
                     b.HasIndex("UserId", "SellerId")
                         .IsUnique();
 
-                    b.ToTable("UserFollowers");
+                    b.ToTable("UserFollowers", (string)null);
                 });
 
             modelBuilder.Entity("SAFQA.DAL.Models.Wallet", b =>
@@ -1587,7 +1587,7 @@ namespace SAFQA.DAL.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Wallets");
+                    b.ToTable("Wallets", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

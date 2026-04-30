@@ -443,17 +443,22 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
 
                 // 3. آخر Bid لكل Auction
                 var lastBids = await _context.Bids
-                    .Where(b => auctionIds.Contains(b.AuctionId.Value))
+                    .Where(b => b.AuctionId.HasValue && auctionIds.Contains(b.AuctionId.Value))
                     .GroupBy(b => b.AuctionId)
                     .Select(g => g.OrderByDescending(b => b.Date).FirstOrDefault())
                     .ToListAsync();
 
+                // بدل FirstOrDefault داخل loop → Dictionary أسرع
+                var lastBidsDict = lastBids
+                    .Where(b => b != null && b.AuctionId.HasValue)
+                    .ToDictionary(b => b.AuctionId!.Value, b => b);
+
                 // 4. كل UserIds الخاصة بالـ Wallets
                 var userIds = lastBids
-                    .Where(b => b != null && b.UserId != null)
+                    .Where(b => b != null && !string.IsNullOrEmpty(b.UserId))
                     .Select(b => b.UserId)
                     .Concat(auctionsData.Select(a => a.SellerUserId))
-                    .Where(x => x != null)
+                    .Where(x => !string.IsNullOrEmpty(x))
                     .Distinct()
                     .ToList();
 
@@ -478,8 +483,12 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                     .ToListAsync())
                     .ToHashSet();
 
-                int batchSize = 20;
-                int counter = 0;
+                // تجميع الإشعارات بدل إرسالها داخل loop
+                var pendingStatusNotifications =
+                    new List<(int auctionId, string status, List<string> users)>();
+
+                var pendingFinishedNotifications =
+                    new List<(int auctionId, decimal finalPrice, string winnerUserId, List<string> users)>();
 
                 // 8. Loop
                 foreach (var a in auctionsData)
@@ -498,7 +507,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                         auction.Status = AuctionStatus.Finished;
                         auction.UpdatedAt = now;
 
-                        var lastBid = lastBids.FirstOrDefault(b => b.AuctionId == a.Id);
+                        lastBidsDict.TryGetValue(a.Id, out var lastBid);
 
                         if (lastBid != null && !string.IsNullOrEmpty(lastBid.UserId))
                         {
@@ -518,30 +527,33 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                                 });
                             }
 
-                            // Wallets
+                            // Wallets + حماية من negative balance
                             if (wallets.TryGetValue(lastBid.UserId, out var buyerWallet) &&
                                 wallets.TryGetValue(a.SellerUserId, out var sellerWallet))
                             {
-                                var before = buyerWallet.Balance;
-
-                                buyerWallet.Balance -= lastBid.Amount;
-                                buyerWallet.FrozenBalance += lastBid.Amount;
-
-                                _context.Transactions.Add(new Transactions
+                                if (buyerWallet.Balance >= lastBid.Amount)
                                 {
-                                    Type = TransactionType.Purchase,
-                                    Status = TransactionStatus.Completed,
-                                    WalletId = buyerWallet.Id,
-                                    Amount = lastBid.Amount,
-                                    BalanceBefore = before,
-                                    BalanceAfter = buyerWallet.Balance,
-                                    Description = $"Payment for Auction #{a.Id}",
-                                    CreatedAt = now
-                                });
+                                    var before = buyerWallet.Balance;
+
+                                    buyerWallet.Balance -= lastBid.Amount;
+                                    buyerWallet.FrozenBalance += lastBid.Amount;
+
+                                    _context.Transactions.Add(new Transactions
+                                    {
+                                        Type = TransactionType.Purchase,
+                                        Status = TransactionStatus.Completed,
+                                        WalletId = buyerWallet.Id,
+                                        Amount = lastBid.Amount,
+                                        BalanceBefore = before,
+                                        BalanceAfter = buyerWallet.Balance,
+                                        Description = $"Payment for Auction #{a.Id}",
+                                        CreatedAt = now
+                                    });
+                                }
                             }
                         }
 
-                        // كل المشاركين + Seller
+                        // تجميع Finished Notification فقط
                         if (participations.TryGetValue(a.Id, out var users))
                         {
                             var usersToNotify = users
@@ -550,12 +562,12 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                                 .Distinct()
                                 .ToList();
 
-                            await _notification.SendAuctionFinishedNotification(
+                            pendingFinishedNotifications.Add((
                                 a.Id,
                                 auction.FinalPrice,
                                 auction.WinnerUserId,
                                 usersToNotify
-                            );
+                            ));
                         }
                     }
                     else
@@ -567,8 +579,9 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                             : AuctionStatus.Active;
                     }
 
-                    // إشعار تغيير الحالة (غير Finished)
-                    if (oldStatus != auction.Status && auction.Status != AuctionStatus.Finished)
+                    // تجميع Status Notification فقط
+                    if (oldStatus != auction.Status &&
+                        auction.Status != AuctionStatus.Finished)
                     {
                         if (participations.TryGetValue(a.Id, out var users))
                         {
@@ -578,25 +591,37 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                                 .Distinct()
                                 .ToList();
 
-                            await _notification.SendAuctionStatusUpdated(
+                            pendingStatusNotifications.Add((
                                 a.Id,
                                 auction.Status.ToString(),
                                 usersToNotify
-                            );
+                            ));
                         }
-                    }
-
-                    counter++;
-
-                    // Save على دفعات
-                    if (counter % batchSize == 0)
-                    {
-                        await _context.SaveChangesAsync();
                     }
                 }
 
-                // آخر batch
+                // حفظ مرة واحدة فقط
                 await _context.SaveChangesAsync();
+
+                // إرسال Notifications بعد الحفظ
+                foreach (var item in pendingFinishedNotifications)
+                {
+                    await _notification.SendAuctionFinishedNotification(
+                        item.auctionId,
+                        item.finalPrice,
+                        item.winnerUserId,
+                        item.users
+                    );
+                }
+
+                foreach (var item in pendingStatusNotifications)
+                {
+                    await _notification.SendAuctionStatusUpdated(
+                        item.auctionId,
+                        item.status,
+                        item.users
+                    );
+                }
             }
             catch (Exception ex)
             {

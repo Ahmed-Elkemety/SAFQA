@@ -29,7 +29,7 @@ namespace SAFQA.BLL.Managers.BackgroundServices
 
                 await manager.UpdateAuctionStatusesAsync();
 
-                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                await Task.Delay(TimeSpan.FromMinutes(2), stoppingToken);
             }
         }
     }

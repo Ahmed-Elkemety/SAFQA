@@ -33,7 +33,7 @@ namespace SAFQA.DAL.Configration
 
             builder.Property(b => b.Type).IsRequired();
             builder.Property(b => b.Date).IsRequired();
-            builder.Property(c => c.Amount).IsRequired();
+            builder.Property(c => c.Amount).IsRequired().HasPrecision(18, 2);
 
         }
     }
