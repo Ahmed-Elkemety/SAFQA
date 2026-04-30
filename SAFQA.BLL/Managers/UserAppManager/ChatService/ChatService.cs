@@ -129,7 +129,8 @@ namespace SAFQA.BLL.Managers.UserAppManager.ConversationService
                     conversationId = dto.ConversationId,
                     senderId = dto.SenderId,
                     content = dto.Content,
-                    createdAt = message.CreatedAt
+                    createdAt = message.CreatedAt,
+                    
                 });
         }
 
@@ -139,6 +140,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.ConversationService
                 return;
 
             var dispute = _disputeRepo.GetById(conversation.DisputeId);
+            Console.WriteLine(dispute.Status);
 
             if (dispute == null)
                 return;

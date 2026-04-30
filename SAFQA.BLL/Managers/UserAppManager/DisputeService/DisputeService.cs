@@ -2,9 +2,11 @@
 using Microsoft.EntityFrameworkCore;
 using SAFQA.BLL.Dtos.UserAppDto.ChatDto;
 using SAFQA.BLL.Dtos.UserAppDto.DisputeDto;
+using SAFQA.BLL.Help;
 using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.BLL.Managers.UserAppManager.ChatService;
 using SAFQA.BLL.Managers.UserAppManager.ConversationService;
+using SAFQA.BLL.Managers.UserAppManager.NotificationService;
 using SAFQA.DAL.Enums;
 using SAFQA.DAL.Models;
 using SAFQA.DAL.Repository.Auction;
@@ -27,6 +29,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
         private readonly IUserRepo _userRepo;
         private readonly IsellerRepo _sellerRepo;
         private readonly IChatService _chatService;
+        private readonly INotificationService _notificationService;
         private readonly IDeliveryRepo _deliveryRepo;
         private readonly IHubContext<ChatHub> _hub;
         public DisputeService(
@@ -36,6 +39,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
             IsellerRepo sellerRepo,
             IChatService chatService,
             IDeliveryRepo deliveryRepo,
+            INotificationService notificationService,
             IHubContext<ChatHub> hub)
         {
             _disputeRepo = disputeRepo;
@@ -45,6 +49,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
             _chatService = chatService;
             _deliveryRepo = deliveryRepo;
             _hub = hub;
+            _notificationService = notificationService;
         }
 
         public async Task<ConversationDto> CreateDispute(string userId, CreateDisputeDto dto)
@@ -54,6 +59,10 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
             if (auction == null)
                 throw new Exception("Auction not found");
 
+            if (auction.SellerId == null)
+                throw new Exception("This auction has no seller");
+
+
             var delivery = await _deliveryRepo.GetByAuctionIdAsync(auction.Id);
 
             if (delivery == null)
@@ -62,6 +71,12 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
             var user = _userRepo.GetById(userId);
             if (user == null)
                 throw new Exception("User not found");
+
+            var seller = await _sellerRepo.GetByUserIdAsync(userId);
+
+            if (seller == null)
+                throw new Exception("Seller not found");
+
 
             if (auction.WinnerUserId != userId)
                 throw new Exception("You are not allowed to open dispute for this auction");
@@ -101,14 +116,13 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
             _disputeRepo.Add(dispute);
             var conversation = _chatService.GetOrCreateConversation(dispute.Id, userId);
 
-            await _hub.Clients
-                .User(auction.Seller.UserId)
-                .SendAsync("DisputeOpened", new
-                {
-                    disputeId = dispute.Id,
-                    conversationId = conversation.Id,
-                    auctionId = auction.Id
-                });
+            await _notificationService.SendDisputeCreatedNotification(
+            dispute.Id,
+            seller.UserId,
+            dispute.Title,
+            dispute.Description,
+            conversation.Id
+        );
 
             return conversation;
         }
@@ -157,24 +171,42 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
             if (dispute == null)
                 throw new Exception("Dispute not found");
 
-            dispute.Status = DisputeStatus.Open;
+            string statusText;
 
-            string statusText = dispute.Status switch
+            if (dispute.Status == DisputeStatus.Open)
             {
-                DisputeStatus.Open => "Waiting for seller",
-                DisputeStatus.Negotiation => "Negotiation",
-                DisputeStatus.UnderReview => "Admin Review",
-                DisputeStatus.Resolved => "Resolved",
-                _ => "Rejected"
-            };
-
+                statusText = "Waiting for seller";
+            }
+            else if (dispute.Status == DisputeStatus.Negotiation)
+            {
+                statusText = "Negotiation";
+            }
+            else if (dispute.Status == DisputeStatus.UnderReview)
+            {
+                statusText = "Admin Review";
+            }
+            else if (dispute.Status == DisputeStatus.Resolved)
+            {
+                statusText = "Resolved";
+            }
+            else
+            {
+                statusText = "Rejected";
+            }
 
             var deadline = dispute.Date.AddDays(3);
             var remaining = deadline - DateTime.UtcNow;
 
-            int days = remaining > TimeSpan.Zero ? remaining.Days : 0;
-            int hours = remaining > TimeSpan.Zero ? remaining.Hours : 0;
-            int minutes = remaining > TimeSpan.Zero ? remaining.Minutes : 0;
+            int days = 0;
+            int hours = 0;
+            int minutes = 0;
+
+            if (remaining > TimeSpan.Zero)
+            {
+                days = remaining.Days;
+                hours = remaining.Hours;
+                minutes = remaining.Minutes;
+            }
 
             bool isExpired = remaining <= TimeSpan.Zero;
 
@@ -195,6 +227,25 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
                 CanEscalate = canEscalate,
                 CanCancel = canCancel
             };
+        }
+
+        public async Task CancelDisputeAsync(int disputeId, string userId)
+        {
+            var dispute = _disputeRepo.GetById(disputeId);
+
+            if (dispute == null)
+                throw new Exception("Dispute not found");
+
+            if (dispute.UserId != userId)
+                throw new Exception("You are not allowed to cancel this dispute");
+
+            if (dispute.Status == SAFQA.DAL.Enums.DisputeStatus.Resolved)
+                throw new Exception("Cannot cancel a Resolved dispute");
+
+
+            dispute.IsDeleted = true;
+
+            _disputeRepo.Update(dispute);
         }
     }
 }

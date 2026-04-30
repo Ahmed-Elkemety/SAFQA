@@ -1,15 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
 using SAFQA.BLL.Managers.BackgroundServices;
 using SAFQA.BLL.Managers.SellerAppManager.Notification;
 using SAFQA.DAL.Database;
 using SAFQA.DAL.Enums;
 using SAFQA.DAL.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace SAFQA.BLL.Managers.UserAppManager.NotificationService
 {
@@ -138,6 +139,42 @@ namespace SAFQA.BLL.Managers.UserAppManager.NotificationService
                     price,
                     type
                 });
+        }
+
+
+
+        public async Task SendDisputeCreatedNotification(
+            int disputeId,
+            string sellerUserId,
+            string title,
+            string description,
+            int ReferenceId)
+        {
+            
+            await _hub.Clients
+                .Group($"user-{sellerUserId}")
+                .SendAsync("ReceiveDisputeNotification", new
+                {
+                    disputeId,
+                    title,
+                    description,
+                    ReferenceId
+                });
+
+           
+            var notification = new Notification
+            {
+                UserId = sellerUserId,
+                Title = "New Dispute Created",
+                Message = $"{title} - {description}",
+                CreatedAt = DateTime.UtcNow,
+                IsRead = false,
+                notificationType = NotificationTypes.Dispute,
+                ReferenceId = ReferenceId,
+            };
+
+            await _context.Notifications.AddAsync(notification);
+            await _context.SaveChangesAsync();
         }
     }
 }

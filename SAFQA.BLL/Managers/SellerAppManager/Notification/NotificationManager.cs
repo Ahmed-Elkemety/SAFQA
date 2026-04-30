@@ -29,7 +29,8 @@ namespace SAFQA.BLL.Managers.SellerAppManager.Notification
                 Message = n.Message,
                 Type = n.notificationType.ToString(),
                 IsRead = n.IsRead,
-                CreatedAt = n.CreatedAt
+                ConversationId = n.ReferenceId,
+                CreatedAt = n.CreatedAt,
             }).ToList();
 
             var unread = notifications.Where(n => !n.IsRead).ToList();

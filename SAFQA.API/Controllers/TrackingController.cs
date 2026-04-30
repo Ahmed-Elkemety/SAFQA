@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SAFQA.BLL.Managers.UserAppManager.TrackingService;
 
@@ -8,14 +9,14 @@ namespace SAFQA.API.Controllers
     [ApiController]
     public class TrackingController : ControllerBase
     {
-        private readonly TrackingService _orderTrackingService;
+        private readonly ITrackingService _orderTrackingService;
 
-        public TrackingController(TrackingService orderTrackingService)
+        public TrackingController(ITrackingService orderTrackingService)
         {
             _orderTrackingService = orderTrackingService;
         }
-        
-        
+
+        [Authorize(Roles = "USER")]
         [HttpGet("{auctionId}")]
         public async Task<IActionResult> GetOrderTracking(int auctionId)
         {

@@ -14,5 +14,11 @@ namespace SAFQA.BLL.Managers.UserAppManager.NotificationService
                     List<string> userIds);
         Task SendAuctionNotification(int auctionId, decimal price, string type);
         Task SendAuctionFinishedNotification(int id, decimal finalPrice, string? winnerUserId, List<string> userIds);
+        Task SendDisputeCreatedNotification(
+                    int disputeId,
+                    string sellerUserId,
+                    string title,
+                    string description,
+                    int ReferenceId);
     }
 }

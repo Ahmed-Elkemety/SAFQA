@@ -62,6 +62,7 @@ namespace SAFQA.BLL.Managers.BackgroundServices
             if (!auctionIds.Any())
                 return;
 
+            // ف حالة حدوث شكوي قبل ال3 ايام بيتم تحويل الفلوس بشكل طبيعي و ف حالة حدوث شكوي يبعت اشعار 
             foreach (var auctionId in auctionIds)
             {
                 using var innerScope = _scopeFactory.CreateScope();

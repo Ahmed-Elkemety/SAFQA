@@ -19,14 +19,16 @@ namespace SAFQA.DAL.Repository.Dispute
         }
         public IQueryable<Disputes> GetAll()
         {
-            return _context.Disputes;
+            return _context.Disputes
+                .Where(d => !d.IsDeleted)
+                .AsNoTracking();
         }
 
         public Disputes GetById(int id)
         {
-            return _context.Disputes.FirstOrDefault(c => c.Id == id);
+            return _context.Disputes
+                .FirstOrDefault(d => d.Id == id && !d.IsDeleted);
         }
-
         public void Add(Disputes disputes)
         {
             _context.Disputes.Add(disputes);
@@ -51,6 +53,13 @@ namespace SAFQA.DAL.Repository.Dispute
                 .Include(d => d.Auction)
                 .Where(d => d.UserId == userId)
                 .ToListAsync();
+        }
+
+        public void SoftDelete(Disputes disputes)
+        {
+            disputes.IsDeleted = true;
+            _context.Disputes.Update(disputes);
+            _context.SaveChanges();
         }
     }
 }
