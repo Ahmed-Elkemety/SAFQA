@@ -26,11 +26,30 @@ namespace SAFQA.API.Controllers
         [HttpPost("manual")]
         public async Task<IActionResult> ManualBid(BidRequestDto dto)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            await _bidService.PlaceManualBid(userId, dto.AuctionId, dto.Amount);
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized(new
+                    {
+                        message = "User not found"
+                    });
 
-            return Ok(new { message = "Bid placed" });
+                await _bidService.PlaceManualBid(userId, dto.AuctionId, dto.Amount);
+
+                return Ok(new
+                {
+                    message = "Bid placed successfully"
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = ex.Message
+                });
+            }
         }
 
         [HttpPost("activate/{auctionId}")]
