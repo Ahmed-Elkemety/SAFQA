@@ -247,5 +247,24 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
 
             _disputeRepo.Update(dispute);
         }
+
+        public DisputeAdmDto GetDisputeDetails(int disputeId)
+        {
+            return _disputeRepo.GetAll()
+
+                .Where(d =>
+                    d.Id == disputeId &&
+                    !d.IsDeleted)
+
+                .Select(d => new DisputeAdmDto
+                {
+                    Description = d.Description,
+
+                    Reason = d.Reason,
+
+                    Evidences = d.Evidences
+                })
+                .FirstOrDefault();
+        }
     }
 }

@@ -15,5 +15,7 @@ namespace SAFQA.BLL.Dtos.UserAppDto.ChatDto
 
         public DateTime CreatedAt { get; set; }
         public string? LastMessage { get; set; }
+        public List<MessageDto> Messages { get; set; }
+
     }
 }

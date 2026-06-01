@@ -20,5 +20,6 @@ namespace SAFQA.BLL.Dtos.UserAppDto.DisputeDto
         public DateTime Date { get; set; }
 
         public int AuctionId { get; set; }
-        public string? AuctionTitle { get; set; }    }
+        public string? AuctionTitle { get; set; } 
+    }
 }
