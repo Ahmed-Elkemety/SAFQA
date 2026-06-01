@@ -20,7 +20,7 @@ namespace SAFQA.API.Controllers
             _adminservice = adminservice;
         }
 
-        // GET: api/Transaction/pending/5
+
         [HttpGet("pending/{sellerId}")]
         public async Task<IActionResult> GetPendingPayments(int sellerId)
         {
