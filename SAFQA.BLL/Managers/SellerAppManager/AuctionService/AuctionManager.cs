@@ -38,40 +38,59 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
             _notification = notification;
             _context = context;
         }
-        public Task<int> GetTotalSellerAuctions(int sellerId)
+        public Task<int> GetTotalSellerAuctions(string userId)
         {
-            return _auctionRepository.CountAuctionsBySeller(sellerId);
+            return _auctionRepository.CountAuctionsBySeller(userId);
         }
 
-        public Task<int> GetActiveSellerAuctions(int sellerId)
+        public Task<int> GetActiveSellerAuctions(string userId)
         {
-            return _auctionRepository.GetActiveSellerAuctions(sellerId);
+            return _auctionRepository.GetActiveSellerAuctions(userId);
         }
 
-        public async Task<IEnumerable<TopWinnerDto>> GetWinnersBySeller(int sellerId)
+        public async Task<IEnumerable<TopWinnerDto>> GetWinnersBySeller(string sellerUserId)
         {
             var result = await _auctionRepository.GetAll()
-                .Where(a => a.SellerId == sellerId &&
-                            a.WinnerUserId != null &&
-                            !a.IsDeleted &&
-                            a.Status == AuctionStatus.Finished)
-                .Join(_userRepo.GetAll(),
-                      a => a.WinnerUserId,
-                      u => u.Id,
-                      (a, u) => new { Auction = a, User = u })
-                .GroupBy(x => new { x.User.Id, x.User.FullName, x.User.Email })
+                .Where(a =>
+                    a.Seller.UserId == sellerUserId &&
+                    a.WinnerUserId != null &&
+                    !a.IsDeleted &&
+                    a.Status == AuctionStatus.Finished)
+
+                .Join(
+                    _userRepo.GetAll(),
+                    a => a.WinnerUserId,
+                    u => u.Id,
+                    (a, u) => new { Auction = a, User = u })
+
+                .GroupBy(x => new
+                {
+                    x.User.Id,
+                    x.User.FullName,
+                    x.User.Email
+                })
+
                 .Select(g => new TopWinnerDto
                 {
                     BuyerName = g.Key.FullName,
+
                     Email = g.Key.Email,
-                    SellerCompanyName = g.Select(x => x.Auction.Seller.StoreName).FirstOrDefault(),
+
+                    SellerCompanyName = g
+                        .Select(x => x.Auction.Seller.StoreName)
+                        .FirstOrDefault(),
+
                     AuctionsWonCount = g.Count(),
-                    TotalPaidAmount = g.Sum(x => x.Auction.FinalPrice + x.Auction.SecurityDeposit)
+
+                    TotalPaidAmount = g.Sum(x =>
+                        x.Auction.FinalPrice +
+                        x.Auction.SecurityDeposit)
                 })
+
                 .OrderByDescending(x => x.TotalPaidAmount)
                 .ToListAsync();
 
-            return result.AsEnumerable(); 
+            return result;
         }
 
         public async Task<List<TopCustomerDto>> GetTopCustomers(string sellerUserId)
@@ -89,6 +108,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
                             (au.Auction.Status == AuctionStatus.Active ||
                              au.Auction.Status == AuctionStatus.Finished))
                 })
+                .Where(x => x.Auctions.Any())
                 .Select(x => new TopCustomerDto
                 {
                     Name = x.User.FullName,
@@ -110,11 +130,11 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
                             .Where(a => a.Auction.WinnerUserId == x.User.Id)
                             .Sum(a => a.Auction.FinalPrice)
                 })
-                .Where(x => x.ParticipatedAuctions > 0)
                 .OrderByDescending(x => x.ParticipatedAuctions);
 
             return await query.ToListAsync();
         }
+
 
         public async Task<int> GetTotalAuctions()
         {
@@ -133,18 +153,22 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
             return await _auctionRepository.GetUpcomingAuctionsCount();
         }
 
-        public async Task<List<AuctionProfitDto>> GetTopProfitableAuctions(int sellerId, int categoryId)
+        public async Task<List<AuctionProfitDto>> GetTopProfitableAuctions(string userId, int categoryId)
         {
+            var seller = _sellerRepository.GetAll()
+                .FirstOrDefault(s => s.UserId == userId && !s.IsDeleted);
+
+            if (seller == null)
+                return new List<AuctionProfitDto>();
+
             var validStatuses = new[] { AuctionStatus.Finished };
 
-            var query = _auctionRepository.GetAll();
-
-            var result = await query
+            var result = await _auctionRepository.GetAll()
                 .Where(a =>
                     !a.IsDeleted &&
-                    a.SellerId == sellerId &&
-                    validStatuses.Contains(a.Status) &&
-                    a.items.Any(i => i.Auction.CategoryId == categoryId)
+                    a.SellerId == seller.Id &&
+                    a.Status == AuctionStatus.Finished &&
+                    a.CategoryId == categoryId
                 )
                 .Select(a => new AuctionProfitDto
                 {
@@ -157,103 +181,114 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
                         .Select(au => au.User.FullName)
                         .FirstOrDefault()
                 })
-                .OrderByDescending(a => a.FinalPrice - a.StartingPrice)
+                .OrderByDescending(x => x.Profit)
                 .ToListAsync();
 
             return result;
         }
 
-        public async Task<IEnumerable<CategoryPercentageDto>> GetCategoryPercentageBySeller(int sellerId)
+        public async Task<IEnumerable<CategoryPercentageDto>> GetCategoryPercentageBySeller(string sellerUserId)
         {
             var auctions = _auctionRepository.GetAll()
-                .Where(a => a.SellerId == sellerId
-                            && !a.IsDeleted
-                            && (a.Status == AuctionStatus.Active || a.Status == AuctionStatus.Finished))
+                .Where(a =>
+                    !a.IsDeleted &&
+                    a.Seller.UserId == sellerUserId &&
+                    (a.Status == AuctionStatus.Active ||
+                     a.Status == AuctionStatus.Finished))
+
                 .Include(a => a.items)
                 .ThenInclude(i => i.Auction.Category);
 
-            var allItems = auctions.SelectMany(a => a.items)
-                                   .Where(i => i.Auction.CategoryId != null);
+            var allItems = auctions
+                .SelectMany(a => a.items);
 
-            var totalItems = allItems.Count();
+            var totalItems = await allItems.CountAsync();
 
-            
             if (totalItems == 0)
                 return new List<CategoryPercentageDto>();
 
-            var result = allItems
+            var result = await allItems
                 .GroupBy(i => i.Auction.Category.Name)
+
                 .Select(g => new CategoryPercentageDto
                 {
                     CategoryName = g.Key,
-                    Percentage = Math.Round((double)g.Count() / totalItems * 100, 2) 
+
+                    Percentage = Math.Round(
+                        ((double)g.Count() / totalItems) * 100,
+                        2)
                 })
-                .OrderByDescending(c => c.Percentage)
-                .ToList();
-
-            return result;
-        }
-
-        public async Task<IEnumerable<AuctionBidsDto>> GetSellerAuctionsBids(int sellerId)
-        {
-            var query = _auctionRepository.GetAll();
-
-            var result = await query
-                .Where(a =>
-                    !a.IsDeleted &&
-                    a.SellerId == sellerId &&
-                    a.Bids.Any() 
-                )
-                .Select(a => new AuctionBidsDto
-                {
-                    Title = a.Title,
-                    StartDate = a.StartDate,
-                    TotalBids = a.Bids.Count()
-                })
-                .OrderByDescending(a => a.TotalBids)
+                .OrderByDescending(x => x.Percentage)
                 .ToListAsync();
 
             return result;
         }
 
-        public IEnumerable<MonthlyEarningDto> GetMonthlyEarningsByCategory(int sellerId, int categoryId)
+        public async Task<IEnumerable<AuctionBidsDto>> GetSellerAuctionsBids(string sellerUserId)
         {
-            var auctions = _auctionRepository.GetAll()
-                .Where(a => a.SellerId == sellerId
-                && a.items.Any(i => i.Auction.CategoryId == categoryId)
-                && !a.IsDeleted)
-                                .ToList();
+            var result = await _auctionRepository.GetAll()
+              .Where(a =>
+                  !a.IsDeleted &&
+                  a.Seller.UserId == sellerUserId &&
+                  a.Bids.Any())
 
-            var grouped = auctions
-                .GroupBy(a => new { a.EndDate.Year, a.EndDate.Month })
+              .Select(a => new AuctionBidsDto
+              {
+                  Title = a.Title,
+
+                  StartDate = a.StartDate,
+
+                  TotalBids = a.Bids.Count()
+              })
+
+              .OrderByDescending(a => a.TotalBids)
+
+              .ToListAsync();
+
+            return result;
+        }
+
+        public IEnumerable<MonthlyEarningDto> GetMonthlyEarningsByCategory(string sellerUserId, int categoryId)
+        {
+            var result = _auctionRepository.GetAll()
+                .Where(a =>
+                    !a.IsDeleted &&
+                    a.Seller.UserId == sellerUserId &&
+                    a.CategoryId == categoryId)
+
+                .GroupBy(a => new
+                {
+                    a.EndDate.Year,
+                    a.EndDate.Month
+                })
                 .Select(g => new MonthlyEarningDto
                 {
                     Year = g.Key.Year,
                     Month = g.Key.Month,
-                    TotalEarnings = g.Sum(a => a.FinalPrice), // أو استخدم Transactions لو عايز دقة أكبر
+                    TotalEarnings = g.Sum(a => a.FinalPrice),
                     AuctionCount = g.Count()
                 })
                 .OrderBy(x => x.Year)
                 .ThenBy(x => x.Month)
                 .ToList();
 
-            return grouped;
+            return result;
         }
 
-        public IEnumerable<PopularProductsDto> GetMostPopularProductsBySeller(int sellerId, int topCount = 5)
+        public IEnumerable<PopularProductsDto> GetMostPopularProductsBySeller(string sellerUserId, int topCount = 5)
         {
-            var sellerAuctions = _auctionRepository.GetAll()
-                .Where(a => a.SellerId == sellerId);
-
-
-            var productViews = sellerAuctions
-                .SelectMany(a => a.items, (auction, item) => new PopularProductsDto
-                {
-                    Title = item.title,
-                    Description = item.Description,
-                    ViewCount = auction.ViewsCount 
-                })
-                .OrderByDescending(p => p.ViewCount) 
+            var productViews = _auctionRepository.GetAll()
+                .Where(a =>
+                    !a.IsDeleted &&
+                    a.Seller.UserId == sellerUserId)
+                .SelectMany(a => a.items,
+                    (auction, item) => new PopularProductsDto
+                    {
+                        Title = item.title,
+                        Description = item.Description,
+                        ViewCount = auction.ViewsCount
+                    })
+                .OrderByDescending(p => p.ViewCount)
                 .Take(topCount)
                 .ToList();
 

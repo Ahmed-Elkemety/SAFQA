@@ -14,25 +14,25 @@ namespace SAFQA.BLL.Managers.SellerAppManager.AuctionService
 {
     public interface IAuctionManager
     {
-        Task<int> GetTotalSellerAuctions(int sellerId);
-        Task<int> GetActiveSellerAuctions(int sellerId);
+        Task<int> GetTotalSellerAuctions(string userId);
+        Task<int> GetActiveSellerAuctions(string userId);
         Task<List<TopCustomerDto>> GetTopCustomers(string SellerUserId);
         Task<int> GetTotalAuctions();
         Task<int> GetActiveAuctionsCount();
         Task<int> GetExpiredAuctionsCount();
         Task<int> GetUpcomingAuctionsCount();
-        Task<List<AuctionProfitDto>> GetTopProfitableAuctions(int sellerId, int categoryId);
-        Task<IEnumerable<CategoryPercentageDto>> GetCategoryPercentageBySeller(int sellerId);
-        Task<IEnumerable<AuctionBidsDto>> GetSellerAuctionsBids(int sellerId);
-        IEnumerable<MonthlyEarningDto> GetMonthlyEarningsByCategory(int sellerId, int categoryId);
-        IEnumerable<PopularProductsDto> GetMostPopularProductsBySeller(int sellerId, int topCount = 10);
+        Task<List<AuctionProfitDto>> GetTopProfitableAuctions(string userId, int categoryId);
+        Task<IEnumerable<CategoryPercentageDto>> GetCategoryPercentageBySeller(string sellerUserId);
+        Task<IEnumerable<AuctionBidsDto>> GetSellerAuctionsBids(string SellerUserId);
+        IEnumerable<MonthlyEarningDto> GetMonthlyEarningsByCategory(string sellerUserId, int categoryId);
+        IEnumerable<PopularProductsDto> GetMostPopularProductsBySeller(string sellerUserId, int topCount = 5);
         PagedResult<ExpiredAuctionsDto> GetExpiredAuctions(int page = 1, int pageSize = 10);
         void DeleteAuctionPermanently(int id);
         PagedResult<ActiveAuctionDto> GetActiveAuctions(int page, int pageSize);
         void ForceExpireAuction(int auctionId);
         PagedResult<RejectedDeletedAuctionDto> GetRejectedDeletedAuctions(int page = 1, int pageSize = 10);
         void DeleteAuctionPermanentlyy(int id);
-        Task<IEnumerable<TopWinnerDto>> GetWinnersBySeller(int sellerId);
+        Task<IEnumerable<TopWinnerDto>> GetWinnersBySeller(string SellerUserId);
         Task<PagedResult<SellerActionHistoryDto>> GetHistory(
                 string userId,
                 AuctionStatus? status,

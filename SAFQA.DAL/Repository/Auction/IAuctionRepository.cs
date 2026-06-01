@@ -14,8 +14,8 @@ namespace SAFQA.DAL.Repository.Auction
     {
         IQueryable<Models.Auction> GetAll();
         Models.Auction GetById(int Id);
-        Task<int> GetActiveSellerAuctions(int sellerId);
-        Task<int> CountAuctionsBySeller(int sellerId);
+        Task<int> GetActiveSellerAuctions(string userId);
+        Task<int> CountAuctionsBySeller(string userId);
         Task<List<(User User, Models.Seller Seller, Models.Auction AuctionDetails)>> GetSellerWinnersRawAsync(int sellerId);
         Task<List<(string UserId, string Name, string Email, string CompanyName, int ParticipatedAuctions, decimal TotalPaid)>> GetTopCustomersAsync();
         Task<int> GetTotalAuctionsCount();

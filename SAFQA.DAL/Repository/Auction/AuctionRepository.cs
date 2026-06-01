@@ -21,17 +21,20 @@ namespace SAFQA.DAL.Repository.Auction
             _context = context;
         }
 
-        public Task<int> CountAuctionsBySeller(int sellerId)
+        public Task<int> CountAuctionsBySeller(string userId)
         {
             return _context.Auctions
-                    .Where(a => a.SellerId == sellerId)
+                    .Where(a =>
+                        a.Seller != null &&
+                        a.Seller.UserId == userId &&
+                        !a.IsDeleted)
                     .CountAsync();
         }
 
-        public Task<int> GetActiveSellerAuctions(int sellerId)
+        public Task<int> GetActiveSellerAuctions(string userId)
         {
             return _context.Auctions
-                            .Where(a => a.SellerId == sellerId && a.Status == AuctionStatus.Active)
+                            .Where(a => a.Seller.UserId == userId && a.Status == AuctionStatus.Active)
                             .CountAsync();
         }
 
