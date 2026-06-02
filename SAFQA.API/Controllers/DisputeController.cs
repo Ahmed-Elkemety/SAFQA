@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SAFQA.BLL.Dtos.UserAppDto.DisputeDto;
+using SAFQA.BLL.Managers.AdminService;
 using SAFQA.BLL.Managers.UserAppManager.DisputeService;
 using System.Security.Claims;
 
@@ -12,9 +13,10 @@ namespace SAFQA.API.Controllers
     public class DisputeController : ControllerBase
     {
         private readonly IDisputeService _disputeService;
-
-        public DisputeController(IDisputeService disputeService)
+        private readonly IAdminService _adminService;
+        public DisputeController(IDisputeService disputeService, IAdminService adminService)
         {
+            _adminService = adminService;
             _disputeService = disputeService;
         }
 
@@ -47,13 +49,16 @@ namespace SAFQA.API.Controllers
             }
         }
 
-        [Authorize( Roles = "USER")]
+        [Authorize(Roles = "USER")]
         [HttpGet("my-reports")]
-        public async Task<IActionResult> GetMyReports()
+        public async Task<IActionResult> GetMyReports(
+             int page = 1,
+             int pageSize = 10)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            var result = await _disputeService.GetUserReports(userId);
+            var result = await _disputeService
+                .GetUserReports(userId, page, pageSize);
 
             if (!result.Item1.IsSuccess)
                 return BadRequest(result.Item1);
@@ -105,6 +110,46 @@ namespace SAFQA.API.Controllers
                     message = ex.Message
                 });
             }
+        }
+
+        [HttpGet("escalated-cards")]
+        public IActionResult GetEscalatedCards()
+        {
+            var result = _adminService.GetEscalatedCards();
+
+            if (result == null || !result.Any())
+            {
+                return NotFound("No escalated disputes found.");
+            }
+
+            return Ok(result);
+        }
+
+        [HttpGet("chat/{disputeId}")]
+        public IActionResult GetDisputeChat(int disputeId)
+        {
+            var result = _adminService.GetDisputeChat(disputeId);
+
+            if (result == null)
+                return NotFound("Conversation not found for this dispute");
+
+            return Ok(result);
+        }
+
+        [HttpGet("disputes/{disputeId}/details")]
+        public IActionResult GetDisputeDetails(int disputeId)
+        {
+            var result = _disputeService.GetDisputeDetails(disputeId);
+
+            if (result == null)
+            {
+                return NotFound(new
+                {
+                    Message = "Dispute not found."
+                });
+            }
+
+            return Ok(result);
         }
     }
 }

@@ -6,6 +6,7 @@ using SAFQA.API.Middleware;
 using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.BLL.Managers.AccountManager.Email_Sender;
 using SAFQA.BLL.Managers.AccountManager.OAuth;
+using SAFQA.BLL.Managers.AdminService;
 using SAFQA.BLL.Managers.BackgroundServices;
 using SAFQA.BLL.Managers.DeliveryAppManager;
 using SAFQA.BLL.Managers.RecommendationAI;
@@ -159,10 +160,11 @@ namespace SAFQA.API
             builder.Services.AddScoped<IProxyRepository, ProxyRepository>();
             builder.Services.AddScoped<IProxyService, ProxyService>();
             builder.Services.AddScoped<IUserInteractionService, UserInteractionService>();
-            //builder.Services.AddHostedService<HotScoreBackgroundService>();
-            //builder.Services.AddHostedService<AuctionStatusBackgroundService>();
-            //builder.Services.AddHostedService<EscrowReleaseBackgroundService>();
-            //builder.Services.AddHostedService<ExpiredOtpCleanupService>();
+            builder.Services.AddHostedService<HotScoreBackgroundService>();
+            builder.Services.AddHostedService<AuctionStatusBackgroundService>();
+            builder.Services.AddHostedService<EscrowReleaseBackgroundService>();
+            builder.Services.AddHostedService<ExpiredOtpCleanupService>();
+            builder.Services.AddScoped<IAdminService, AdminService>();
 
 
 

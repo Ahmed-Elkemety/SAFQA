@@ -685,9 +685,11 @@ namespace SAFQA.BLL.Managers.SellerAppManager
                 .Take(pageSize)
                 .Select(s => new SellerListDto
                 {
+                    Id = s.UserId,
                     Business = s.StoreName,
                     Owner = s.User.FullName,
                     Email = s.User.Email,
+                    Status = s.VerificationStatus.ToString()
                 })
                 .ToList();
 

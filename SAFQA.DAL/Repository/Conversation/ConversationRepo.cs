@@ -22,6 +22,18 @@ namespace SAFQA.DAL.Repository.Conversation
             return _context.conversations;
         }
 
+        public Models.Conversation Get(int disputeId)
+        {
+            return _context.conversations
+              .Include(c => c.Buyer)
+              .Include(c => c.SellerUser)
+              .Include(c => c.Messages)
+                  .ThenInclude(m => m.Sender)
+              .Include(c => c.Messages)
+                  .ThenInclude(m => m.Attachments)
+              .FirstOrDefault(c => c.DisputeId == disputeId);
+        }
+
         public Models.Conversation GetById(int id)
         {
             return _context.conversations.FirstOrDefault(c => c.Id == id);

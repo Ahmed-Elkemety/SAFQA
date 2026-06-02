@@ -232,7 +232,7 @@ namespace SAFQA.API.Controllers
             return Ok(new { message = "Seller rejected successfully" });
         }
 
-        [HttpGet]
+        [HttpGet("/GetAll")]
         public IActionResult GetAllSellers([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             if (page <= 0) page = 1;

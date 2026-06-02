@@ -11,6 +11,7 @@ namespace SAFQA.DAL.Repository.Conversation
     {
         IQueryable<Models.Conversation> GetAll();
         Models.Conversation GetById(int id);
+        Models.Conversation Get(int disputeId);
         void Add(Models.Conversation conversation);
         void Update(Models.Conversation conversation);
         void Delete(Models.Conversation conversation);

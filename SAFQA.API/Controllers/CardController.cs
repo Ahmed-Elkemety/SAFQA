@@ -38,6 +38,7 @@ namespace SAFQA.API.Controllers
         }
 
         [HttpGet("cards")]
+        [Authorize(Roles = "USER")]
         public IActionResult GetUserCards()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

@@ -29,32 +29,49 @@ namespace SAFQA.API.Controllers
         }
 
         // GET: api/Auction/active/5
-        [HttpGet("Total_active/{sellerId}")]
-        public async Task<IActionResult> GetActiveAuctions(int sellerId)
+        [Authorize(Roles = "SELLER")]
+        [HttpGet("Total_active")]
+        public async Task<IActionResult> GetActiveAuctions()
         {
-            var activeAuctions = await _auctionManager.GetActiveSellerAuctions(sellerId);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var activeAuctions = await _auctionManager.GetActiveSellerAuctions(userId);
             return Ok(activeAuctions);
         }
 
+
         // GET: api/Auction/total/5
-        [HttpGet("total/{sellerId}")]
-        public async Task<IActionResult> GetTotalAuctions(int sellerId)
+        [Authorize(Roles = "SELLER")]
+        [HttpGet("total/Seller/Auctions")]
+        public async Task<IActionResult> GetTotalAuctions()
         {
-            var total = await _auctionManager.GetTotalSellerAuctions(sellerId);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var total = await _auctionManager.GetTotalSellerAuctions(userId);
             return Ok(total);
         }
 
-
-        [HttpGet("{sellerUserId}/Top customers")]
-        public async Task<IActionResult> GetSellerCustomers(string sellerUserId)
+        [HttpGet("Seller/Top customers")]
+        public async Task<IActionResult> GetSellerCustomers()
         {
-            var result = await _auctionManager.GetTopCustomers(sellerUserId);
+            var UserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(UserId))
+                return Unauthorized();
+
+            var result = await _auctionManager.GetTopCustomers(UserId);
 
             return Ok(result);
         }
 
         [HttpGet("total-auctions")]
-        public async Task<IActionResult> GetTotalAuctions()
+        public async Task<IActionResult> GetTotalAuction()
         {
             int total = await _auctionManager.GetTotalAuctions();
             return Ok(new { totalAuctions = total });
@@ -81,11 +98,15 @@ namespace SAFQA.API.Controllers
             return Ok(new { upcomingAuctions = count });
         }
 
-
-        [HttpGet("winners/{sellerId}")]
-        public async Task<IActionResult> GetWinnersBySeller(int sellerId)
+        [HttpGet("winners")]
+        public async Task<IActionResult> GetWinnersBySeller()
         {
-            var result = await _auctionManager.GetWinnersBySeller(sellerId); 
+            var sellerUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(sellerUserId))
+                return Unauthorized();
+
+            var result = await _auctionManager.GetWinnersBySeller(sellerUserId); 
 
             if (result == null || !result.Any())
                 return NotFound("No winners found for this seller");
@@ -93,25 +114,36 @@ namespace SAFQA.API.Controllers
             return Ok(result);
         }
 
-        [HttpGet("auctions-bids/{sellerId}")]
-        public async Task<ActionResult> GetSellerAuctionsBids(int sellerId)
+        [HttpGet("auctions-bids")]
+        public async Task<ActionResult> GetSellerAuctionsBids()
         {
-            var result = await _auctionManager.GetSellerAuctionsBids(sellerId);
+            var sellerUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(sellerUserId))
+                return Unauthorized();
+
+            var result = await _auctionManager.GetSellerAuctionsBids(sellerUserId);
 
             if (result == null || !result.Any())
             {
-                return NotFound($"No auctions with bids found for seller ID {sellerId}");
+                return NotFound("No auctions with bids found for this seller");
             }
 
             return Ok(result);
         }
 
-        [HttpGet("{sellerId}/category-percentages")]
-        public async Task<IActionResult> GetCategoryPercentages(int sellerId)
+        [HttpGet("category-percentages")]
+        public async Task<IActionResult> GetCategoryPercentages()
         {
-            var result = await _auctionManager.GetCategoryPercentageBySeller(sellerId);
+            var sellerUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            if (result == null || !result.Any())
+            if (string.IsNullOrEmpty(sellerUserId))
+                return Unauthorized();
+
+            var result = await _auctionManager
+                .GetCategoryPercentageBySeller(sellerUserId);
+
+            if (!result.Any())
                 return NotFound("No items or auctions found for this seller");
 
             return Ok(result);
@@ -139,40 +171,58 @@ namespace SAFQA.API.Controllers
             return Ok(result);
         }
 
-        [HttpGet("seller/{sellerId}/category/{categoryId}/monthly-earnings")]
-        public ActionResult<IEnumerable<MonthlyEarningDto>> GetMonthlyEarningsByCategory(
-            int sellerId,
-            int categoryId)
+        [HttpGet("monthly-earnings/{categoryId}")]
+        public IActionResult GetMonthlyEarningsByCategory(int categoryId)
         {
-            var earnings = _auctionManager.GetMonthlyEarningsByCategory(sellerId, categoryId);
+            var sellerUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            if (earnings == null || !earnings.Any())
-                return NotFound("There are no earnings for this category or for the specified seller");
+            if (string.IsNullOrEmpty(sellerUserId))
+                return Unauthorized();
 
-            return Ok(earnings);
+            var result = _auctionManager
+                .GetMonthlyEarningsByCategory(sellerUserId, categoryId);
+
+            if (!result.Any())
+                return NotFound("No earnings found.");
+
+            return Ok(result);
         }
 
-        [HttpGet("MostPopularProducts/{sellerId}")]
-        public IActionResult GetMostPopularProducts(int sellerId, int topCount = 5)
+        [HttpGet("MostPopularProducts")]
+        public IActionResult GetMostPopularProducts(int topCount = 5)
         {
-            var popularProducts = _auctionManager.GetMostPopularProductsBySeller(sellerId, topCount);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var popularProducts =
+                _auctionManager.GetMostPopularProductsBySeller(userId, topCount);
 
             if (popularProducts == null || !popularProducts.Any())
-                return NotFound(new { Message = "No products found for this seller." });
+                return NotFound(new
+                {
+                    Message = "No products found for this seller."
+                });
 
             return Ok(popularProducts);
         }
 
-        [HttpGet("top-profitable/{sellerId}/{categoryId}")]
-        public async Task<IActionResult> GetTopProfitableAuctions(int sellerId, int categoryId)
+        [HttpGet("top-profitable/{categoryId}")]
+        public async Task<IActionResult> GetTopProfitableAuctions(int categoryId)
         {
-            if (sellerId <= 0 || categoryId <= 0)
-                return BadRequest("SellerId and CategoryId must be greater than zero.");
+            if (categoryId <= 0)
+                return BadRequest("CategoryId must be greater than zero.");
 
-            var auctions = await _auctionManager.GetTopProfitableAuctions(sellerId, categoryId);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var auctions = await _auctionManager.GetTopProfitableAuctions(userId, categoryId);
 
             if (auctions == null || !auctions.Any())
-                return NotFound("No profitable auctions found for this seller in this category.");
+                return NotFound("No profitable auctions found.");
 
             return Ok(auctions);
         }
@@ -191,18 +241,17 @@ namespace SAFQA.API.Controllers
 
             return Ok(result);
         }
-        // ✅ 1. Get All Categories
+ 
+
         [HttpGet ("Get-Categories")]
-        [Authorize(Roles = "SELLER")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _category.GetAllCategoriesAsync();
             return Ok(result);
         }
 
-        // ✅ 2. Get Category Attributes
         [HttpGet("Get-Attributes/{categoryId}")]
-        [Authorize(Roles = "SELLER")]
+
         public async Task<IActionResult> GetAttributes(int categoryId)
         {
             var result = await _category.GetCategoryAttributesAsync(categoryId);
@@ -277,7 +326,6 @@ namespace SAFQA.API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
-
 
         [HttpGet("expired")]
         public IActionResult GetExpiredAuctions([FromQuery] int page = 1, [FromQuery] int pageSize = 10)

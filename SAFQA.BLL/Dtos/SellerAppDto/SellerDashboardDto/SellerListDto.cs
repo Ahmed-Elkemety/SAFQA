@@ -8,6 +8,7 @@ namespace SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto
 {
     public class SellerListDto
     {
+        public string Id { get; set; }
         public string Business { get; set; }   
         public string Owner { get; set; }      
         public string Email { get; set; }     
