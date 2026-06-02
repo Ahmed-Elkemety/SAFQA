@@ -356,6 +356,8 @@ namespace SAFQA.BLL.Managers.AccountManager.Auth
                 expires: DateTime.UtcNow.AddHours(6),
                 signingCredentials: creds
             );
+
+            await _context.SaveChangesAsync();
             return (new JwtSecurityTokenHandler().WriteToken(token));
         }
 

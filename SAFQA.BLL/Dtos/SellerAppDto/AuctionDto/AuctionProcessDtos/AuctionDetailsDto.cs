@@ -8,6 +8,7 @@ namespace SAFQA.BLL.Dtos.SellerAppDto.AuctionDto.AuctionProcessDtos
 {
     public class AuctionDetailsDto
     {
+        public bool IsFaviorate { get; set; }
         public int Id { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }

@@ -10,6 +10,5 @@ namespace SAFQA.BLL.Dtos.UserAppDto.AuctionDto
     {
         public int AuctionId { get; set; }
         public string Reason { get; set; }
-        public string? Notes { get; set; }
     }
 }

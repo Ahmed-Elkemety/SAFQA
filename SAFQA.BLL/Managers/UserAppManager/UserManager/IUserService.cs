@@ -20,5 +20,8 @@ namespace SAFQA.BLL.Managers.UserAppManager
         Task<(AuthResult, UserProfileDto?)> GetProfile(string userId);
         Task<(AuthResult, UserAccountDto?)> GetAccount(string userId);
         Task<AuthResult> EditAccount(string userId, EditAccountDto dto);
+        Task<AuthResult> FollowSeller(string userId, int sellerId);
+        Task<AuthResult> UnfollowSeller(string userId, int sellerId);
+        Task<AuthResult> RemoveFavorite(string userId, int auctionId);
     }
 }

@@ -9,6 +9,7 @@ namespace SAFQA.BLL.Dtos.SellerAppDto.BussinessAccountDto
 {
     public class BusinessAccountDto
     {
+        public bool? isfollowed { get; set; }
         public string StoreName { get; set; }
         public string Email { get; set; }
         public string PhoneNumber { get; set; }

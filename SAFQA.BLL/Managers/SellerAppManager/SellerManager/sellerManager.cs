@@ -382,13 +382,14 @@ namespace SAFQA.BLL.Managers.SellerAppManager
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<BusinessAccountDto?> GetBusinessAccountAsync(string userId)
+        public async Task<BusinessAccountDto?> GetBusinessAccountAsync(string sellerId,string? userId)
         {
-            var data = await _sellerRepo.GetBusinessAccountAsync(userId);
+            var data = await _sellerRepo.GetBusinessAccountAsync(sellerId);
 
             if (data == null) return null;
 
-            return new BusinessAccountDto
+            
+            var result =  new BusinessAccountDto
             {
                 StoreName = data.StoreName,
                 Email = data.Email,
@@ -403,6 +404,27 @@ namespace SAFQA.BLL.Managers.SellerAppManager
                 StoreLogo = data.StoreLogo,
                 VerificationStatus = data.VerificationStatus
             };
+
+            var sellerIdFromUser = await _context.Sellers
+                .Where(s => s.UserId == sellerId)
+                .Select(s => s.Id)
+                .FirstOrDefaultAsync();
+
+            if (userId != null)
+            {
+                var  userfollow = await _context.UserFollowers
+                    .FirstOrDefaultAsync(uf => uf.UserId == userId && uf.SellerId == sellerIdFromUser);
+                if (userfollow != null)
+                {
+                  result.isfollowed = true;
+                }
+                else
+                {
+                    result.isfollowed = false;
+                }
+            }
+            return result;
+            
         }
 
         public async Task<int> GetTotalSellersCount()

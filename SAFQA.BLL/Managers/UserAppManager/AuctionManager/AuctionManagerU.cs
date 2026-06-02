@@ -44,6 +44,18 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
 
         public async Task<AuthResult> ReportAuctionAsync(string userId, CreateReportDto dto)
         {
+
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "User not found"
+                };
+            }
+
             var exists = await _context.auctionReports
                 .AnyAsync(r => r.AuctionId == dto.AuctionId && r.UserId == userId);
 
@@ -61,6 +73,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                 AuctionId = dto.AuctionId,
                 UserId = userId,
                 Reason = dto.Reason,
+                CreatedAt = DateTime.UtcNow
             };
 
             await _context.auctionReports.AddAsync(report);
@@ -304,8 +317,21 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                 }, null);
             }
 
+            var  userfaviorate = _context.auctionLikes
+                .Any(l => l.AuctionId == auctionId && l.UserId == userId);
+            bool ok;
+            if (userfaviorate)
+            {
+                ok = true;
+            }
+            else
+            {
+                ok = false;
+            }
+
             var dto = new AuctionDetailsDto
             {
+                IsFaviorate = ok,
                 Id = auction.Id,
                 Title = auction.Title,
                 Description = auction.Description,
@@ -384,7 +410,30 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                 };
             }
 
-            if (wallet.Balance >= auction.SecurityDeposit)
+            if (wallet.Balance < auction.SecurityDeposit)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = "Insufficient balance for security deposit"
+                };
+            }
+
+            var exists = await _context.auctionParticipations
+                .AnyAsync(x =>
+                    x.AuctionId == auctionId &&
+                    x.UserId == userId);
+
+            if (exists)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = true,
+                    Message = "You have already joined this auction"
+                };
+            }
+
+            try
             {
                 var auctionParticipation = new AuctionParticipations
                 {
@@ -394,20 +443,25 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                 };
 
                 auction.ParticipationCount++;
+
                 await _auctionRepository.CreateAuctionParticipation(auctionParticipation);
                 await _auctionRepository.SaveChangesAsync();
-
+            }
+            catch (DbUpdateException ex)
+                when (ex.InnerException is Microsoft.Data.SqlClient.SqlException sqlEx
+                      && (sqlEx.Number == 2627 || sqlEx.Number == 2601))
+            {
                 return new AuthResult
                 {
                     IsSuccess = true,
-                    Message = "You have enough balance to proceed"
+                    Message = "You have already joined this auction"
                 };
             }
 
             return new AuthResult
             {
-                IsSuccess = false,
-                Message = "Insufficient balance for security deposit"
+                IsSuccess = true,
+                Message = "You have enough balance to proceed"
             };
         }
 
@@ -667,8 +721,19 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
             {
                 AuctionId = a.Id,
                 Title = a.Title,
-                DisplayPrice = a.CurrentPrice,
-                DisplayDate = a.CreatedAt,
+                DisplayPrice =
+                    a.Status == AuctionStatus.Upcoming
+                        ? a.StartingPrice
+                        : a.Status == AuctionStatus.Active || a.Status == AuctionStatus.EndingSoon
+                            ? a.CurrentPrice
+                                : 0,
+
+                DisplayDate =
+                    a.Status == AuctionStatus.Upcoming
+                        ? a.StartDate
+                        : a.Status == AuctionStatus.Active || a.Status == AuctionStatus.EndingSoon
+                            ? a.EndDate
+                                : DateTime.MinValue,
                 TotalBids = a.TotalBids,
                 Status = a.Status,
                 Image = a.Image
@@ -745,7 +810,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
             return (new AuthResult
             {
                 IsSuccess = true,
-                Message = "Favorite auctions retrieved successfully"
+                Message = "Search auctions retrieved successfully"
             }, result);
         }
     }

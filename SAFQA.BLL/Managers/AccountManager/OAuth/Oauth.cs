@@ -17,6 +17,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using SAFQA.DAL.Database;
 using SAFQA.BLL.Dtos.AccountDto.Facebook;
+using SAFQA.DAL.Enums;
 
 namespace SAFQA.BLL.Managers.AccountManager.OAuth
 {
@@ -47,43 +48,49 @@ namespace SAFQA.BLL.Managers.AccountManager.OAuth
 
             try
             {
-                var clientId = _configuration["Google:ClientId"];
-
-                if (string.IsNullOrEmpty(clientId))
+                if (string.IsNullOrWhiteSpace(idToken))
                 {
-                    return new AuthResult
-                    {
-                        IsSuccess = false,
-                        Message = "Google ClientId is not configured"
-                    };
+                    return new AuthResult { IsSuccess = false, Message = "Token is empty" };
                 }
 
-                var settings = new GoogleJsonWebSignature.ValidationSettings
-                {
-                    Audience = new List<string> { clientId }
-                };
+                var clientId = _configuration["Google:ClientId"];
 
-                payload = await GoogleJsonWebSignature.ValidateAsync(idToken, settings);
+                payload = await GoogleJsonWebSignature.ValidateAsync(
+                    idToken,
+                    new GoogleJsonWebSignature.ValidationSettings
+                    {
+                        Audience = new List<string> { clientId }
+                    });
             }
-            catch
+            catch (Exception ex)
             {
                 return new AuthResult
                 {
                     IsSuccess = false,
-                    Message = "Invalid Google token"
+                    Message = ex.Message
                 };
             }
 
-            var user = await _userManager.FindByEmailAsync(payload.Email);
+            var user = await _userManager.Users
+                .FirstOrDefaultAsync(x =>
+                    x.GoogleId == payload.Subject ||
+                    x.Email == payload.Email);
 
             if (user == null)
             {
                 user = new User
                 {
+                    GoogleId = payload.Subject,
                     Email = payload.Email,
                     UserName = payload.Email,
-                    FullName = payload.Name,
-                    EmailConfirmed = true
+                    FullName = payload.Name ?? "Google User",
+
+                    EmailConfirmed = true,
+                    SecurityStamp = Guid.NewGuid().ToString(),
+                    CityId = 97,
+                    Gender = GenderType.Male,
+                    Status = UserStatus.Active,
+                    IsProfileCompleted = false
                 };
 
                 var createResult = await _userManager.CreateAsync(user);
@@ -93,21 +100,42 @@ namespace SAFQA.BLL.Managers.AccountManager.OAuth
                     return new AuthResult
                     {
                         IsSuccess = false,
-                        Message = "Failed to create user",
-                        Errors = createResult.Errors
-                            .Select(e => e.Description)
-                            .ToList()
+                        Message = string.Join(", ", createResult.Errors.Select(e => e.Description))
                     };
                 }
-
-                var loginInfo = new UserLoginInfo(
-                    loginProvider: "Google",
-                    providerKey: payload.Subject,
-                    displayName: "Google"
-                );
-
-                await _userManager.AddLoginAsync(user, loginInfo);
             }
+
+            if (string.IsNullOrEmpty(user.GoogleId))
+            {
+                user.GoogleId = payload.Subject;
+            }
+
+            if (!await _userManager.IsInRoleAsync(user, "USER"))
+            {
+                await _userManager.AddToRoleAsync(user, "USER");
+            }
+
+            var walletExists = await _context.Wallets
+                .AnyAsync(w => w.UserId == user.Id);
+
+            if (!walletExists)
+            {
+                var wallet = new Wallet
+                {
+                    UserId = user.Id,
+                    Balance = 0,
+                    FrozenBalance = 0,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                await _context.Wallets.AddAsync(wallet);
+                await _context.SaveChangesAsync();
+            }
+
+            user.LastLogin = DateTime.UtcNow;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await _userManager.UpdateAsync(user);
 
             var tokens = await GenerateTokensAsync(user);
 
@@ -135,19 +163,25 @@ namespace SAFQA.BLL.Managers.AccountManager.OAuth
             }
 
             var user = await _userManager.Users
-                .FirstOrDefaultAsync(u =>
-                    u.FacebookId == fbUser.Id ||
-                    (!string.IsNullOrEmpty(fbUser.Email) && u.Email == fbUser.Email));
+                .FirstOrDefaultAsync(x =>
+                    x.FacebookId == fbUser.Id ||
+                    (!string.IsNullOrEmpty(fbUser.Email) && x.Email == fbUser.Email));
 
             if (user == null)
             {
                 user = new User
                 {
                     FacebookId = fbUser.Id,
-                    Email = fbUser.Email,
-                    UserName = fbUser.Email ?? $"fb_{fbUser.Id}",
-                    FullName = fbUser.Name,
-                    EmailConfirmed = true
+                    Email = "user@safqa.com",
+                    UserName = "SAFQA USER" ?? $"fb_{fbUser.Id}",
+                    FullName = fbUser.Name ?? "Facebook User",
+
+                    EmailConfirmed = true,
+                    SecurityStamp = Guid.NewGuid().ToString(),
+                    CityId = 97,
+                    Gender = GenderType.Male,
+                    Status = UserStatus.Active,
+                    IsProfileCompleted = false
                 };
 
                 var createResult = await _userManager.CreateAsync(user);
@@ -157,24 +191,42 @@ namespace SAFQA.BLL.Managers.AccountManager.OAuth
                     return new AuthResult
                     {
                         IsSuccess = false,
-                        Message = "Failed to create user",
-                        Errors = createResult.Errors
-                            .Select(e => e.Description)
-                            .ToList()
+                        Message = string.Join(", ", createResult.Errors.Select(e => e.Description))
                     };
                 }
-
-                await _userManager.AddLoginAsync(user,
-                    new UserLoginInfo(
-                        "Facebook",
-                        fbUser.Id,
-                        "Facebook"));
             }
-            else if (string.IsNullOrEmpty(user.FacebookId))
+
+            if (string.IsNullOrEmpty(user.FacebookId))
             {
                 user.FacebookId = fbUser.Id;
-                await _userManager.UpdateAsync(user);
             }
+
+            if (!await _userManager.IsInRoleAsync(user, "USER"))
+            {
+                await _userManager.AddToRoleAsync(user, "USER");
+            }
+
+            var walletExists = await _context.Wallets
+                .AnyAsync(w => w.UserId == user.Id);
+
+            if (!walletExists)
+            {
+                var wallet = new Wallet
+                {
+                    UserId = user.Id,
+                    Balance = 0,
+                    FrozenBalance = 0,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                await _context.Wallets.AddAsync(wallet);
+                await _context.SaveChangesAsync();
+            }
+
+            user.LastLogin = DateTime.UtcNow;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await _userManager.UpdateAsync(user);
 
             var tokens = await GenerateTokensAsync(user);
 
@@ -206,19 +258,6 @@ namespace SAFQA.BLL.Managers.AccountManager.OAuth
             var userInfoUrl = $"https://graph.facebook.com/me?fields=id,name,email&access_token={accessToken}";
             var userInfoResponse = await client.GetStringAsync(userInfoUrl);
             return JsonSerializer.Deserialize<FacebookUserDto>(userInfoResponse);
-        }
-
-        private async Task<User> CreateUserAsync(FacebookUserDto fbUser)
-        {
-            var newUser = new User
-            {
-                FacebookId = fbUser.Id,
-                Email = fbUser.Email, // ممكن يكون null
-                UserName = fbUser.Email ?? fbUser.Id, // لو مفيش ايميل استخدم الـ id
-                FullName = fbUser.Name
-            };
-            await _userManager.CreateAsync(newUser);
-            return newUser;
         }
         #endregion
 

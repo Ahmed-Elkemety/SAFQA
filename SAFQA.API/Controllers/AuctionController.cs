@@ -444,6 +444,7 @@ namespace SAFQA.API.Controllers
             });
         }
 
+        [Authorize(Roles = "USER")]
         [HttpPost("check-deposit/{Id}")]
         public async Task<IActionResult> CheckDeposit(int id)
         {

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SAFQA.BLL.Dtos.UserAppDto.AccountDto;
+using SAFQA.BLL.Dtos.UserAppDto.FollowDto;
 using SAFQA.BLL.Managers.UserAppManager;
 using SAFQA.BLL.Managers.UserAppManager.AuctionManager;
 using SAFQA.BLL.Managers.UserAppManager.InteractionService;
@@ -20,12 +21,14 @@ namespace SAFQA.API.Controllers
         private readonly IUserService _userService;
         private readonly IAuctionManagerU _managerU;
         private readonly IUserInteractionService _interactionService;
+        private readonly IUserService _user;
 
-        public UserController(IUserService homeService ,IAuctionManagerU managerU , IUserInteractionService interactionService)
+        public UserController(IUserService homeService ,IAuctionManagerU managerU , IUserInteractionService interactionService,IUserService user)
         {
             _userService = homeService;
             _managerU = managerU;
             _interactionService = interactionService;
+            _user = user;
         }
 
 
@@ -178,15 +181,40 @@ namespace SAFQA.API.Controllers
             return Ok(result);
         }
 
-        // ===============================
-        // ADD FOLLOW
-        // ===============================
-        [HttpPost("add-follow/{sellerId}")]
-        public async Task<IActionResult> AddFollow(int sellerId)
+        [HttpPost("Follow")]
+        public async Task<IActionResult> Follow(FollowSellerDto dto)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            var result = await _interactionService.AddFollowAsync(sellerId, userId);
+            var result = await _user
+                .FollowSeller(userId, dto.SellerId);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        [HttpDelete("Unfollow/{sellerId}")]
+        public async Task<IActionResult> Unfollow(int sellerId)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var result = await _user
+                .UnfollowSeller(userId, sellerId);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        [HttpDelete("RemoveFavorite/{auctionId}")]
+        public async Task<IActionResult> RemoveFavorite(int auctionId)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var result = await _user.RemoveFavorite(userId, auctionId);
 
             if (!result.IsSuccess)
                 return BadRequest(result);
