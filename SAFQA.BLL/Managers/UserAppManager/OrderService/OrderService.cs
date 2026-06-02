@@ -48,9 +48,10 @@ namespace SAFQA.BLL.Managers.UserAppManager.OrderService
                 .Select(a => new UserInProgressOrderDto
                 {
                     AuctionId = a.Id,
+                    ExpectedDeliveryDate = a.delivery.ComfirmedAt,
 
-                    ExpectedDeliveryDate = a.delivery.ComfirmedAt, 
-
+                    AuctionTitle = a.Title,
+                    DeliveryStatus = a.delivery.Status,
                     Images = a.items
                         .SelectMany(i => i.images)
                         .Select(img => img.Image)

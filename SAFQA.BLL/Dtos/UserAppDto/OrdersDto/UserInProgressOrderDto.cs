@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SAFQA.DAL.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +10,8 @@ namespace SAFQA.BLL.Dtos.UserAppDto.OrdersDto
     public class UserInProgressOrderDto
     {
         public int AuctionId { get; set; }
+        public string AuctionTitle { get; set; }
+        public DeliveryStatus DeliveryStatus { get; set; }
         public DateTime? ExpectedDeliveryDate { get; set; }
         public List<byte[]> Images { get; set; }
     }
