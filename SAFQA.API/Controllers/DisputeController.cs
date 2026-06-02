@@ -49,13 +49,16 @@ namespace SAFQA.API.Controllers
             }
         }
 
-        [Authorize( Roles = "USER")]
+        [Authorize(Roles = "USER")]
         [HttpGet("my-reports")]
-        public async Task<IActionResult> GetMyReports()
+        public async Task<IActionResult> GetMyReports(
+             int page = 1,
+             int pageSize = 10)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            var result = await _disputeService.GetUserReports(userId);
+            var result = await _disputeService
+                .GetUserReports(userId, page, pageSize);
 
             if (!result.Item1.IsSuccess)
                 return BadRequest(result.Item1);

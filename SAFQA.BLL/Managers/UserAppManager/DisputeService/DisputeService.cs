@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static SAFQA.BLL.Help.Helper;
 
 namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
 {
@@ -61,6 +62,19 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
 
             if (auction.SellerId == null)
                 throw new Exception("This auction has no seller");
+
+            var existingDispute = _disputeRepo.GetAll()
+                   .FirstOrDefault(d =>
+                       d.AuctionId == dto.AuctionId &&
+                       d.UserId == userId &&
+                       !d.IsDeleted);
+
+            if (existingDispute != null)
+            {
+                throw new Exception(
+                    $"You already created a dispute for this auction. Dispute Id: {existingDispute.Id}"
+                );
+            }
 
 
             var delivery = await _deliveryRepo.GetByAuctionIdAsync(auction.Id);
@@ -127,41 +141,66 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
             return conversation;
         }
 
-        public async Task<(AuthResult, List<DisputeDto>)> GetUserReports(string userId)
+        public async Task<(AuthResult, PagedResult<DisputeDto>)>
+                    GetUserReports(string userId, int page = 1, int pageSize = 10)
         {
-            var disputes = await _disputeRepo.GetUserDisputesAsync(userId);
+            var query = _disputeRepo.GetUserDisputes(userId);
+            var totalCount = await query.CountAsync();
 
-            if (disputes == null || !disputes.Any())
+            if (totalCount == 0)
             {
-                return (new AuthResult
-                {
-                    IsSuccess = false,
-                    Message = "No reports found"
-                }, new List<DisputeDto>());
+                return (
+                    new AuthResult
+                    {
+                        IsSuccess = false,
+                        Message = "No reports found"
+                    },
+                    new PagedResult<DisputeDto>
+                    {
+                        Data = new List<DisputeDto>(),
+                        CurrentPage = page,
+                        TotalPages = 0,
+                        TotalCount = 0,
+                        HasNextPage = false
+                    }
+                );
             }
+            var pagedDisputes = await query
+                .OrderByDescending(d => d.Date)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(d => new DisputeDto
+                {
+                    Id = d.Id,
+                    Title = d.Title,
+                    Status = d.Status,
+                    ProblemType = d.ProblemType,
+                    Description = d.Description,
+                    ResolutionType = d.ResolutionType,
+                    Evidences = d.Evidences,
+                    Reason = d.Reason,
+                    Date = d.Date,
+                    AuctionId = d.AuctionId,
+                    AuctionTitle = d.Auction.Title
+                })
+                .ToListAsync();
 
-            var result = disputes.Select(d => new DisputeDto
-            {
-                Id = d.Id,
-                Title = d.Title,
-                Status = d.Status,
-                ProblemType = d.ProblemType,
-                Description = d.Description,
-                ResolutionType = d.ResolutionType,
-                Evidences = d.Evidences,
-                Reason = d.Reason,
-                Date = d.Date,
-                AuctionId = d.AuctionId,
-                AuctionTitle = d.Auction.Title
-            }).ToList();
-
-            return (new AuthResult
-            {
-                IsSuccess = true,
-                Message = "Success"
-            }, result);
+            return (
+                new AuthResult
+                {
+                    IsSuccess = true,
+                    Message = "Success"
+                },
+                new PagedResult<DisputeDto>
+                {
+                    Data = pagedDisputes,
+                    CurrentPage = page,
+                    TotalCount = totalCount,
+                    TotalPages = (int)Math.Ceiling((double)totalCount / pageSize),
+                    HasNextPage = page * pageSize < totalCount
+                }
+            );
         }
-
 
         public async Task<DisputeTrackingDto> GetDisputeTracking(int disputeId)
         {
@@ -259,9 +298,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
                 .Select(d => new DisputeAdmDto
                 {
                     Description = d.Description,
-
                     Reason = d.Reason,
-
                     Evidences = d.Evidences
                 })
                 .FirstOrDefault();

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using SAFQA.BLL.Dtos.UserAppDto.ChatDto;
 using SAFQA.BLL.Managers.UserAppManager.ChatService;
 using SAFQA.DAL.Enums;
@@ -65,7 +66,8 @@ namespace SAFQA.BLL.Managers.UserAppManager.ConversationService
                 throw new Exception("Unauthorized access");
 
             var existing = _conversationRepo.GetAll()
-                .FirstOrDefault(c => c.DisputeId == disputeId);
+                             .Include(c => c.Dispute)
+                             .FirstOrDefault(c => c.DisputeId == disputeId);
 
             if (existing != null)
                 return Map(existing);
@@ -76,7 +78,8 @@ namespace SAFQA.BLL.Managers.UserAppManager.ConversationService
                 SellerUserId = sellerId,
                 DisputeId = dispute.Id,
                 Type = ConversationType.Dispute,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                Dispute = dispute
             };
 
             _conversationRepo.Add(conversation);
@@ -93,7 +96,8 @@ namespace SAFQA.BLL.Managers.UserAppManager.ConversationService
                 SellerId = c.SellerUserId,
                 DisputeId = c.DisputeId,
                 CreatedAt = c.CreatedAt,
-                LastMessage = c.LastMessage
+                LastMessage = c.LastMessage,
+                Reason = c.Dispute?.Reason
             };
         }
 
