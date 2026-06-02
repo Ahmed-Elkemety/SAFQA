@@ -23,45 +23,51 @@ namespace SAFQA.DAL.Repository.Transaction
         {
             await _context.Transactions.AddAsync(transaction);
         }
-        public async Task<List<(int Month, decimal Revenue)>> GetSellerMonthlyRevenue(int sellerId)
+
+        public async Task<List<(int Month, decimal Revenue)>> GetSellerMonthlyRevenue(string userId)
         {
-            return await _context.Transactions
-            .Where(t => t.Status == Enums.TransactionStatus.Completed &&
-                        t.Type == TransactionType.Deposit &&
-                        t.Wallet.User.Seller.Id == sellerId)
-            .GroupBy(t => t.CreatedAt.Month)
-            .Select(g => new ValueTuple<int, decimal>(
-                g.Key,
-                g.Sum(t => t.Amount)
-            ))
-            .ToListAsync();
+            return await GetAll()
+                .Where(t =>
+                    t.Status == TransactionStatus.Completed &&
+                    t.Type == TransactionType.Deposit &&
+                    t.Wallet != null &&
+                    t.Wallet.User != null &&
+                    t.Wallet.User.Seller != null &&
+                    t.Wallet.User.Seller.UserId == userId)
+                .GroupBy(t => t.CreatedAt.Month)
+                .Select(g => new ValueTuple<int, decimal>(
+                    g.Key,
+                    g.Sum(t => t.Amount)
+                ))
+                .ToListAsync();
         }
 
-        public async Task<int> GetTotalPendingPayments(int sellerId)
+        public Task<int> GetTotalPendingPayments(string userId)
         {
-            return await _context.Transactions
-                    .Where(t => t.Status == Enums.TransactionStatus.Pending &&
-                                t.Wallet != null &&
-                                t.Wallet.User != null &&
-                                t.Wallet.User.Seller != null &&
-                                t.Wallet.User.Seller.Id == sellerId)
-                    .CountAsync();
+            return _context.Transactions
+                .Where(t =>
+                    t.Status == TransactionStatus.Pending &&
+                    t.Wallet != null &&
+                    t.Wallet.User != null &&
+                    t.Wallet.User.Seller != null &&
+                    t.Wallet.User.Seller.UserId == userId
+                )
+                .CountAsync();
         }
 
 
 
-        public async Task<decimal> GetTotalRevenueAsync(int sellerId)
+        public async Task<decimal> GetTotalRevenueAsync(string userId)
         {
-            var totalDeposits = await _context.Transactions
-             .Where(t => t.Type == TransactionType.Deposit
-                         && t.Status == Enums.TransactionStatus.Completed
-                         && t.Wallet != null
-                         && t.Wallet.User != null
-                         && t.Wallet.User.Seller != null
-                         && t.Wallet.User.Seller.Id == sellerId)
-             .SumAsync(t => t.Amount);
-
-            return totalDeposits;
+            return await _context.Transactions
+                .Where(t =>
+                    t.Type == TransactionType.Deposit &&
+                    t.Status == TransactionStatus.Completed &&
+                    t.Wallet != null &&
+                    t.Wallet.User != null &&
+                    t.Wallet.User.Seller != null &&
+                    t.Wallet.User.Seller.UserId == userId)
+                .SumAsync(t => t.Amount);
         }
 
         public async Task<int> GetTotalTransactionsCount()

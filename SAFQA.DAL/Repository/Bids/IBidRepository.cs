@@ -11,8 +11,8 @@ namespace SAFQA.DAL.Repository.Bids
     {
         IQueryable<Bid> GetAll();
         Bid GetById(int Id);
-        Task<int> GetSellerBids(int sellerId);
-        Task<int> GetBidsByCategory(int sellerId, int categoryId);
+        Task<int> GetSellerBids(string userId);
+        Task<int> GetBidsByCategory(string userId, int categoryId);
         Task<List<(int AuctionId, string AuctionTitle, List<string> ProductNames, int TotalBids)>> GetAuctionsWithBidsRawBySellerAsync(int sellerId);
     }
 }

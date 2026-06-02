@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
 using SAFQA.BLL.Managers.AdminService;
 using SAFQA.BLL.Managers.SellerAppManager.TransactionService;
+using System.Security.Claims;
 
 namespace SAFQA.API.Controllers
 {
@@ -21,26 +23,41 @@ namespace SAFQA.API.Controllers
         }
 
 
-        [HttpGet("pending/{sellerId}")]
-        public async Task<IActionResult> GetPendingPayments(int sellerId)
+        [HttpGet("pending")]
+        public async Task<IActionResult> GetPendingPayments()
         {
-            var pendingPayments = await _transactionManager.GetTotalPendingPayments(sellerId);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+                return Unauthorized();
+
+            var pendingPayments = await _transactionManager.GetTotalPendingPayments(userId);
+
             return Ok(pendingPayments);
         }
 
-        // GET: api/Transaction/revenue/5
-        [HttpGet("revenue/{sellerId}")]
-        public async Task<IActionResult> GetTotalRevenue(int sellerId)
+        [HttpGet("revenue")]
+        public async Task<IActionResult> GetTotalRevenue()
         {
-            var totalRevenue = await _transactionManager.GetTotalRevenueAsync(sellerId);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+                return Unauthorized();
+
+            var totalRevenue = await _transactionManager.GetTotalRevenueAsync(userId);
+
             return Ok(totalRevenue);
         }
 
-        [HttpGet("MonthlyRevenue/{sellerId}")]
-        public async Task<ActionResult<List<SellerMonthlyRevenueDto>>> GetSellerMonthlyRevenue(int sellerId)
+        [HttpGet("MonthlyRevenue")]
+        public async Task<ActionResult<List<SellerMonthlyRevenueDto>>> GetSellerMonthlyRevenue()
         {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            var result = await _transactionManager.GetSellerMonthlyRevenueAsync(sellerId);
+            if (userId == null)
+                return Unauthorized();
+
+            var result = await _transactionManager.GetSellerMonthlyRevenueAsync(userId);
 
             return Ok(result);
         }

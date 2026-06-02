@@ -18,19 +18,19 @@ namespace SAFQA.BLL.Managers.SellerAppManager.ItemService
             _itemsRepository = itemsRepository;
         }
 
-        public IQueryable<Item> GetSellerProducts(int sellerId)
+        public IQueryable<Item> GetSellerProducts(string userId)
         {
-            return _itemsRepository.GetSellerProducts(sellerId);
+            return _itemsRepository.GetSellerProducts(userId);
         }
 
-        public IQueryable<Item> GetProductsByCategory(int sellerId, string categoryName)
+        public IQueryable<Item> GetProductsByCategory(string userId, string categoryName)
         {
-            return _itemsRepository.GetProductsByCategory(sellerId, categoryName);
+            return _itemsRepository.GetProductsByCategory(userId, categoryName);
         }
 
-        public IQueryable<Item> GetMostPopularProducts(int sellerId, int top = 5)
+        public IQueryable<Item> GetMostPopularProducts(string userId, int top = 5)
         {
-            return _itemsRepository.GetMostPopularProducts(sellerId, top);
+            return _itemsRepository.GetMostPopularProducts(userId, top);
         }
 
     }

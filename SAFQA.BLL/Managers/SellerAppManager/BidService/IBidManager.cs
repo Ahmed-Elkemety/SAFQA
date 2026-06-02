@@ -10,8 +10,8 @@ namespace SAFQA.BLL.Managers.SellerAppManager.BidService
 {
     public interface IBidManager
     {
-        Task<int> GetBidsByCategory(int sellerId, int categoryId);
+        Task<int> GetBidsByCategory(string userId, int categoryId);
 
-        Task<int> GetSellerBids(int sellerId);
+        Task<int> GetSellerBids(string userId);
     }
 }

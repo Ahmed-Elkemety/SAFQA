@@ -18,19 +18,20 @@ namespace SAFQA.BLL.Managers.SellerAppManager.TransactionService
             _transactionRepository = transactionRepository;
         }
 
-        public Task<int> GetTotalPendingPayments(int sellerId)
+        public Task<int> GetTotalPendingPayments(string userId)
         {
-            return _transactionRepository.GetTotalPendingPayments(sellerId);
+            return _transactionRepository.GetTotalPendingPayments(userId);
         }
 
-        public async Task<decimal> GetTotalRevenueAsync(int sellerId)
+        public async Task<decimal> GetTotalRevenueAsync(string userId)
         {
-            return await _transactionRepository.GetTotalRevenueAsync(sellerId);
+            return await _transactionRepository.GetTotalRevenueAsync(userId);
         }
 
-         public async Task<List<SellerMonthlyRevenueDto>> GetSellerMonthlyRevenueAsync(int sellerId)
-         {
-            var revenueData = await _transactionRepository.GetSellerMonthlyRevenue(sellerId);
+        public async Task<List<SellerMonthlyRevenueDto>> GetSellerMonthlyRevenueAsync(string userId)
+        {
+            var revenueData = await _transactionRepository
+                .GetSellerMonthlyRevenue(userId);
 
             return revenueData
                 .Select(r => new SellerMonthlyRevenueDto
@@ -39,7 +40,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager.TransactionService
                     Revenue = r.Revenue
                 })
                 .ToList();
-         }
+        }
 
         public async Task<int> GetTotalTransactionsCount()
         {

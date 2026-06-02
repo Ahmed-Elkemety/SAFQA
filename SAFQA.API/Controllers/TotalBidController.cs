@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
 using SAFQA.BLL.Managers.SellerAppManager.BidService;
+using System.Security.Claims;
 
 namespace SAFQA.API.Controllers
 {
@@ -16,19 +18,29 @@ namespace SAFQA.API.Controllers
             _bidManager = bidManager;
         }
 
-        // GET: api/Bid/seller/5
-        [HttpGet("seller/{sellerId}")]
-        public async Task<IActionResult> TotalSellerBids(int sellerId)
+        [HttpGet("seller")]
+        public async Task<IActionResult> TotalSellerBids()
         {
-            var bids = await _bidManager.GetSellerBids(sellerId);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+                return Unauthorized();
+
+            var bids = await _bidManager.GetSellerBids(userId);
             return Ok(bids);
         }
 
-        // GET: api/Bid/category/5/2
-        [HttpGet("category/{sellerId}/{categoryId}")]
-        public async Task<IActionResult> GetBidsByCategory(int sellerId, int categoryId)
+        [Authorize]
+        [HttpGet("category/{categoryId}")]
+        public async Task<IActionResult> GetBidsByCategory(int categoryId)
         {
-            var bids = await _bidManager.GetBidsByCategory(sellerId, categoryId);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+                return Unauthorized();
+
+            var bids = await _bidManager.GetBidsByCategory(userId, categoryId);
+
             return Ok(bids);
         }
     }

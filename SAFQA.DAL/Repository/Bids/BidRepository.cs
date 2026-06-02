@@ -17,19 +17,21 @@ namespace SAFQA.DAL.Repository.Bids
             _context = context;
         }
 
-        public async Task<int> GetBidsByCategory(int sellerId, int categoryId)
-        {
-            var totalBids = await _context.Bids
-                                 .Where(b => b.Auction.SellerId == sellerId && b.Auction.CategoryId == categoryId)
-                                 .CountAsync();
-            return totalBids;
-        }
-
-        public Task<int> GetSellerBids(int sellerId)
+        public Task<int> GetBidsByCategory(string userId, int categoryId)
         {
             return _context.Bids
-                            .Where(b => b.Auction.SellerId == sellerId)
-                            .CountAsync();
+                .Where(b =>
+                    b.Auction.Seller.UserId == userId &&
+                    b.Auction.CategoryId == categoryId
+                )
+                .CountAsync();
+        }
+
+        public Task<int> GetSellerBids(string userId)
+        {
+            return _context.Bids
+                .Where(b => b.Auction.Seller.UserId == userId)
+                .CountAsync();
         }
 
         public async Task<List<(int AuctionId, string AuctionTitle, List<string> ProductNames, int TotalBids)>> GetAuctionsWithBidsRawBySellerAsync(int sellerId)

@@ -10,9 +10,9 @@ namespace SAFQA.DAL.Repository.Transaction
     public interface ITransactionRepository
     {
         Task AddAsync(Transactions transaction);
-        Task<int> GetTotalPendingPayments(int sellerId);
-        Task<decimal> GetTotalRevenueAsync(int sellerId);
-        Task<List<(int Month, decimal Revenue)>> GetSellerMonthlyRevenue(int sellerId);
+        Task<int> GetTotalPendingPayments(string userId);
+        Task<decimal> GetTotalRevenueAsync(string userId);
+        Task<List<(int Month, decimal Revenue)>> GetSellerMonthlyRevenue(string userId);
         Task<int> GetTotalTransactionsCount();
         Task<int> GetSuccessfulTransactionsCount();
         Task<int> GetFailedTransactionsCount();

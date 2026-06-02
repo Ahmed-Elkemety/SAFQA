@@ -17,24 +17,27 @@ namespace SAFQA.DAL.Repository.Items
         {
             _context = context;
         }
-        public IQueryable<Item> GetMostPopularProducts(int sellerId, int top = 5)
+        public IQueryable<Item> GetMostPopularProducts(string userId, int top = 5)
         {
             return _context.Items
-                            .Where(i => i.Auction.SellerId == sellerId)
-                            .OrderByDescending(i => i.Auction.TotalBids)
-                            .Take(top);
+                .Where(i => i.Auction.Seller.UserId == userId)
+                .OrderByDescending(i => i.Auction.TotalBids)
+                .Take(top);
         }
 
-        public IQueryable<Item> GetProductsByCategory(int sellerId, string categoryName)
+        public IQueryable<Item> GetProductsByCategory(string userId, string categoryName)
         {
             return _context.Items
-                .Where(i => i.Auction.SellerId == sellerId && i.Auction.Category.Name == categoryName);
+                .Where(i =>
+                    i.Auction.Seller.UserId == userId &&
+                    i.Auction.Category.Name == categoryName
+                );
         }
         
-        public IQueryable<Item> GetSellerProducts(int sellerId)
+        public IQueryable<Item> GetSellerProducts(string userId)
         {
             return _context.Items
-                    .Where(a => a.Auction.SellerId == sellerId);
+                        .Where(i => i.Auction.Seller.UserId == userId);
         }
 
         public IQueryable<Item> GetAll()

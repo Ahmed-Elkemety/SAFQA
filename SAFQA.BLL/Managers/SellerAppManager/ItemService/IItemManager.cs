@@ -10,10 +10,10 @@ namespace SAFQA.BLL.Managers.SellerAppManager.ItemService
 {
     public interface IItemManager
     {
-        IQueryable<Item> GetSellerProducts(int sellerId);
+        IQueryable<Item> GetSellerProducts(string userId);
 
-        IQueryable<Item> GetProductsByCategory(int sellerId, string categoryName);
+        IQueryable<Item> GetProductsByCategory(string SellerId, string categoryName);
 
-        IQueryable<Item> GetMostPopularProducts(int sellerId, int top = 5);
+        IQueryable<Item> GetMostPopularProducts(string userId, int top = 5);
     }
 }

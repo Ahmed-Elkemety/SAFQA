@@ -18,14 +18,14 @@ namespace SAFQA.BLL.Managers.SellerAppManager.BidService
             _bidRepository = bidRepository;
         }
 
-        public Task<int> GetBidsByCategory(int sellerId, int categoryId)
+        public Task<int> GetBidsByCategory(string userId, int categoryId)
         {
-            return _bidRepository.GetBidsByCategory(sellerId, categoryId);
+            return _bidRepository.GetBidsByCategory(userId, categoryId);
         }
 
-        public Task<int> GetSellerBids(int sellerId)
+        public Task<int> GetSellerBids(string userId)
         {
-            return _bidRepository.GetSellerBids(sellerId);
+            return _bidRepository.GetSellerBids(userId);
         }
     }
 }

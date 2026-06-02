@@ -10,10 +10,10 @@ namespace SAFQA.BLL.Managers.SellerAppManager.TransactionService
 {
     public interface ITransactionManager
     {
-        Task<int> GetTotalPendingPayments(int sellerId);
+        Task<int> GetTotalPendingPayments(string userId);
 
-        Task<decimal> GetTotalRevenueAsync(int sellerId);
-        Task<List<SellerMonthlyRevenueDto>> GetSellerMonthlyRevenueAsync(int sellerId);
+        Task<decimal> GetTotalRevenueAsync(string userId);
+        Task<List<SellerMonthlyRevenueDto>> GetSellerMonthlyRevenueAsync(string userId);
         Task<int> GetTotalTransactionsCount();
         Task<int> GetSuccessfulTransactionsCount();
         Task<int> GetFailedTransactionsCount();

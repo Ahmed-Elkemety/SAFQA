@@ -11,8 +11,8 @@ namespace SAFQA.DAL.Repository.Items
     {
         IQueryable<Item> GetAll();
         Item GetById(int Id);
-        IQueryable<Item> GetSellerProducts(int sellerId);
-        IQueryable<Item> GetProductsByCategory(int sellerId, string categoryName);
-        IQueryable<Item> GetMostPopularProducts(int sellerId, int top = 5);
+        IQueryable<Item> GetSellerProducts(string userId);
+        IQueryable<Item> GetProductsByCategory(string sellerId, string categoryName);
+        IQueryable<Item> GetMostPopularProducts(string sellerId, int top = 5);
     }
 }

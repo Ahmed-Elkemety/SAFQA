@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SAFQA.BLL.Dtos.SellerAppDto.SellerDashboardDto;
 using SAFQA.BLL.Managers.SellerAppManager.ItemService;
+using System.Security.Claims;
 
 namespace SAFQA.API.Controllers
 {
@@ -17,28 +18,42 @@ namespace SAFQA.API.Controllers
         }
 
         [HttpGet("seller-products/{sellerId}")]
-        public IActionResult GetSellerProducts(int sellerId)
+        public IActionResult GetSellerProducts()
         {
-            var products = _itemManager.GetSellerProducts(sellerId).ToList();
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+                return Unauthorized();
+
+            var products = _itemManager.GetSellerProducts(userId).ToList();
 
             return Ok(products);
         }
 
         [HttpGet("products-by-category")]
-        public IActionResult GetProductsByCategory(int sellerId, string categoryName)
+        public IActionResult GetProductsByCategory(string categoryName)
         {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+                return Unauthorized();
+
             var products = _itemManager
-                .GetProductsByCategory(sellerId, categoryName)
+                .GetProductsByCategory(userId, categoryName)
                 .ToList();
 
             return Ok(products);
         }
 
-        [HttpGet("most-popular-products/{sellerId}")]
-        public IActionResult GetMostPopularProducts(int sellerId, int top = 5)
+        [HttpGet("most-popular-products")]
+        public IActionResult GetMostPopularProducts(int top = 5)
         {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+                return Unauthorized();
+
             var products = _itemManager
-                .GetMostPopularProducts(sellerId, top)
+                .GetMostPopularProducts(userId, top)
                 .ToList();
 
             return Ok(products);
