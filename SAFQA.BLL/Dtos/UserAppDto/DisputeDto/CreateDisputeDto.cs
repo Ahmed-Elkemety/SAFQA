@@ -12,6 +12,7 @@ namespace SAFQA.BLL.Dtos.UserAppDto.DisputeDto
         public int AuctionId { get; set; }
         public string Description { get; set; }
         public DisputeResolutionType ResolutionType { get; set; }
+        public DisputeProblemType DisputeProblemType { get; set; }
         public List<string> Evidences { get; set; }
     }
 }

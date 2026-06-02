@@ -55,7 +55,6 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
 
         public async Task<ConversationDto> CreateDispute(string userId, CreateDisputeDto dto)
         {
-
             var auction = _auctionRepo.GetById(dto.AuctionId);
             if (auction == null)
                 throw new Exception("Auction not found");
@@ -119,6 +118,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
                 Description = dto.Description,
                 Reason = dto.Description,
                 ResolutionType = dto.ResolutionType,
+                ProblemType = dto.DisputeProblemType,
                 Evidences = evidenceBytes,
                 Status = DisputeStatus.Open,
                 Date = DateTime.UtcNow,
