@@ -11,6 +11,5 @@ namespace SAFQA.BLL.Managers.UserAppManager.InteractionService
     {
         Task<AuthResult> AddFavoriteAsync(int auctionId, string userId);
         Task<AuthResult> AddViewAsync(int auctionId, string userId, string deviceType);
-        Task<AuthResult> AddFollowAsync(int sellerId, string userId);
     }
 }

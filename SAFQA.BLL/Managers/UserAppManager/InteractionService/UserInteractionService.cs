@@ -97,47 +97,5 @@ namespace SAFQA.BLL.Managers.UserAppManager.InteractionService
             result.IsSuccess = true;
             return result;
         }
-
-        // ===============================
-        // ADD FOLLOW
-        // ===============================
-        public async Task<AuthResult> AddFollowAsync(int sellerId, string userId)
-        {
-            var result = new AuthResult();
-
-            var seller = await _context.Sellers
-                .FirstOrDefaultAsync(s => s.Id == sellerId && !s.IsDeleted);
-
-            if (seller == null)
-            {
-                result.Errors.Add("Seller not found");
-                return result;
-            }
-
-            var alreadyFollowing = await _context.Set<UserFollowers>()
-                .AnyAsync(x => x.SellerId == sellerId && x.UserId == userId);
-
-            if (alreadyFollowing)
-            {
-                result.Errors.Add("Already following this seller");
-                return result;
-            }
-
-            var follow = new UserFollowers
-            {
-                SellerId = sellerId,
-                UserId = userId,
-                FollowedAt = DateTime.UtcNow
-            };
-
-            await _context.Set<UserFollowers>().AddAsync(follow);
-
-            seller.Followers++;
-
-            await _context.SaveChangesAsync();
-
-            result.IsSuccess = true;
-            return result;
-        }
     }
 }

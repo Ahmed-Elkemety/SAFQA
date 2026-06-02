@@ -159,10 +159,10 @@ namespace SAFQA.API
             builder.Services.AddScoped<IProxyRepository, ProxyRepository>();
             builder.Services.AddScoped<IProxyService, ProxyService>();
             builder.Services.AddScoped<IUserInteractionService, UserInteractionService>();
-            builder.Services.AddHostedService<HotScoreBackgroundService>();
-            builder.Services.AddHostedService<AuctionStatusBackgroundService>();
-            builder.Services.AddHostedService<EscrowReleaseBackgroundService>();
-            builder.Services.AddHostedService<ExpiredOtpCleanupService>();
+            //builder.Services.AddHostedService<HotScoreBackgroundService>();
+            //builder.Services.AddHostedService<AuctionStatusBackgroundService>();
+            //builder.Services.AddHostedService<EscrowReleaseBackgroundService>();
+            //builder.Services.AddHostedService<ExpiredOtpCleanupService>();
 
 
 

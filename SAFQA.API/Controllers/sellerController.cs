@@ -6,6 +6,7 @@ using SAFQA.BLL.Dtos.AccountDto.Seller;
 using SAFQA.BLL.Dtos.SellerAppDto.BussinessAccountDto;
 using SAFQA.BLL.Managers.AccountManager.Auth;
 using SAFQA.BLL.Managers.SellerAppManager.SellerManager;
+using SAFQA.DAL.Database;
 
 namespace SAFQA.API.Controllers
 {
@@ -14,10 +15,12 @@ namespace SAFQA.API.Controllers
     public class sellerController : ControllerBase
     {
         private readonly IsellerManager _sellerService;
-        
-        public sellerController(IsellerManager sellerService)
+        private readonly SAFQA_Context _context;
+
+        public sellerController(IsellerManager sellerService ,SAFQA_Context context)
         {
             _sellerService = sellerService;
+            _context = context;
         }
 
         [Authorize(Roles = "USER")]
@@ -108,15 +111,26 @@ namespace SAFQA.API.Controllers
         }
 
         [HttpGet("business-account")]
-        [Authorize(Roles = "SELLER")]
-        public async Task<IActionResult> GetBusinessAccount()
+        [Authorize(Roles = "USER")]
+        public async Task<IActionResult> GetBusinessAccount(int? sellerid)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            string? sellerId;
+            string? userId = null;
+            if (sellerid != null)
+            {
+                var seller = await _context.Sellers.FindAsync(sellerid.Value);
+                sellerId = seller?.UserId;
+                userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            }
+            else
+            {
+                sellerId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            }
 
-            if (string.IsNullOrEmpty(userId))
+            if (sellerId == null)
                 return Unauthorized("User Not Found");
 
-            var result = await _sellerService.GetBusinessAccountAsync(userId);
+            var result = await _sellerService.GetBusinessAccountAsync(sellerId,userId);
 
             if (result == null)
                 return NotFound("Seller not found");
