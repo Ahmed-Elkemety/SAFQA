@@ -30,6 +30,7 @@ namespace SAFQA.DAL.Repository.Message
         {
             _context.Messages.Add(message);
             _context.SaveChanges();
+            Console.WriteLine("Message saved with Id: " + message.Id);
         }
 
         public void Update(Models.Message message)

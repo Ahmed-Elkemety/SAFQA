@@ -66,8 +66,10 @@ namespace SAFQA.BLL.Managers.UserAppManager.ConversationService
                 throw new Exception("Unauthorized access");
 
             var existing = _conversationRepo.GetAll()
-                             .Include(c => c.Dispute)
-                             .FirstOrDefault(c => c.DisputeId == disputeId);
+                                .Include(c => c.Dispute)
+                                .Include(c => c.Messages)
+                                .ThenInclude(m => m.Attachments)
+                                .FirstOrDefault(c => c.DisputeId == disputeId);
 
             if (existing != null)
                 return Map(existing);
@@ -97,7 +99,18 @@ namespace SAFQA.BLL.Managers.UserAppManager.ConversationService
                 DisputeId = c.DisputeId,
                 CreatedAt = c.CreatedAt,
                 LastMessage = c.LastMessage,
-                Reason = c.Dispute?.Reason
+                Reason = c.Dispute?.Reason,
+                Messages = c.Messages?
+                            .Select(m => new MessageDto
+                            {
+                                MessageId = m.Id,
+                                SenderName = m.SenderId,
+                                Content = m.Content,
+                                CreatedAt = m.CreatedAt,
+                                IsSeen = m.IsSeen,
+                                Attachments = m.Attachments?.Select(a => a.FileUrl).ToList()
+                            })
+                            .ToList()
             };
         }
 
