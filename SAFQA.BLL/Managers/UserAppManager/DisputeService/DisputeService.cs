@@ -10,6 +10,7 @@ using SAFQA.BLL.Managers.UserAppManager.NotificationService;
 using SAFQA.DAL.Enums;
 using SAFQA.DAL.Models;
 using SAFQA.DAL.Repository.Auction;
+using SAFQA.DAL.Repository.Conversation;
 using SAFQA.DAL.Repository.Delivery;
 using SAFQA.DAL.Repository.Dispute;
 using SAFQA.DAL.Repository.Seller;
@@ -32,6 +33,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
         private readonly IChatService _chatService;
         private readonly INotificationService _notificationService;
         private readonly IDeliveryRepo _deliveryRepo;
+        private readonly IConversationRepo _conversationRepo;
         private readonly IHubContext<ChatHub> _hub;
         public DisputeService(
             IDiputeRepo disputeRepo,
@@ -41,6 +43,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
             IChatService chatService,
             IDeliveryRepo deliveryRepo,
             INotificationService notificationService,
+            IConversationRepo conversationRepo,
             IHubContext<ChatHub> hub)
         {
             _disputeRepo = disputeRepo;
@@ -49,6 +52,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
             _sellerRepo = sellerRepo;
             _chatService = chatService;
             _deliveryRepo = deliveryRepo;
+            _conversationRepo = conversationRepo;
             _hub = hub;
             _notificationService = notificationService;
         }
@@ -207,6 +211,9 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
             var dispute = _disputeRepo.GetAll()
                 .FirstOrDefault(d => d.Id == disputeId);
 
+            var conversation = _conversationRepo.GetAll()
+                    .FirstOrDefault(c => c.DisputeId == disputeId);
+
             if (dispute == null)
                 throw new Exception("Dispute not found");
 
@@ -257,6 +264,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
             {
                 DisputeId = dispute.Id,
                 Status = statusText,
+                ConversationId = conversation.Id,
 
                 Days = days,
                 Hours = hours,
