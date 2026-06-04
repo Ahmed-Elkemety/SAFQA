@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static SAFQA.BLL.Help.Helper;
+using static SAFQA.BLL.Help.Helper.FileValidator;
 
 namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
 {
@@ -15,8 +16,8 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
         Task<ConversationDto> CreateDispute(string userId, CreateDisputeDto dto);
         Task<(AuthResult, PagedResult<DisputeDto>)> GetUserReports(string userId, int page = 1, int pageSize = 10);
         Task<DisputeTrackingDto> GetDisputeTracking(int disputeId);
-
         Task CancelDisputeAsync(int disputeId, string userId);
         DisputeAdmDto GetDisputeDetails(int disputeId);
+        ServiceResult EscalateDispute(int disputeId);
     }
 }

@@ -21,6 +21,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static SAFQA.BLL.Help.Helper;
+using static SAFQA.BLL.Help.Helper.FileValidator;
 
 namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
 {
@@ -311,5 +312,48 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
                 })
                 .FirstOrDefault();
         }
+
+        public ServiceResult EscalateDispute(int disputeId)
+        {
+            var dispute = _disputeRepo.GetById(disputeId);
+
+            if (dispute == null)
+                return new ServiceResult
+                {
+                    Success = false,
+                    Message = "Dispute not found"
+                };
+
+            if (dispute.Status == DisputeStatus.Resolved)
+                return new ServiceResult
+                {
+                    Success = false,
+                    Message = "Resolved dispute cannot be escalated"
+                };
+
+            if (dispute.Status == DisputeStatus.Rejected)
+                return new ServiceResult
+                {
+                    Success = false,
+                    Message = "Rejected dispute cannot be escalated"
+                };
+
+            if (dispute.Status == DisputeStatus.UnderReview)
+                return new ServiceResult
+                {
+                    Success = true,
+                    Message = "Dispute is already under review"
+                };
+
+            dispute.Status = DisputeStatus.UnderReview;
+
+            _disputeRepo.Update(dispute);
+
+            return new ServiceResult
+            {
+                Success = true,
+                Message = "Dispute escalated successfully"
+            };
+        } 
     }
 }

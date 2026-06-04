@@ -151,5 +151,16 @@ namespace SAFQA.API.Controllers
 
             return Ok(result);
         }
+
+        [HttpPut("EscalateDispute/{disputeId}")]
+        public IActionResult EscalateDispute(int disputeId)
+        {
+            var result = _disputeService.EscalateDispute(disputeId);
+
+            if (!result.Success)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
     }
 }
