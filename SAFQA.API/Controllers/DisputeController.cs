@@ -111,6 +111,34 @@ namespace SAFQA.API.Controllers
                 });
             }
         }
+
+        [Authorize(Roles = "USER")]
+        [HttpDelete("cancel/For-Admin{disputeId}")]
+        public async Task<IActionResult> CancelDisputeAdm(int disputeId)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized("User not found");
+
+                await _disputeService.CancelDisputeAsyncAdmin(disputeId, userId);
+
+                return Ok(new
+                {
+                    message = "Dispute cancelled successfully"
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = ex.Message
+                });
+            }
+        }
+
         [Authorize(Roles = "ADMIN")]
         [HttpGet("escalated-cards")]
         public IActionResult GetEscalatedCards()
