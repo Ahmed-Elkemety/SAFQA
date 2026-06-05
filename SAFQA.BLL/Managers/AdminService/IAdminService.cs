@@ -1,4 +1,5 @@
-﻿using SAFQA.BLL.Dtos.UserAppDto.ChatDto;
+﻿using SAFQA.BLL.Dtos.AnnouncementDto;
+using SAFQA.BLL.Dtos.UserAppDto.ChatDto;
 using SAFQA.BLL.Dtos.UserAppDto.DisputeDto;
 using SAFQA.BLL.Dtos.UserAppDto.paymentsAdmDto;
 using System;
@@ -17,5 +18,6 @@ namespace SAFQA.BLL.Managers.AdminService
         List<FailedPaymentDto> GetFailedPayments(int days);
         RefundDto FullRefund(int disputeId);
         RefundDto PartialRefund(int disputeId, decimal refundAmount);
+        Task SendGlobalAnnouncement(SendAnnouncementDto dto);
     }
 }

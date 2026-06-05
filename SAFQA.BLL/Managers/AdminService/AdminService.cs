@@ -1,13 +1,18 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using SAFQA.BLL.Dtos.AnnouncementDto;
 using SAFQA.BLL.Dtos.UserAppDto.ChatDto;
 using SAFQA.BLL.Dtos.UserAppDto.DisputeDto;
 using SAFQA.BLL.Dtos.UserAppDto.paymentsAdmDto;
+using SAFQA.BLL.Managers.BackgroundServices;
 using SAFQA.DAL.Enums;
 using SAFQA.DAL.Models;
 using SAFQA.DAL.Repository.Auction;
 using SAFQA.DAL.Repository.Conversation;
 using SAFQA.DAL.Repository.Dispute;
+using SAFQA.DAL.Repository.Notification;
 using SAFQA.DAL.Repository.Transaction;
+using SAFQA.DAL.Repository.Users;
 using SAFQA.DAL.Repository.Wallet;
 using System;
 using System.Collections.Generic;
@@ -24,15 +29,20 @@ namespace SAFQA.BLL.Managers.AdminService
         private readonly ITransactionRepository _transactionRepo;
         private readonly IAuctionRepository _auctionRepo;
         private readonly IWalletRepo _walletRepo;
+        private readonly INotificationRepository _notificationRepo;
+        private readonly IUserRepo _userRepo;
+        IHubContext<NotificationHub> _hubContext;
 
-
-        public AdminService(IDiputeRepo diputeRepo, IConversationRepo conversationRepo, ITransactionRepository transactionRepo, IAuctionRepository auctionRepo, IWalletRepo walletRepo)
+        public AdminService(IDiputeRepo diputeRepo, IConversationRepo conversationRepo, ITransactionRepository transactionRepo, IAuctionRepository auctionRepo, IWalletRepo walletRepo, INotificationRepository notificationRepo, IUserRepo userRepo, IHubContext<NotificationHub> hubContext)
         {
             _disputeRepo = diputeRepo;
             _conversationRepo = conversationRepo;
             _transactionRepo = transactionRepo;
             _auctionRepo = auctionRepo;
+            _userRepo = userRepo;
+            _notificationRepo = notificationRepo;
             _walletRepo = walletRepo;
+            _hubContext = hubContext;
         }
 
         public List<EscalateCardDTO> GetEscalatedCards()
@@ -366,6 +376,48 @@ namespace SAFQA.BLL.Managers.AdminService
                 Message = "Partial refund completed successfully.",
                 RefundedAmount = refundAmount
             };
+        }
+
+        public async Task SendGlobalAnnouncement(SendAnnouncementDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.Title))
+                throw new Exception("Title is required");
+
+            if (string.IsNullOrWhiteSpace(dto.Message))
+                throw new Exception("Message is required");
+
+            // 1) Get only user IDs (lighter than full entities)
+            var userIds = _userRepo.GetAll()
+                .Where(u => !u.IsDeleted)
+                .Select(u => u.Id)
+                .ToList();
+
+            var now = DateTime.UtcNow;
+
+            // 2) Prepare notifications in memory (NO DB CALL YET)
+            var notifications = userIds.Select(userId => new Notification
+            {
+                Title = dto.Title,
+                Message = dto.Message,
+                UserId = userId,
+                IsRead = false,
+                CreatedAt = now,
+                notificationType = NotificationTypes.Announcement,
+                ReferenceId = null
+            }).ToList();
+
+            // 3) BULK INSERT (FAST)
+            await _notificationRepo.AddRangeAsync(notifications);
+
+            // 4) SignalR broadcast (instant, no waiting for DB)
+            await _hubContext.Clients.All.SendAsync(
+                "ReceiveAnnouncement",
+                new
+                {
+                    Title = dto.Title,
+                    Message = dto.Message,
+                    CreatedAt = now
+                });
         }
     }
 }

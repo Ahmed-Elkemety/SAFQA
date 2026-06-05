@@ -1,14 +1,16 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using SAFQA.BLL.Dtos.AnnouncementDto;
 using SAFQA.BLL.Dtos.UserAppDto.AccountDto;
 using SAFQA.BLL.Dtos.UserAppDto.FollowDto;
+using SAFQA.BLL.Managers.AdminService;
 using SAFQA.BLL.Managers.UserAppManager;
 using SAFQA.BLL.Managers.UserAppManager.AuctionManager;
 using SAFQA.BLL.Managers.UserAppManager.InteractionService;
 using SAFQA.BLL.Managers.UserAppManager.UserManager;
+using System.Security.Claims;
 
 namespace SAFQA.API.Controllers
 {
@@ -22,13 +24,15 @@ namespace SAFQA.API.Controllers
         private readonly IAuctionManagerU _managerU;
         private readonly IUserInteractionService _interactionService;
         private readonly IUserService _user;
+        private readonly IAdminService _adminService;
 
-        public UserController(IUserService homeService ,IAuctionManagerU managerU , IUserInteractionService interactionService,IUserService user)
+        public UserController(IAdminService adminservice, IUserService homeService ,IAuctionManagerU managerU , IUserInteractionService interactionService,IUserService user)
         {
             _userService = homeService;
             _managerU = managerU;
             _interactionService = interactionService;
             _user = user;
+            _adminService = adminservice;
         }
 
 
@@ -222,5 +226,26 @@ namespace SAFQA.API.Controllers
             return Ok(result);
         }
 
+        [HttpPost("send-global")]
+        public async Task<IActionResult> SendGlobalAnnouncement([FromBody] SendAnnouncementDto dto)
+        {
+            if (dto == null)
+                return BadRequest("Invalid request");
+            try
+            {
+                await _adminService.SendGlobalAnnouncement(dto);
+                return Ok(new
+                {
+                    message = "Announcement sent successfully"
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = ex.Message
+                });
+            }
+        }
     }
 }

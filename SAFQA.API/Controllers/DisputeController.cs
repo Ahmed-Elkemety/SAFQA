@@ -85,7 +85,7 @@ namespace SAFQA.API.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
+        [Authorize(Roles = "USER")]
         [HttpDelete("cancel/{disputeId}")]
         public async Task<IActionResult> CancelDispute(int disputeId)
         {
@@ -111,7 +111,7 @@ namespace SAFQA.API.Controllers
                 });
             }
         }
-
+        [Authorize(Roles = "ADMIN")]
         [HttpGet("escalated-cards")]
         public IActionResult GetEscalatedCards()
         {
@@ -151,7 +151,7 @@ namespace SAFQA.API.Controllers
 
             return Ok(result);
         }
-
+        [Authorize(Roles = "USER")]
         [HttpPut("EscalateDispute/{disputeId}")]
         public IActionResult EscalateDispute(int disputeId)
         {
