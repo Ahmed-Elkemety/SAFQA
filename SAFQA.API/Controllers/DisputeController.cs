@@ -118,12 +118,7 @@ namespace SAFQA.API.Controllers
         {
             try
             {
-                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-                if (string.IsNullOrEmpty(userId))
-                    return Unauthorized("User not found");
-
-                await _disputeService.CancelDisputeAsyncAdmin(disputeId, userId);
+                await _disputeService.CancelDisputeAsyncAdmin(disputeId);
 
                 return Ok(new
                 {

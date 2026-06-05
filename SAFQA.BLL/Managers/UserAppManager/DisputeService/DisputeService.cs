@@ -297,7 +297,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
             _disputeRepo.Update(dispute);
         }
 
-        public async Task CancelDisputeAsyncAdmin(int disputeId, string userId)
+        public async Task CancelDisputeAsyncAdmin(int disputeId)
         {
             var dispute = _disputeRepo.GetById(disputeId);
 
