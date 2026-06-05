@@ -66,11 +66,11 @@ namespace SAFQA.API.Controllers
 
         [AllowAnonymous]
         [HttpPost("google")]
-        public async Task<IActionResult> GoogleLogin([FromBody] GoogleDto dto)
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleDto dto,string role)
         {
             var deviceId = Request.Headers["DeviceId"].FirstOrDefault() ?? Guid.NewGuid().ToString();
 
-            var result = await _oAuth.GoogleLoginAsync(dto.IdToken, deviceId);
+            var result = await _oAuth.GoogleLoginAsync(dto.IdToken, deviceId,role);
 
             if (!result.IsSuccess)
                 return Unauthorized(result);

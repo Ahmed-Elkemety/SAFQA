@@ -42,7 +42,7 @@ namespace SAFQA.BLL.Managers.AccountManager.OAuth
         #endregion
 
         #region Google Login
-        public async Task<AuthResult> GoogleLoginAsync(string idToken, string deviceId)
+        public async Task<AuthResult> GoogleLoginAsync(string idToken, string deviceId,string role)
         {
             GoogleJsonWebSignature.Payload payload;
 
@@ -52,8 +52,15 @@ namespace SAFQA.BLL.Managers.AccountManager.OAuth
                 {
                     return new AuthResult { IsSuccess = false, Message = "Token is empty" };
                 }
-
-                var clientId = _configuration["Google:ClientId"];
+                string clientId = "";
+                if (role == "user")
+                {
+                    clientId = _configuration["Google:ClientId"];
+                }
+                else
+                {
+                    clientId = _configuration["Google:ClientId2"];
+                }
 
                 payload = await GoogleJsonWebSignature.ValidateAsync(
                     idToken,

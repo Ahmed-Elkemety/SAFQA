@@ -9,7 +9,7 @@ namespace SAFQA.BLL.Managers.AccountManager.OAuth
 {
     public interface IOAuth
     {
-        Task<AuthResult> GoogleLoginAsync(string idToken, string deviceId);
+        Task<AuthResult> GoogleLoginAsync(string idToken, string deviceId,string role);
         Task<AuthResult> FacebookLoginAsync(string accessToken, string deviceId);
     }
 }
