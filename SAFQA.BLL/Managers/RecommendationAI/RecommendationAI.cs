@@ -32,7 +32,8 @@ namespace SAFQA.BLL.Managers.RecommendationAI
                 throw new Exception("User not found");
             }
 
-            var url = $"https://courier-recoil-dumping.ngrok-free.dev/recommend/{userId}?n={n}";
+            var url = $"https://isamel000-safqa-recommendation.hf.space/recommend/{userId}?n={n}";
+            // 23d78848-4e75-4b75-ad11-05a6dfe6a338?n=10  
 
             var response = await _httpClient.GetAsync(url);
 
