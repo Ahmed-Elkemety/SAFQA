@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using static SAFQA.BLL.Help.Helper;
 using SAFQA.DAL.Models;
 using SAFQA.DAL.Database;
+using SAFQA.BLL.Help;
 
 
 namespace SAFQA.BLL.Managers.UserAppManager.UserManager
@@ -34,6 +35,48 @@ namespace SAFQA.BLL.Managers.UserAppManager.UserManager
             _auctionRepo = auctionRepo;
             _userRepo = userRepo;
             _context = Context;
+        }
+
+        public Helper.PagedResult<UserListDto> GetUsers(int page, int pageSize)
+        {
+            var query = _userRepo.GetAll()
+                .Where(u => !u.IsDeleted);
+
+            var totalCount = query.Count();
+
+            var users = query
+                .OrderByDescending(u => u.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList()
+                .Select(u =>
+                {
+                    string action;
+
+                    if (u.Status == UserStatus.Active)
+                        action = "Suspend";
+                    else
+                        action = "Restore";
+
+                    return new UserListDto
+                    {
+                        Id = u.Id,
+                        FullName = u.FullName,
+                        Email = u.Email,
+                        Status = u.Status.ToString(),
+                        Action = action
+                    };
+                })
+                .ToList();
+
+            return new Helper.PagedResult<UserListDto>
+            {
+                Data = users,
+                CurrentPage = page,
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
+                HasNextPage = page * pageSize < totalCount
+            };
         }
 
         public bool ChangeStatus(string userId)
