@@ -13,6 +13,7 @@ namespace SAFQA.DAL.Enums
         Orders = 3,
         Wallet = 4,
         Admin = 5,
-        Dispute = 6
+        Dispute = 6,
+        Announcement = 7
     }
 }

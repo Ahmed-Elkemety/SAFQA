@@ -85,7 +85,7 @@ namespace SAFQA.API.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
+        [Authorize(Roles = "USER")]
         [HttpDelete("cancel/{disputeId}")]
         public async Task<IActionResult> CancelDispute(int disputeId)
         {
@@ -111,7 +111,7 @@ namespace SAFQA.API.Controllers
                 });
             }
         }
-
+        [Authorize(Roles = "ADMIN")]
         [HttpGet("escalated-cards")]
         public IActionResult GetEscalatedCards()
         {
@@ -148,6 +148,17 @@ namespace SAFQA.API.Controllers
                     Message = "Dispute not found."
                 });
             }
+
+            return Ok(result);
+        }
+        [Authorize(Roles = "USER")]
+        [HttpPut("EscalateDispute/{disputeId}")]
+        public IActionResult EscalateDispute(int disputeId)
+        {
+            var result = _disputeService.EscalateDispute(disputeId);
+
+            if (!result.Success)
+                return BadRequest(result);
 
             return Ok(result);
         }

@@ -10,6 +10,7 @@ using SAFQA.BLL.Managers.UserAppManager.NotificationService;
 using SAFQA.DAL.Enums;
 using SAFQA.DAL.Models;
 using SAFQA.DAL.Repository.Auction;
+using SAFQA.DAL.Repository.Conversation;
 using SAFQA.DAL.Repository.Delivery;
 using SAFQA.DAL.Repository.Dispute;
 using SAFQA.DAL.Repository.Seller;
@@ -20,6 +21,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static SAFQA.BLL.Help.Helper;
+using static SAFQA.BLL.Help.Helper.FileValidator;
 
 namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
 {
@@ -32,6 +34,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
         private readonly IChatService _chatService;
         private readonly INotificationService _notificationService;
         private readonly IDeliveryRepo _deliveryRepo;
+        private readonly IConversationRepo _conversationRepo;
         private readonly IHubContext<ChatHub> _hub;
         public DisputeService(
             IDiputeRepo disputeRepo,
@@ -41,6 +44,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
             IChatService chatService,
             IDeliveryRepo deliveryRepo,
             INotificationService notificationService,
+            IConversationRepo conversationRepo,
             IHubContext<ChatHub> hub)
         {
             _disputeRepo = disputeRepo;
@@ -49,6 +53,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
             _sellerRepo = sellerRepo;
             _chatService = chatService;
             _deliveryRepo = deliveryRepo;
+            _conversationRepo = conversationRepo;
             _hub = hub;
             _notificationService = notificationService;
         }
@@ -207,6 +212,9 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
             var dispute = _disputeRepo.GetAll()
                 .FirstOrDefault(d => d.Id == disputeId);
 
+            var conversation = _conversationRepo.GetAll()
+                    .FirstOrDefault(c => c.DisputeId == disputeId);
+
             if (dispute == null)
                 throw new Exception("Dispute not found");
 
@@ -257,6 +265,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
             {
                 DisputeId = dispute.Id,
                 Status = statusText,
+                ConversationId = conversation.Id,
 
                 Days = days,
                 Hours = hours,
@@ -303,5 +312,48 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
                 })
                 .FirstOrDefault();
         }
+
+        public ServiceResult EscalateDispute(int disputeId)
+        {
+            var dispute = _disputeRepo.GetById(disputeId);
+
+            if (dispute == null)
+                return new ServiceResult
+                {
+                    Success = false,
+                    Message = "Dispute not found"
+                };
+
+            if (dispute.Status == DisputeStatus.Resolved)
+                return new ServiceResult
+                {
+                    Success = false,
+                    Message = "Resolved dispute cannot be escalated"
+                };
+
+            if (dispute.Status == DisputeStatus.Rejected)
+                return new ServiceResult
+                {
+                    Success = false,
+                    Message = "Rejected dispute cannot be escalated"
+                };
+
+            if (dispute.Status == DisputeStatus.UnderReview)
+                return new ServiceResult
+                {
+                    Success = true,
+                    Message = "Dispute is already under review"
+                };
+
+            dispute.Status = DisputeStatus.UnderReview;
+
+            _disputeRepo.Update(dispute);
+
+            return new ServiceResult
+            {
+                Success = true,
+                Message = "Dispute escalated successfully"
+            };
+        } 
     }
 }

@@ -10,6 +10,7 @@ namespace SAFQA.BLL.Dtos.UserAppDto.DisputeDto
     {
         public int DisputeId { get; set; }
         public string Status { get; set; }
+        public int ConversationId { get; set; }
         public int Days { get; set; }
         public int Hours { get; set; }
         public int Minutes { get; set; }

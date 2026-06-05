@@ -77,6 +77,11 @@ namespace SAFQA.BLL.Help
 
                 return (true, null);
             }
+            public class ServiceResult
+            {
+                public bool Success { get; set; }
+                public string Message { get; set; }
+            }
         }
     }
 }

@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Asn1;
+using SAFQA.DAL.Database;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using SAFQA.DAL.Database;
 namespace SAFQA.DAL.Repository.Notification
 {
     public class NotificationRepository : INotificationRepository
@@ -48,6 +49,15 @@ namespace SAFQA.DAL.Repository.Notification
         public async Task AddAsync(Models.Notification notification)
         {
             await _context.Notifications.AddAsync(notification);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task AddRangeAsync(IEnumerable<Models.Notification> notifications)
+        {
+            if (notifications == null || !notifications.Any())
+                return;
+
+            await _context.Notifications.AddRangeAsync(notifications);
             await _context.SaveChangesAsync();
         }
     }
