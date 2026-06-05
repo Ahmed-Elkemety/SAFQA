@@ -379,45 +379,45 @@ namespace SAFQA.BLL.Managers.AdminService
         }
 
         public async Task SendGlobalAnnouncement(SendAnnouncementDto dto)
+{
+    if (string.IsNullOrWhiteSpace(dto.Title))
+        throw new Exception("Title is required");
+
+    if (string.IsNullOrWhiteSpace(dto.Message))
+        throw new Exception("Message is required");
+
+    // 1) Get only user IDs (lighter than full entities)
+    var userIds = _userRepo.GetAll()
+        .Where(u => !u.IsDeleted)
+        .Select(u => u.Id)
+        .ToList();
+
+    var now = DateTime.UtcNow;
+
+    // 2) Prepare notifications in memory (NO DB CALL YET)
+    var notifications = userIds.Select(userId => new Notification
+    {
+        Title = dto.Title,
+        Message = dto.Message,
+        UserId = userId,
+        IsRead = false,
+        CreatedAt = now,
+        notificationType = NotificationTypes.Announcement,
+        ReferenceId = null
+    }).ToList();
+
+    // 3) BULK INSERT (FAST)
+    await _notificationRepo.AddRangeAsync(notifications);
+
+    // 4) SignalR broadcast (instant, no waiting for DB)
+    await _hubContext.Clients.All.SendAsync(
+        "ReceiveAnnouncement",
+        new
         {
-            if (string.IsNullOrWhiteSpace(dto.Title))
-                throw new Exception("Title is required");
-
-            if (string.IsNullOrWhiteSpace(dto.Message))
-                throw new Exception("Message is required");
-
-            // 1) Get only user IDs (lighter than full entities)
-            var userIds = _userRepo.GetAll()
-                .Where(u => !u.IsDeleted)
-                .Select(u => u.Id)
-                .ToList();
-
-            var now = DateTime.UtcNow;
-
-            // 2) Prepare notifications in memory (NO DB CALL YET)
-            var notifications = userIds.Select(userId => new Notification
-            {
-                Title = dto.Title,
-                Message = dto.Message,
-                UserId = userId,
-                IsRead = false,
-                CreatedAt = now,
-                notificationType = NotificationTypes.Announcement,
-                ReferenceId = null
-            }).ToList();
-
-            // 3) BULK INSERT (FAST)
-            await _notificationRepo.AddRangeAsync(notifications);
-
-            // 4) SignalR broadcast (instant, no waiting for DB)
-            await _hubContext.Clients.All.SendAsync(
-                "ReceiveAnnouncement",
-                new
-                {
-                    Title = dto.Title,
-                    Message = dto.Message,
-                    CreatedAt = now
-                });
-        }
+            Title = dto.Title,
+            Message = dto.Message,
+            CreatedAt = now
+        });
+}
     }
 }
