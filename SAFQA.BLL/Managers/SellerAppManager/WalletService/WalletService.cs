@@ -74,7 +74,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager.WalletService
                 BalanceAfter = wallet.Balance,
                 Status = TransactionStatus.Completed,
                 Description = description,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow.AddHours(3)
             };
             _transactionRepo.Add(transaction);
 
@@ -132,7 +132,7 @@ namespace SAFQA.BLL.Managers.SellerAppManager.WalletService
                 Type = TransactionType.Withdrawal,
                 Status = TransactionStatus.Completed,
                 Description = description,
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.Now.AddHours(3)
             };
 
             _transactionRepo.Add(transaction);

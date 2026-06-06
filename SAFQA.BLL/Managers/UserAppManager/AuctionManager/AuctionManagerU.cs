@@ -469,7 +469,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
         {
             try
             {
-                var now = DateTime.UtcNow;
+                var now = DateTime.UtcNow.AddHours(3);
 
                 // 1. بيانات خفيفة
                 var auctionsData = await _context.Auctions
@@ -626,9 +626,10 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
                     }
                     else
                     {
-                        var timeLeft = a.EndDate - now;
+                        var totalDuration = auction.EndDate - auction.StartDate;
+                        var timeLeft = auction.EndDate - now;
 
-                        auction.Status = timeLeft.TotalHours <= 3
+                        auction.Status = timeLeft.TotalMinutes <= totalDuration.TotalMinutes * 0.2
                             ? AuctionStatus.EndingSoon
                             : AuctionStatus.Active;
                     }

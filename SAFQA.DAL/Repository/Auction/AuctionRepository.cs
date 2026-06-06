@@ -377,7 +377,6 @@ namespace SAFQA.DAL.Repository.Auction
             var totalCount = await query.CountAsync();
 
             var data = await query
-                .OrderByDescending(a => a.CreatedAt)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();

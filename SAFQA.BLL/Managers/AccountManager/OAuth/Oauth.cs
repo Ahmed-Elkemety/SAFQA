@@ -42,7 +42,7 @@ namespace SAFQA.BLL.Managers.AccountManager.OAuth
         #endregion
 
         #region Google Login
-        public async Task<AuthResult> GoogleLoginAsync(string idToken, string deviceId,string role)
+        public async Task<AuthResult>                               GoogleLoginAsync(string idToken, string deviceId,string role)
         {
             GoogleJsonWebSignature.Payload payload;
 
