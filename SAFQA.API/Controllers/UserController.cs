@@ -247,5 +247,13 @@ namespace SAFQA.API.Controllers
                 });
             }
         }
+
+        [Authorize(Roles = "ADMIN")]
+        [HttpGet]
+        public IActionResult GetUser([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            var result = _userService.GetUsers(page, pageSize);
+            return Ok(result);
+        }
     }
 }

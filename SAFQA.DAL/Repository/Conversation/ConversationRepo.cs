@@ -31,7 +31,10 @@ namespace SAFQA.DAL.Repository.Conversation
                   .ThenInclude(m => m.Sender)
               .Include(c => c.Messages)
                   .ThenInclude(m => m.Attachments)
-              .FirstOrDefault(c => c.DisputeId == disputeId);
+              .FirstOrDefault(c =>
+                    c.DisputeId == disputeId &&
+                    c.Dispute != null &&
+                    !c.Dispute.IsDeleted);
         }
 
         public Models.Conversation GetById(int id)

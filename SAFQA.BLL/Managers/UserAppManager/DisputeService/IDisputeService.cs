@@ -17,6 +17,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
         Task<(AuthResult, PagedResult<DisputeDto>)> GetUserReports(string userId, int page = 1, int pageSize = 10);
         Task<DisputeTrackingDto> GetDisputeTracking(int disputeId);
         Task CancelDisputeAsync(int disputeId, string userId);
+        Task CancelDisputeAsyncAdmin(int disputeId);
         DisputeAdmDto GetDisputeDetails(int disputeId);
         ServiceResult EscalateDispute(int disputeId);
     }

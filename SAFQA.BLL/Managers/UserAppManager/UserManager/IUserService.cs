@@ -1,6 +1,7 @@
 ﻿using SAFQA.BLL.Dtos.UserAppDto.AccountDto;
 using SAFQA.BLL.Dtos.UserAppDto.HomeDto;
 using SAFQA.BLL.Dtos.UserAppDto.ProfileDto;
+using SAFQA.BLL.Help;
 using SAFQA.BLL.Managers.AccountManager.Auth;
 using System;
 using System.Collections.Generic;
@@ -23,5 +24,7 @@ namespace SAFQA.BLL.Managers.UserAppManager
         Task<AuthResult> FollowSeller(string userId, int sellerId);
         Task<AuthResult> UnfollowSeller(string userId, int sellerId);
         Task<AuthResult> RemoveFavorite(string userId, int auctionId);
+        Helper.PagedResult<UserListDto> GetUsers(int page, int pageSize);
+
     }
 }

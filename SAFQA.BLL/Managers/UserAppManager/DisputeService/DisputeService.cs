@@ -146,10 +146,12 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
             return conversation;
         }
 
-        public async Task<(AuthResult, PagedResult<DisputeDto>)>
-                    GetUserReports(string userId, int page = 1, int pageSize = 10)
+        public async Task<(AuthResult, PagedResult<DisputeDto>)> 
+            GetUserReports(string userId, int page = 1, int pageSize = 10)
         {
-            var query = _disputeRepo.GetUserDisputes(userId);
+            var query = _disputeRepo.GetUserDisputes(userId)
+             .Where(d => !d.IsDeleted);
+
             var totalCount = await query.CountAsync();
 
             if (totalCount == 0)
@@ -290,6 +292,20 @@ namespace SAFQA.BLL.Managers.UserAppManager.DisputeService
             if (dispute.Status == SAFQA.DAL.Enums.DisputeStatus.Resolved)
                 throw new Exception("Cannot cancel a Resolved dispute");
 
+            dispute.IsDeleted = true;
+
+            _disputeRepo.Update(dispute);
+        }
+
+        public async Task CancelDisputeAsyncAdmin(int disputeId)
+        {
+            var dispute = _disputeRepo.GetById(disputeId);
+
+            if (dispute == null)
+                throw new Exception("Dispute not found");
+
+            if (dispute.Status == SAFQA.DAL.Enums.DisputeStatus.Resolved)
+                throw new Exception("Cannot cancel a Resolved dispute");
 
             dispute.IsDeleted = true;
 

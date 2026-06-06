@@ -69,7 +69,10 @@ namespace SAFQA.BLL.Managers.UserAppManager.ConversationService
                                 .Include(c => c.Dispute)
                                 .Include(c => c.Messages)
                                 .ThenInclude(m => m.Attachments)
-                                .FirstOrDefault(c => c.DisputeId == disputeId);
+                                .FirstOrDefault(c =>
+                                            c.DisputeId == disputeId &&
+                                            c.Dispute != null &&
+                                            !c.Dispute.IsDeleted);
 
             if (existing != null)
                 return Map(existing);
