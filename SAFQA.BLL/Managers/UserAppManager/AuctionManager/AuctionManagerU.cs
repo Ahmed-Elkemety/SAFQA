@@ -744,6 +744,7 @@ namespace SAFQA.BLL.Managers.UserAppManager.AuctionManager
         public async Task<List<Dtos.UserAppDto.HomeDto.CategoryDto>> GetCategoriesAsync(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
+
             if (user == null)
             {
                 throw new Exception("User not found");

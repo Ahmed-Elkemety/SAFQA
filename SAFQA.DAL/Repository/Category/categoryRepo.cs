@@ -63,15 +63,15 @@ namespace SAFQA.DAL.Repository.Category
         public async Task<List<Categorys>> GetCategoriesWithCountAsync()
         {
             return await _context.Category
-             .AsNoTracking()
-             .Select(c => new Categorys
-             {
-                 Id = c.Id,
-                 Name = c.Name,
-                 Image = c.Image,
-                 AuctionCount = c.Auctions.Count()
-             })
-             .ToListAsync();
+                .AsNoTracking()
+                .Select(c => new Categorys
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Image = c.Image,
+                    AuctionCount = c.Auctions.Count(a => !a.IsDeleted)
+                })
+                .ToListAsync();
         }
     }
 }
